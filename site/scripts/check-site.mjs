@@ -37,8 +37,23 @@ if (home.includes("testflight.apple.com")) {
   throw new Error("A public TestFlight URL appeared without a verified build-time configuration.");
 }
 
-const scriptCount = (home.match(/<script/g) ?? []).length;
-if (scriptCount !== 0) {
+if (!home.includes("SoftwareApplication")) {
+  throw new Error("Landing is missing SoftwareApplication structured data.");
+}
+
+if (!home.includes("id=\"look-inside\"") && !home.includes('id="look-inside"')) {
+  throw new Error("Landing is missing the screenshot gallery.");
+}
+
+if (home.includes("Download on the App Store") && !home.includes("https://apps.apple.com/")) {
+  throw new Error("App Store badge copy appeared without a verified apps.apple.com URL.");
+}
+
+const executableScripts = [...home.matchAll(/<script\b([^>]*)>/gi)].filter((match) => {
+  const attrs = match[1] ?? "";
+  return !/type=["']application\/ld\+json["']/i.test(attrs);
+});
+if (executableScripts.length !== 0) {
   throw new Error("The static landing unexpectedly ships client-side JavaScript.");
 }
 

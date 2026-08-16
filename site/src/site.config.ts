@@ -38,7 +38,13 @@ export type SiteConfig = {
     blush: string;
     inkOnDark: string;
   };
+  colorScheme: "light" | "dark";
   hero: { image: string; alt: string; caption: string };
+  gallery: { src: string; alt: string }[];
+  applicationCategory: string;
+  availability: "unreleased" | "testflight" | "app-store";
+  appStoreUrl?: string;
+  appStoreId?: string;
   betaNote: string;
   tension: { statement: string; title: string; copy: string };
   chaptersKicker: string;
@@ -93,11 +99,18 @@ export const site: SiteConfig = {
     blush: "#f3ddd0",
     inkOnDark: "#fff6ea"
   },
+  colorScheme: "light",
   hero: {
     image: "/images/screens/constellation.png",
     alt: "Kith’s constellation of people as warm lanterns of different sizes",
     caption: "Closer people take more space. Size is something you set."
   },
+  gallery: [
+    { src: "/images/screens/constellation.png", alt: "Kith constellation of people as warm lanterns" },
+    { src: "/images/screens/person.png", alt: "Kith person page with standing notes and a hangout log" }
+  ],
+  applicationCategory: "LifestyleApplication",
+  availability: "unreleased",
   betaNote: "Invite-only iPhone testing. No account. Notes stay on your phone and, if you want, your iCloud.",
   tension: {
     statement: "A contact list is not a relationship.",

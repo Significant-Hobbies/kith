@@ -11,6 +11,9 @@
 @layer tokens {
   :root {
     color-scheme: light;
+  }
+  html[data-scheme="dark"] {
+    color-scheme: dark;
     --paper: var(--site-paper);
     --field: var(--site-field);
     --ink: var(--site-ink);
@@ -70,6 +73,13 @@
   .legal-copy h2 { margin-bottom: 10px; font-size: 1.25rem; }
   .legal-copy p, .legal-copy li { color: var(--ink-soft); line-height: 1.75; }
   .legal-copy a { color: var(--accent-dark); font-weight: 700; }
+  html[data-scheme="dark"] .privacy-section {
+    background: var(--field);
+    color: var(--ink);
+  }
+  html[data-scheme="dark"] .privacy-section .chapter-kicker { color: var(--accent-soft); }
+  html[data-scheme="dark"] .privacy-section p:not(.chapter-kicker) { color: var(--ink-soft); }
+  html[data-scheme="dark"] .privacy-section .text-link { color: var(--ink); }
 }
 
 @layer utilities {
