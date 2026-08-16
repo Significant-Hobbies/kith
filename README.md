@@ -10,8 +10,7 @@ There is no Kith account. Notes live on the phone and, when you are signed
 into iCloud, in your personal private CloudKit database (team
 `8F7LXHTJZR`).
 
-The public landing lives in `site/`. It is the iOS landing template
-(Indulge’s page set) with Kith tokens and copy.
+The public landing is Astro in `site/` (the shared iOS landing template).
 
 ```bash
 cd site
