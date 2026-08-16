@@ -25,10 +25,15 @@ final class AppModel {
         self.store = store
         let arguments = ProcessInfo.processInfo.arguments
         self.cloud = Self.isDemoLaunch(arguments) ? nil : cloud
+        if arguments.contains("--person-demo") {
+            selectedPersonID = UUID(uuidString: "11111111-1111-1111-1111-111111111111")
+        }
     }
 
     private static func isDemoLaunch(_ arguments: [String]) -> Bool {
-        arguments.contains("--ui-demo") || arguments.contains("--fresh-demo")
+        arguments.contains("--ui-demo")
+            || arguments.contains("--fresh-demo")
+            || arguments.contains("--person-demo")
     }
 
     var visiblePeople: [Person] {
@@ -43,7 +48,7 @@ final class AppModel {
         defer { isLoading = false }
         let arguments = ProcessInfo.processInfo.arguments
         do {
-            if arguments.contains("--ui-demo") {
+            if arguments.contains("--ui-demo") || arguments.contains("--person-demo") {
                 document = .sample
             } else if arguments.contains("--fresh-demo") {
                 document = .empty

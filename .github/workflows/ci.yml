@@ -9,6 +9,20 @@ permissions:
   contents: read
 
 jobs:
+  site:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 24
+      - run: corepack enable && corepack install
+      - run: pnpm install --frozen-lockfile
+        working-directory: site
+      - run: pnpm check
+        working-directory: site
+
   native:
     runs-on: macos-15
     timeout-minutes: 25

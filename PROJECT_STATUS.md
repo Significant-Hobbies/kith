@@ -1,6 +1,6 @@
 # Kith — PROJECT STATUS
 
-Last updated: 2026-08-16
+Last updated: 2026-08-17
 
 ## Why / What
 
@@ -32,6 +32,8 @@ reminders as a notification product, messaging, and a web client.
 
 ## Timeline
 
+- 2026-08-17 — added a public landing from the shared iOS template
+  (Indulge page set, Kith tokens). Not deployed yet.
 - 2026-08-16 — signed with the personal Apple team and mirrored the local
   document into that team's private iCloud container
 - 2026-08-16 — first device-first constellation: local people and logs, warm
@@ -41,6 +43,8 @@ reminders as a notification product, messaging, and a web client.
 
 - Native iPhone app `com.significanthobbies.kith` (local binary, not in the
   App Store yet)
+- Static landing in `site/` intended for `kith.significanthobbies.com`
+  (not deployed)
 
 ## Features (shipped)
 
