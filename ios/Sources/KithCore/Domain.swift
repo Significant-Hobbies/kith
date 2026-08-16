@@ -172,15 +172,50 @@ public struct KithDocument: Codable, Equatable, Sendable {
     public var schemaVersion: Int
     public var people: [Person]
     public var entries: [Entry]
+    public var savedAt: Date
+
+    enum CodingKeys: String, CodingKey {
+        case schemaVersion
+        case people
+        case entries
+        case savedAt
+    }
 
     public init(
         schemaVersion: Int = currentSchemaVersion,
         people: [Person] = [],
-        entries: [Entry] = []
+        entries: [Entry] = [],
+        savedAt: Date = .distantPast
     ) {
         self.schemaVersion = schemaVersion
         self.people = people
         self.entries = entries
+        self.savedAt = savedAt
+    }
+
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        schemaVersion = try container.decode(Int.self, forKey: .schemaVersion)
+        people = try container.decode([Person].self, forKey: .people)
+        entries = try container.decode([Entry].self, forKey: .entries)
+        savedAt = try container.decodeIfPresent(Date.self, forKey: .savedAt) ?? .distantPast
+    }
+
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(schemaVersion, forKey: .schemaVersion)
+        try container.encode(people, forKey: .people)
+        try container.encode(entries, forKey: .entries)
+        try container.encode(savedAt, forKey: .savedAt)
+    }
+
+    /// Newer document wins. Used when the phone and personal iCloud disagree.
+    public static func newer(_ lhs: KithDocument, _ rhs: KithDocument) -> KithDocument {
+        lhs.savedAt >= rhs.savedAt ? lhs : rhs
+    }
+
+    public mutating func markSaved(at date: Date = Date()) {
+        savedAt = date
     }
 
     public static var empty: KithDocument { KithDocument() }
@@ -215,12 +250,14 @@ public struct KithDocument: Codable, Equatable, Sendable {
         } else {
             people.append(saved)
         }
+        markSaved()
         sortPeople()
     }
 
     public mutating func removePerson(id: UUID) {
         people.removeAll { $0.id == id }
         entries.removeAll { $0.personID == id }
+        markSaved()
     }
 
     public mutating func add(_ entry: Entry) throws {
@@ -228,10 +265,12 @@ public struct KithDocument: Codable, Equatable, Sendable {
             throw KithError.missingPerson
         }
         entries.append(entry)
+        markSaved()
     }
 
     public mutating func removeEntry(id: UUID) {
         entries.removeAll { $0.id == id }
+        markSaved()
     }
 
     public func matchingPeople(query: String) -> [Person] {

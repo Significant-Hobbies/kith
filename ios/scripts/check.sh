@@ -4,7 +4,7 @@ set -euo pipefail
 
 script_dir="${0:A:h}"
 project_root="${script_dir:h}"
-destination="${KITH_SIMULATOR_DESTINATION:-platform=iOS Simulator,name=iPhone 17 Pro,OS=26.4}"
+destination="${KITH_SIMULATOR_DESTINATION:-platform=iOS Simulator,name=iPhone 17 Pro,OS=26.2}"
 derived_data="${KITH_DERIVED_DATA:-/private/tmp/kith-ios-derived}"
 
 cd "$project_root"
