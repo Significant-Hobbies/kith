@@ -4,9 +4,10 @@
 - Keep Kith's source, product planning, tests, and release configuration in
   this repository. Fleet Workspace may catalog Kith but does not own its
   product source.
-- Kith is device-first. People and logs live in one local JSON document. Do
-  not add an account, a server, a network call, or a third-party analytics
-  SDK to the relationship path.
+- Kith is device-first. People and logs live in one local JSON document, and
+  optionally mirror to the owner's private iCloud database on the personal
+  Apple team `8F7LXHTJZR` (`iCloud.com.significanthobbies.kith`). Do not add
+  a Kith account, a Kith server, or a third-party analytics SDK.
 - Speak about people, closeness, and notes — never contacts, CRM, pipelines,
   or leads.
 - Closeness is an explicit 1–5 value the person sets. Do not infer it from

@@ -23,21 +23,21 @@ public actor KithStore {
             return .empty
         }
         let data = try Data(contentsOf: fileURL)
-        return try Self.migrate(decode(data))
+        return try Self.migrate(Self.decode(data))
     }
 
     public func save(_ document: KithDocument) throws {
         let directory = fileURL.deletingLastPathComponent()
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-        try encode(document).write(to: fileURL, options: [.atomic, .completeFileProtectionUnlessOpen])
+        try Self.encode(document).write(to: fileURL, options: [.atomic, .completeFileProtectionUnlessOpen])
     }
 
-    public func encode(_ document: KithDocument) throws -> Data {
-        try Self.encoder.encode(document)
+    public static func encode(_ document: KithDocument) throws -> Data {
+        try encoder.encode(document)
     }
 
-    public func decode(_ data: Data) throws -> KithDocument {
-        try Self.decoder.decode(KithDocument.self, from: data)
+    public static func decode(_ data: Data) throws -> KithDocument {
+        try decoder.decode(KithDocument.self, from: data)
     }
 
     static func migrate(_ document: KithDocument) throws -> KithDocument {

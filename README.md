@@ -6,7 +6,9 @@ People you add float as warm bubbles. Closer relationships are larger. Tap
 someone to write down what matters — a dinner, a call, a birthday, a thing
 you want to remember.
 
-There is no account. Everything stays on the device.
+There is no Kith account. Notes live on the phone and, when you are signed
+into iCloud, in your personal private CloudKit database (team
+`8F7LXHTJZR`).
 
 ## Run
 

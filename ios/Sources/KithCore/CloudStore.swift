@@ -19,14 +19,9 @@ public actor KithCloudStore {
     private static let payloadKey = "payload"
 
     private let container: CKContainer
-    private let codec: KithStore
 
-    public init(
-        containerIdentifier: String = containerIdentifier,
-        codec: KithStore = KithStore()
-    ) {
+    public init(containerIdentifier: String = containerIdentifier) {
         self.container = CKContainer(identifier: containerIdentifier)
-        self.codec = codec
     }
 
     public func availability() async -> CloudAvailability {
@@ -55,7 +50,7 @@ public actor KithCloudStore {
         do {
             let record = try await container.privateCloudDatabase.record(for: recordID)
             guard let data = record[Self.payloadKey] as? Data else { return nil }
-            return try await codec.decode(data)
+            return try KithStore.decode(data)
         } catch let error as CKError where error.code == .unknownItem {
             return nil
         }
@@ -69,7 +64,7 @@ public actor KithCloudStore {
         } catch let error as CKError where error.code == .unknownItem {
             record = CKRecord(recordType: Self.recordType, recordID: recordID)
         }
-        record[Self.payloadKey] = try await codec.encode(document) as CKRecordValue
+        record[Self.payloadKey] = try KithStore.encode(document) as CKRecordValue
         _ = try await container.privateCloudDatabase.save(record)
     }
 }

@@ -13,7 +13,7 @@ In scope: adding people, setting closeness and circle, a floating
 constellation home, a searchable list, standing notes, and a chronological
 log per person.
 
-Out of scope: accounts, cloud sync, contact-book import, social graphs,
+Out of scope: a Kith account, contact-book import, social graphs,
 reminders as a notification product, messaging, and a web client.
 
 ## Dependencies
@@ -21,6 +21,8 @@ reminders as a notification product, messaging, and a web client.
 ### External
 
 - SwiftUI on iOS 17+
+- Personal Apple Developer team `8F7LXHTJZR` (Sarthak Agrawal) and CloudKit
+  container `iCloud.com.significanthobbies.kith`
 - XcodeGen to generate the Xcode project
 - XCTest for domain, persistence, and interface coverage
 
@@ -30,6 +32,8 @@ reminders as a notification product, messaging, and a web client.
 
 ## Timeline
 
+- 2026-08-16 — signed with the personal Apple team and mirrored the local
+  document into that team's private iCloud container
 - 2026-08-16 — first device-first constellation: local people and logs, warm
   floating bubbles sized by closeness, person pages, and a searchable list
 
@@ -46,6 +50,7 @@ reminders as a notification product, messaging, and a web client.
 - Per-person log kinds: note, hangout, call, message, gift, milestone, remember
 - Searchable list fallback and reduced-motion static layout
 - Empty state and a `--ui-demo` fixture for tests and screenshots
+- Private CloudKit mirror on the personal team when iCloud is signed in
 
 ## Work queue
 

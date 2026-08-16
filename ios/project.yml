@@ -23,6 +23,8 @@ targets:
     type: framework
     platform: iOS
     sources: Sources/KithCore
+    dependencies:
+      - sdk: CloudKit.framework
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.significanthobbies.kith.core

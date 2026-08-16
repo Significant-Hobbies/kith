@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		09E8E56D1B58E87EC470F8DE /* KithCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 706248B78A28D30986A34B42 /* KithCore.framework */; };
+		15835961CE7BABD27EA30295 /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8E3415A5E88E90361208B65E /* CloudKit.framework */; };
 		1D8DB7DB42B1154E40F56ED6 /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = A662AC2BCD668AE688D25BB5 /* Persistence.swift */; };
 		26F587DD0A2D6F634E9068BE /* KithCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 706248B78A28D30986A34B42 /* KithCore.framework */; };
 		28DC706C84B926D801903C80 /* KithCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 706248B78A28D30986A34B42 /* KithCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
@@ -21,6 +22,7 @@
 		65C76174953419A9F87B0092 /* DemoData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79D378032A9722C9555ED8AE /* DemoData.swift */; };
 		6A749513F46572C1A112A145 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10F1C159C3DA6714FD52E7A /* AppModel.swift */; };
 		9AE67972B45E3203D786E267 /* KithApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBCFD88B8B1F5D94999E4F0C /* KithApp.swift */; };
+		9CD8FB3118B722E7027AF697 /* CloudStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A8B5ADE80477C15D5324428 /* CloudStore.swift */; };
 		A076BAE8EDA2DF34808A76E6 /* PersonViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 283EE3AFA2ADACAC47EDC05F /* PersonViews.swift */; };
 		B11A9EBD171FF12E6F7B0045 /* KithUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69B0BA41F320166AEA1728A2 /* KithUITests.swift */; };
 		F3C48A6CA9EC720182B123BC /* Design.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE4DDB782CAF5D8FD571DC3B /* Design.swift */; };
@@ -87,7 +89,9 @@
 		6B63B598C54DF2994E3A9AF0 /* Kith.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Kith.entitlements; sourceTree = "<group>"; };
 		706248B78A28D30986A34B42 /* KithCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = KithCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		79D378032A9722C9555ED8AE /* DemoData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoData.swift; sourceTree = "<group>"; };
+		7A8B5ADE80477C15D5324428 /* CloudStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudStore.swift; sourceTree = "<group>"; };
 		7AA76B6FCE2A1BD2FDDE7D45 /* BubbleField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BubbleField.swift; sourceTree = "<group>"; };
+		8E3415A5E88E90361208B65E /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
 		8FDEF1D744F055053CB588A9 /* KithCoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KithCoreTests.swift; sourceTree = "<group>"; };
 		A662AC2BCD668AE688D25BB5 /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
 		A6982529B80DE3228F8C45F4 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
@@ -116,6 +120,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		8225BE96028F5B6C93194620 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				15835961CE7BABD27EA30295 /* CloudKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -126,6 +138,14 @@
 				2C466A859325D15A49C22248 /* PrivacyInfo.xcprivacy */,
 			);
 			path = Resources;
+			sourceTree = "<group>";
+		};
+		740D39D08FAD697420684C6E /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				8E3415A5E88E90361208B65E /* CloudKit.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		9F523A73087559EADBF4E41D /* KithUITests */ = {
@@ -160,6 +180,7 @@
 		C95DED6552F603708C492B95 /* KithCore */ = {
 			isa = PBXGroup;
 			children = (
+				7A8B5ADE80477C15D5324428 /* CloudStore.swift */,
 				79D378032A9722C9555ED8AE /* DemoData.swift */,
 				DC4EA45455B6FF74E4BCFC21 /* Domain.swift */,
 				A662AC2BCD668AE688D25BB5 /* Persistence.swift */,
@@ -193,6 +214,7 @@
 				C95DED6552F603708C492B95 /* KithCore */,
 				C1BA66230AAF4E8FA087C9D8 /* KithCoreTests */,
 				9F523A73087559EADBF4E41D /* KithUITests */,
+				740D39D08FAD697420684C6E /* Frameworks */,
 				B53CC26908B713C18F8BDABE /* Products */,
 			);
 			sourceTree = "<group>";
@@ -264,6 +286,7 @@
 			buildConfigurationList = 49C9377BCA132EF97A2917E4 /* Build configuration list for PBXNativeTarget "KithCore" */;
 			buildPhases = (
 				60738BEDC80337F5C7693E30 /* Sources */,
+				8225BE96028F5B6C93194620 /* Frameworks */,
 			);
 			buildRules = (
 			);
@@ -343,6 +366,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9CD8FB3118B722E7027AF697 /* CloudStore.swift in Sources */,
 				65C76174953419A9F87B0092 /* DemoData.swift in Sources */,
 				615BC818E410D41C47C41708 /* Domain.swift in Sources */,
 				1D8DB7DB42B1154E40F56ED6 /* Persistence.swift in Sources */,

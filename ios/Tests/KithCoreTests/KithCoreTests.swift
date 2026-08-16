@@ -77,6 +77,23 @@ final class KithCoreTests: XCTestCase {
         }
     }
 
+    func testOlderDocumentsWithoutSavedAtStillDecode() throws {
+        let json = Data("""
+        {"schemaVersion":1,"people":[],"entries":[]}
+        """.utf8)
+        let decoded = try KithStore.decode(json)
+        XCTAssertEqual(decoded.savedAt, .distantPast)
+    }
+
+    func testNewerDocumentWinsForICloudMirror() {
+        var older = KithDocument.sample
+        older.savedAt = Date(timeIntervalSince1970: 100)
+        var newer = KithDocument.empty
+        newer.savedAt = Date(timeIntervalSince1970: 200)
+        XCTAssertEqual(KithDocument.newer(older, newer).savedAt, newer.savedAt)
+        XCTAssertTrue(KithDocument.newer(older, newer).people.isEmpty)
+    }
+
     private func loadSync(_ store: KithStore) throws -> KithDocument {
         let box = ResultBox()
         let semaphore = DispatchSemaphore(value: 0)
