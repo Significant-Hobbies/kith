@@ -1,0 +1,735 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		09E8E56D1B58E87EC470F8DE /* KithCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 706248B78A28D30986A34B42 /* KithCore.framework */; };
+		1D8DB7DB42B1154E40F56ED6 /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = A662AC2BCD668AE688D25BB5 /* Persistence.swift */; };
+		26F587DD0A2D6F634E9068BE /* KithCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 706248B78A28D30986A34B42 /* KithCore.framework */; };
+		28DC706C84B926D801903C80 /* KithCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 706248B78A28D30986A34B42 /* KithCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		3D16CCA4E369961726F5EC1F /* KithCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 706248B78A28D30986A34B42 /* KithCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		3D2725D7CF8A07FC80223E4E /* KithCoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FDEF1D744F055053CB588A9 /* KithCoreTests.swift */; };
+		43362B2B8A40AEC6FFBF4E34 /* LogViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC05AFA81D366A2F3F3657C9 /* LogViews.swift */; };
+		4DAC407477F1CDC34376B408 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 30859487C6430E18E645A7E1 /* Assets.xcassets */; };
+		50198B83B77FCE3BB74868B9 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6982529B80DE3228F8C45F4 /* RootView.swift */; };
+		5D36133D386B4091A7DB8845 /* BubbleField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AA76B6FCE2A1BD2FDDE7D45 /* BubbleField.swift */; };
+		615BC818E410D41C47C41708 /* Domain.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4EA45455B6FF74E4BCFC21 /* Domain.swift */; };
+		65C76174953419A9F87B0092 /* DemoData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79D378032A9722C9555ED8AE /* DemoData.swift */; };
+		6A749513F46572C1A112A145 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10F1C159C3DA6714FD52E7A /* AppModel.swift */; };
+		9AE67972B45E3203D786E267 /* KithApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBCFD88B8B1F5D94999E4F0C /* KithApp.swift */; };
+		A076BAE8EDA2DF34808A76E6 /* PersonViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 283EE3AFA2ADACAC47EDC05F /* PersonViews.swift */; };
+		B11A9EBD171FF12E6F7B0045 /* KithUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69B0BA41F320166AEA1728A2 /* KithUITests.swift */; };
+		F3C48A6CA9EC720182B123BC /* Design.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE4DDB782CAF5D8FD571DC3B /* Design.swift */; };
+		F680576C1F45EE52AFBA44DE /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 2C466A859325D15A49C22248 /* PrivacyInfo.xcprivacy */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		3ADFFFC10B1726C575911AC8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9551192361D22AAFCE735BA5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = FBF266D51143FD491CAAD363;
+			remoteInfo = KithCore;
+		};
+		7D87253EA3501138BEE24541 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9551192361D22AAFCE735BA5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BCC96A7E8083614AFEF97660;
+			remoteInfo = Kith;
+		};
+		936ECBA75C9052DD270905E6 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9551192361D22AAFCE735BA5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = FBF266D51143FD491CAAD363;
+			remoteInfo = KithCore;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		F112E39D69F120EE5DFF7AD0 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				3D16CCA4E369961726F5EC1F /* KithCore.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FFFF965E0C9BADE920E789F4 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				28DC706C84B926D801903C80 /* KithCore.framework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXFileReference section */
+		093BCDF0FE2F82258D1A28E0 /* KithCoreTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = KithCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		09C2DC255CA3B902918900FB /* KithUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = KithUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		283EE3AFA2ADACAC47EDC05F /* PersonViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonViews.swift; sourceTree = "<group>"; };
+		2C466A859325D15A49C22248 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		30859487C6430E18E645A7E1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		5EBF5537116C0DE3DA6726C5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		69B0BA41F320166AEA1728A2 /* KithUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KithUITests.swift; sourceTree = "<group>"; };
+		6B63B598C54DF2994E3A9AF0 /* Kith.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Kith.entitlements; sourceTree = "<group>"; };
+		706248B78A28D30986A34B42 /* KithCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = KithCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		79D378032A9722C9555ED8AE /* DemoData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoData.swift; sourceTree = "<group>"; };
+		7AA76B6FCE2A1BD2FDDE7D45 /* BubbleField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BubbleField.swift; sourceTree = "<group>"; };
+		8FDEF1D744F055053CB588A9 /* KithCoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KithCoreTests.swift; sourceTree = "<group>"; };
+		A662AC2BCD668AE688D25BB5 /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
+		A6982529B80DE3228F8C45F4 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		B10F1C159C3DA6714FD52E7A /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
+		B5055DD36BBAD17F586CE183 /* Kith.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Kith.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		BBCFD88B8B1F5D94999E4F0C /* KithApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KithApp.swift; sourceTree = "<group>"; };
+		BC05AFA81D366A2F3F3657C9 /* LogViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogViews.swift; sourceTree = "<group>"; };
+		DC4EA45455B6FF74E4BCFC21 /* Domain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain.swift; sourceTree = "<group>"; };
+		DE4DDB782CAF5D8FD571DC3B /* Design.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Design.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		72D5C2DB9641C125B2C3B696 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				26F587DD0A2D6F634E9068BE /* KithCore.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		780D86DA152E8C547167F4CC /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				09E8E56D1B58E87EC470F8DE /* KithCore.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		397EE5C7F585780678D6EA3B /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				30859487C6430E18E645A7E1 /* Assets.xcassets */,
+				2C466A859325D15A49C22248 /* PrivacyInfo.xcprivacy */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		9F523A73087559EADBF4E41D /* KithUITests */ = {
+			isa = PBXGroup;
+			children = (
+				69B0BA41F320166AEA1728A2 /* KithUITests.swift */,
+			);
+			name = KithUITests;
+			path = Tests/KithUITests;
+			sourceTree = "<group>";
+		};
+		B53CC26908B713C18F8BDABE /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				B5055DD36BBAD17F586CE183 /* Kith.app */,
+				706248B78A28D30986A34B42 /* KithCore.framework */,
+				093BCDF0FE2F82258D1A28E0 /* KithCoreTests.xctest */,
+				09C2DC255CA3B902918900FB /* KithUITests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		C1BA66230AAF4E8FA087C9D8 /* KithCoreTests */ = {
+			isa = PBXGroup;
+			children = (
+				8FDEF1D744F055053CB588A9 /* KithCoreTests.swift */,
+			);
+			name = KithCoreTests;
+			path = Tests/KithCoreTests;
+			sourceTree = "<group>";
+		};
+		C95DED6552F603708C492B95 /* KithCore */ = {
+			isa = PBXGroup;
+			children = (
+				79D378032A9722C9555ED8AE /* DemoData.swift */,
+				DC4EA45455B6FF74E4BCFC21 /* Domain.swift */,
+				A662AC2BCD668AE688D25BB5 /* Persistence.swift */,
+			);
+			name = KithCore;
+			path = Sources/KithCore;
+			sourceTree = "<group>";
+		};
+		DA78E00117DC2C243A41A595 /* Kith */ = {
+			isa = PBXGroup;
+			children = (
+				B10F1C159C3DA6714FD52E7A /* AppModel.swift */,
+				7AA76B6FCE2A1BD2FDDE7D45 /* BubbleField.swift */,
+				DE4DDB782CAF5D8FD571DC3B /* Design.swift */,
+				5EBF5537116C0DE3DA6726C5 /* Info.plist */,
+				6B63B598C54DF2994E3A9AF0 /* Kith.entitlements */,
+				BBCFD88B8B1F5D94999E4F0C /* KithApp.swift */,
+				BC05AFA81D366A2F3F3657C9 /* LogViews.swift */,
+				283EE3AFA2ADACAC47EDC05F /* PersonViews.swift */,
+				A6982529B80DE3228F8C45F4 /* RootView.swift */,
+				397EE5C7F585780678D6EA3B /* Resources */,
+			);
+			name = Kith;
+			path = Sources/Kith;
+			sourceTree = "<group>";
+		};
+		F35B7C939F8B4E95D11CD4D9 = {
+			isa = PBXGroup;
+			children = (
+				DA78E00117DC2C243A41A595 /* Kith */,
+				C95DED6552F603708C492B95 /* KithCore */,
+				C1BA66230AAF4E8FA087C9D8 /* KithCoreTests */,
+				9F523A73087559EADBF4E41D /* KithUITests */,
+				B53CC26908B713C18F8BDABE /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		00D81C67312E33339B9E2E76 /* KithUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = D3359B56F5FC3F8C4911345F /* Build configuration list for PBXNativeTarget "KithUITests" */;
+			buildPhases = (
+				8CB8929053E2A8DFC172744E /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				DF6867AC7DB039F012F2C38D /* PBXTargetDependency */,
+			);
+			name = KithUITests;
+			packageProductDependencies = (
+			);
+			productName = KithUITests;
+			productReference = 09C2DC255CA3B902918900FB /* KithUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+		5754601C9787A40EE381E8E8 /* KithCoreTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 952E07942BAC90C997735A8D /* Build configuration list for PBXNativeTarget "KithCoreTests" */;
+			buildPhases = (
+				DF2289F70857C845D5C9A454 /* Sources */,
+				72D5C2DB9641C125B2C3B696 /* Frameworks */,
+				F112E39D69F120EE5DFF7AD0 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B63AD7D68D5B91DA8DEDA179 /* PBXTargetDependency */,
+			);
+			name = KithCoreTests;
+			packageProductDependencies = (
+			);
+			productName = KithCoreTests;
+			productReference = 093BCDF0FE2F82258D1A28E0 /* KithCoreTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		BCC96A7E8083614AFEF97660 /* Kith */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 46B564538F5B7F86F2202233 /* Build configuration list for PBXNativeTarget "Kith" */;
+			buildPhases = (
+				8B085295F94185749749D8D2 /* Sources */,
+				4F60C47BF5ED1081908DB7B7 /* Resources */,
+				780D86DA152E8C547167F4CC /* Frameworks */,
+				FFFF965E0C9BADE920E789F4 /* Embed Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				A30332C1774720C52A2754E4 /* PBXTargetDependency */,
+			);
+			name = Kith;
+			packageProductDependencies = (
+			);
+			productName = Kith;
+			productReference = B5055DD36BBAD17F586CE183 /* Kith.app */;
+			productType = "com.apple.product-type.application";
+		};
+		FBF266D51143FD491CAAD363 /* KithCore */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 49C9377BCA132EF97A2917E4 /* Build configuration list for PBXNativeTarget "KithCore" */;
+			buildPhases = (
+				60738BEDC80337F5C7693E30 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = KithCore;
+			packageProductDependencies = (
+			);
+			productName = KithCore;
+			productReference = 706248B78A28D30986A34B42 /* KithCore.framework */;
+			productType = "com.apple.product-type.framework";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		9551192361D22AAFCE735BA5 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+					00D81C67312E33339B9E2E76 = {
+						DevelopmentTeam = 8F7LXHTJZR;
+						ProvisioningStyle = Automatic;
+						TestTargetID = BCC96A7E8083614AFEF97660;
+					};
+					5754601C9787A40EE381E8E8 = {
+						DevelopmentTeam = 8F7LXHTJZR;
+						ProvisioningStyle = Automatic;
+					};
+					BCC96A7E8083614AFEF97660 = {
+						DevelopmentTeam = 8F7LXHTJZR;
+						ProvisioningStyle = Automatic;
+					};
+					FBF266D51143FD491CAAD363 = {
+						DevelopmentTeam = 8F7LXHTJZR;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = 589A638D2F7F0D1B69963CE5 /* Build configuration list for PBXProject "Kith" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = F35B7C939F8B4E95D11CD4D9;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = B53CC26908B713C18F8BDABE /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				FBF266D51143FD491CAAD363 /* KithCore */,
+				BCC96A7E8083614AFEF97660 /* Kith */,
+				5754601C9787A40EE381E8E8 /* KithCoreTests */,
+				00D81C67312E33339B9E2E76 /* KithUITests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		4F60C47BF5ED1081908DB7B7 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4DAC407477F1CDC34376B408 /* Assets.xcassets in Resources */,
+				F680576C1F45EE52AFBA44DE /* PrivacyInfo.xcprivacy in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		60738BEDC80337F5C7693E30 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				65C76174953419A9F87B0092 /* DemoData.swift in Sources */,
+				615BC818E410D41C47C41708 /* Domain.swift in Sources */,
+				1D8DB7DB42B1154E40F56ED6 /* Persistence.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8B085295F94185749749D8D2 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6A749513F46572C1A112A145 /* AppModel.swift in Sources */,
+				5D36133D386B4091A7DB8845 /* BubbleField.swift in Sources */,
+				F3C48A6CA9EC720182B123BC /* Design.swift in Sources */,
+				9AE67972B45E3203D786E267 /* KithApp.swift in Sources */,
+				43362B2B8A40AEC6FFBF4E34 /* LogViews.swift in Sources */,
+				A076BAE8EDA2DF34808A76E6 /* PersonViews.swift in Sources */,
+				50198B83B77FCE3BB74868B9 /* RootView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		8CB8929053E2A8DFC172744E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B11A9EBD171FF12E6F7B0045 /* KithUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DF2289F70857C845D5C9A454 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3D2725D7CF8A07FC80223E4E /* KithCoreTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		A30332C1774720C52A2754E4 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = FBF266D51143FD491CAAD363 /* KithCore */;
+			targetProxy = 936ECBA75C9052DD270905E6 /* PBXContainerItemProxy */;
+		};
+		B63AD7D68D5B91DA8DEDA179 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = FBF266D51143FD491CAAD363 /* KithCore */;
+			targetProxy = 3ADFFFC10B1726C575911AC8 /* PBXContainerItemProxy */;
+		};
+		DF6867AC7DB039F012F2C38D /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BCC96A7E8083614AFEF97660 /* Kith */;
+			targetProxy = 7D87253EA3501138BEE24541 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		06622CCE9046789A61992835 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.significanthobbies.kith.core-tests";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		32A91FC1DA711B6FBB19C7A5 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = 8F7LXHTJZR;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Debug;
+		};
+		61A318655F11044E59064AC0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.significanthobbies.kith.ui-tests";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Kith;
+			};
+			name = Release;
+		};
+		95768831B27A65EBC4D6E96C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Sources/Kith/Kith.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = Sources/Kith/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.significanthobbies.kith;
+				PRODUCT_NAME = Kith;
+				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		983106A603FA5FAB6FCE1FC2 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.significanthobbies.kith.ui-tests";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = Kith;
+			};
+			name = Debug;
+		};
+		C2961C5825FDEB08CD9E4DB1 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.significanthobbies.kith.core;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Debug;
+		};
+		D2BAD98B384DCE27CCBE1102 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Sources/Kith/Kith.entitlements;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				INFOPLIST_FILE = Sources/Kith/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.significanthobbies.kith;
+				PRODUCT_NAME = Kith;
+				SDKROOT = iphoneos;
+				SUPPORTS_MACCATALYST = NO;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		DAA80009F1182AB36EC45924 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.significanthobbies.kith.core-tests";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		EA3F751E46FF1CF0F4CFA593 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = 8F7LXHTJZR;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		EABF4F97CCF8A8B1E6B68495 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_IDENTITY = "";
+				CURRENT_PROJECT_VERSION = 1;
+				DEFINES_MODULE = YES;
+				DYLIB_COMPATIBILITY_VERSION = 1;
+				DYLIB_CURRENT_VERSION = 1;
+				DYLIB_INSTALL_NAME_BASE = "@rpath";
+				GENERATE_INFOPLIST_FILE = YES;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Frameworks";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.significanthobbies.kith.core;
+				SDKROOT = iphoneos;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VERSIONING_SYSTEM = "apple-generic";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		46B564538F5B7F86F2202233 /* Build configuration list for PBXNativeTarget "Kith" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				95768831B27A65EBC4D6E96C /* Debug */,
+				D2BAD98B384DCE27CCBE1102 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		49C9377BCA132EF97A2917E4 /* Build configuration list for PBXNativeTarget "KithCore" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C2961C5825FDEB08CD9E4DB1 /* Debug */,
+				EABF4F97CCF8A8B1E6B68495 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		589A638D2F7F0D1B69963CE5 /* Build configuration list for PBXProject "Kith" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				32A91FC1DA711B6FBB19C7A5 /* Debug */,
+				EA3F751E46FF1CF0F4CFA593 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		952E07942BAC90C997735A8D /* Build configuration list for PBXNativeTarget "KithCoreTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				06622CCE9046789A61992835 /* Debug */,
+				DAA80009F1182AB36EC45924 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		D3359B56F5FC3F8C4911345F /* Build configuration list for PBXNativeTarget "KithUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				983106A603FA5FAB6FCE1FC2 /* Debug */,
+				61A318655F11044E59064AC0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 9551192361D22AAFCE735BA5 /* Project object */;
+}
