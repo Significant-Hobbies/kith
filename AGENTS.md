@@ -14,6 +14,7 @@
   recency, log volume, or circle.
 - Run `ios/scripts/check.sh` after changes under `ios/`. It regenerates the
   Xcode project, runs unit and UI tests, and builds Release unsigned.
-- The public site is `site/`, copied from Fleet’s iOS landing template.
-  After copy or token changes run `pnpm --dir site check`. Do not invent a
+- The public site source of truth is `ios-landings` (`PRODUCT=kith`).
+  This repo still has a buildable `site/` copy so Kith stays independent.
+  After local site edits run `pnpm --dir site check`. Do not invent a
   second page set.
