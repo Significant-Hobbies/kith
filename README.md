@@ -10,13 +10,9 @@ There is no Kith account. Notes live on the phone and, when you are signed
 into iCloud, in your personal private CloudKit database (team
 `8F7LXHTJZR`).
 
-The public landing is Astro in `site/` (the shared iOS landing template).
-
-```bash
-cd site
-pnpm install
-pnpm dev
-```
+The public landing is the ios-landings factory at
+https://kith.significanthobbies.com. Deploy it from that repo with
+`pnpm run deploy:kith`. The `site/` folder here is leftover.
 
 ## Run
 

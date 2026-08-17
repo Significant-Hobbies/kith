@@ -32,8 +32,10 @@ reminders as a notification product, messaging, and a web client.
 
 ## Timeline
 
+- 2026-08-17 — public landing live at kith.significanthobbies.com from
+  the ios-landings factory
 - 2026-08-17 — added a public landing from the shared iOS template
-  (Indulge page set, Kith tokens). Not deployed yet.
+  (Indulge page set, Kith tokens)
 - 2026-08-16 — signed with the personal Apple team and mirrored the local
   document into that team's private iCloud container
 - 2026-08-16 — first device-first constellation: local people and logs, warm
@@ -43,8 +45,8 @@ reminders as a notification product, messaging, and a web client.
 
 - Native iPhone app `com.significanthobbies.kith` (local binary, not in the
   App Store yet)
-- Static landing in `site/` intended for `kith.significanthobbies.com`
-  (not deployed)
+- Public landing at https://kith.significanthobbies.com (ios-landings,
+  Cloudflare Pages project `kith`)
 
 ## Features (shipped)
 
@@ -55,6 +57,7 @@ reminders as a notification product, messaging, and a web client.
 - Searchable list fallback and reduced-motion static layout
 - Empty state and a `--ui-demo` fixture for tests and screenshots
 - Private CloudKit mirror on the personal team when iCloud is signed in
+- Public factory landing at kith.significanthobbies.com
 
 ## Work queue
 
