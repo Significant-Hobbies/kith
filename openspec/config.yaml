@@ -1,6 +1,0 @@
-schema: spec-driven
-
-context: |
-  Kith is a device-first iPhone relationship log. SwiftUI + a local JSON
-  document. No account, no server, no CRM language. Closeness is an
-  explicit 1–5 the person sets; bubble size follows that value only.
