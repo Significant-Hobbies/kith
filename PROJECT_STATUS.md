@@ -1,6 +1,6 @@
 # Kith — PROJECT STATUS
 
-Last updated: 2026-08-17
+Last updated: 2026-08-21
 
 ## Why / What
 
@@ -32,6 +32,11 @@ reminders as a notification product, messaging, and a web client.
 
 ## Timeline
 
+- 2026-08-21 — created the personal-team App Store Connect record as
+  `Kith by Significant Hobbies` (ID `6803666674`) and uploaded iPhone build
+  `1.0.0 (1)` for internal-only TestFlight; Apple accepted the package for
+  processing after the application target was corrected to emit only the
+  intended iPhone device family
 - 2026-08-17 — public landing live at kith.significanthobbies.com from
   the ios-landings factory
 - 2026-08-17 — added a public landing from the shared iOS template
@@ -43,8 +48,9 @@ reminders as a notification product, messaging, and a web client.
 
 ## Products
 
-- Native iPhone app `com.significanthobbies.kith` (local binary, not in the
-  App Store yet)
+- Native iPhone app `com.significanthobbies.kith`; build `1.0.0 (1)` is
+  accepted for internal-only TestFlight processing on personal team
+  `8F7LXHTJZR`, but is not yet confirmed ready for testers
 - Public landing at https://kith.significanthobbies.com (ios-landings,
   Cloudflare Pages project `kith`)
 
