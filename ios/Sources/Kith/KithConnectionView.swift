@@ -1,4 +1,3 @@
-import AuthenticationServices
 import PersonalSyncKit
 import SwiftUI
 
@@ -29,16 +28,14 @@ struct KithConnectionView: View {
                             Task { await account.signOut() }
                         }
                     } else {
-                        SignInWithAppleButton(.continue) { request in
-                            account.prepare(request)
-                        } onCompletion: { result in
+                        Button("Connect Significant Hobbies") {
                             Task {
-                                await account.complete(result)
+                                await account.connect()
                                 await model.syncFromPlatform()
                             }
                         }
-                        .signInWithAppleButtonStyle(.black)
-                        .frame(height: 48)
+                        .buttonStyle(ClayButtonStyle())
+                        .disabled(account.isConnecting)
                     }
                     if account.isConnecting { ProgressView() }
                     if let error = account.errorMessage {

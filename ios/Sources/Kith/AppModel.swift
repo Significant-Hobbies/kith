@@ -22,7 +22,7 @@ final class AppModel {
     private let store: KithStore
     private let cloud: KithCloudStore?
     private let platform: PersonalPlatformConnection?
-    let account: PersonalAppleSignInModel?
+    let account: PersonalWebSignInModel?
 
     init(
         store: KithStore = KithStore(),
@@ -31,7 +31,9 @@ final class AppModel {
     ) {
         self.store = store
         self.platform = platform
-        account = platform.map { PersonalAppleSignInModel(identity: $0.identity) }
+        account = platform.map {
+            PersonalWebSignInModel(identity: $0.identity, callbackScheme: "kith")
+        }
         let arguments = ProcessInfo.processInfo.arguments
         self.cloud = Self.isDemoLaunch(arguments) ? nil : cloud
         if arguments.contains("--person-demo") {
