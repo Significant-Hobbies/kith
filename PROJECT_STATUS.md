@@ -36,6 +36,10 @@ reminders as a notification product, messaging, and a web client.
 
 ## Timeline
 
+- 2026-08-22 — Apple completed processing Kith 1.0.0 (3) on personal team
+  `8F7LXHTJZR`; the build still needs internal tester assignment before it
+  appears in TestFlight.
+
 - 2026-08-21 — Personal Platform-enabled Kith 1.0.0 (2) completed
   internal-only TestFlight processing on personal team `8F7LXHTJZR` after the
   browser handoff replaced bundle-specific native Apple identity.
