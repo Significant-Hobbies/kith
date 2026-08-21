@@ -13,7 +13,7 @@ In scope: adding people, setting closeness and circle, a floating
 constellation home, a searchable list, standing notes, and a chronological
 log per person.
 
-Out of scope: a Kith account, contact-book import, social graphs,
+Out of scope: a mandatory Kith account, contact-book import, social graphs,
 reminders as a notification product, messaging, and a web client.
 
 ## Dependencies
@@ -30,10 +30,15 @@ reminders as a notification product, messaging, and a web client.
 
 ### Internal
 
-- None. Kith does not call Fleet services.
+- Cloudflare Personal Platform for optional semantic people and interaction
+  synchronization. Significant Hobbies provides the shared browser sign-in
+  handoff; local JSON remains the immediate store.
 
 ## Timeline
 
+- 2026-08-21 — Personal Platform-enabled Kith 1.0.0 (2) completed
+  internal-only TestFlight processing on personal team `8F7LXHTJZR` after the
+  browser handoff replaced bundle-specific native Apple identity.
 - 2026-08-21 — added optional Sign in with Apple synchronization for people
   and interactions through Personal Platform. Local JSON remains immediate and
   offline-capable; the CloudKit mirror stays enabled as migration rollback.
@@ -53,9 +58,9 @@ reminders as a notification product, messaging, and a web client.
 
 ## Products
 
-- Native iPhone app `com.significanthobbies.kith`; build `1.0.0 (1)` is
-  accepted for internal-only TestFlight processing on personal team
-  `8F7LXHTJZR`, but is not yet confirmed ready for testers
+- Native iPhone app `com.significanthobbies.kith`; Personal Platform-enabled
+  build `1.0.0 (2)` completed internal-only TestFlight processing on personal
+  team `8F7LXHTJZR`. No App Store submission.
 - Public landing at https://kith.significanthobbies.com (ios-landings,
   Cloudflare Pages project `kith`)
 
