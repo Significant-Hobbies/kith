@@ -108,9 +108,11 @@ final class AppModel {
     }
 
     func deletePerson(id: UUID) {
+        let deletedIDs = [id] + document.entries.filter { $0.personID == id }.map(\.id)
         document.removePerson(id: id)
         if selectedPersonID == id { selectedPersonID = nil }
         persist()
+        enqueueDeletions(deletedIDs)
     }
 
     func addEntry(_ entry: Entry) {
@@ -126,6 +128,7 @@ final class AppModel {
     func deleteEntry(id: UUID) {
         document.removeEntry(id: id)
         persist()
+        enqueueDeletions([id])
     }
 
     private func persist() {
@@ -149,12 +152,45 @@ final class AppModel {
     func syncFromPlatform() async {
         guard let platform else { return }
         do {
+            try await enqueueLocalRecords(using: platform)
             let changes = try await platform.sync.synchronize()
             guard !changes.isEmpty else { return }
             for change in changes { apply(change) }
             try await store.save(document)
         } catch {
             // The local document remains fully usable while offline.
+        }
+    }
+
+    private func enqueueLocalRecords(using platform: PersonalPlatformConnection) async throws {
+        for person in document.people {
+            try await platform.sync.enqueue(
+                recordId: person.id.uuidString.lowercased(),
+                occurredAt: KithPlatformRecord.iso(person.updatedAt),
+                record: KithPlatformRecord.person(person)
+            )
+        }
+        for entry in document.entries {
+            guard let person = document.person(id: entry.personID) else { continue }
+            try await platform.sync.enqueue(
+                recordId: entry.id.uuidString.lowercased(),
+                occurredAt: KithPlatformRecord.iso(entry.happenedOn),
+                record: KithPlatformRecord.interaction(entry, person: person)
+            )
+        }
+    }
+
+    private func enqueueDeletions(_ ids: [UUID]) {
+        guard let platform, !ids.isEmpty else { return }
+        Task {
+            for id in ids {
+                try? await platform.sync.enqueue(
+                    recordId: id.uuidString.lowercased(),
+                    operation: .delete,
+                    occurredAt: KithPlatformRecord.iso(.now)
+                )
+            }
+            _ = try? await platform.sync.synchronize()
         }
     }
 
