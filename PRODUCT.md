@@ -29,8 +29,9 @@ scores.
 - Used on an iPhone, often in a quiet moment after a call, dinner, or
   birthday, one-handed, with little patience for forms.
 - The repeated action is "open someone, write a short note, leave."
-- Data is intimate. It stays on the owner's devices and, when they are
-  signed into iCloud, in their private CloudKit database.
+- Data is intimate. The local document remains immediately usable offline.
+  When explicitly signed in, structured people and notes also synchronize
+  through the private Personal Platform account.
 
 ## Capabilities and Constraints
 
@@ -42,9 +43,9 @@ scores.
   short body.
 - The home surface is a floating constellation. A list with search exists
   for finding someone quickly and for VoiceOver.
-- Everything is stored in one local JSON document. There is no Kith
-  account. When the owner is signed into iCloud, that document is mirrored
-  to the personal-team container `iCloud.com.significanthobbies.kith`.
+- Everything is stored first in one local JSON document. Personal Platform
+  synchronization is optional and uses Sign in with Apple; the existing
+  personal-team CloudKit mirror remains available during transition.
 - Contact import, notifications, photos, and a public site remain deferred.
 
 ## Brand Commitments

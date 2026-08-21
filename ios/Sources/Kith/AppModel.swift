@@ -1,12 +1,12 @@
 import Foundation
 import KithCore
 import Observation
+import PersonalSyncKit
 
 /// Owns the one Kith document and every action that changes it.
 ///
-/// The phone is the working copy. Personal iCloud (private CloudKit on the
-/// Sarthak Agrawal team) mirrors it when the owner is signed in. There is no
-/// Kith account and no Kith server.
+/// The phone is the working copy. CloudKit remains a transition mirror, while
+/// an explicit Personal Platform sign-in synchronizes typed people and notes.
 @MainActor
 @Observable
 final class AppModel {
@@ -15,14 +15,23 @@ final class AppModel {
     var selectedPersonID: UUID?
     var isAddingPerson = false
     var isShowingList = false
+    var isShowingConnection = false
     var searchText = ""
     var message: String?
 
     private let store: KithStore
     private let cloud: KithCloudStore?
+    private let platform: PersonalPlatformConnection?
+    let account: PersonalAppleSignInModel?
 
-    init(store: KithStore = KithStore(), cloud: KithCloudStore? = KithCloudStore()) {
+    init(
+        store: KithStore = KithStore(),
+        cloud: KithCloudStore? = KithCloudStore(),
+        platform: PersonalPlatformConnection? = AppModel.makePlatformConnection()
+    ) {
         self.store = store
+        self.platform = platform
+        account = platform.map { PersonalAppleSignInModel(identity: $0.identity) }
         let arguments = ProcessInfo.processInfo.arguments
         self.cloud = Self.isDemoLaunch(arguments) ? nil : cloud
         if arguments.contains("--person-demo") {
@@ -55,6 +64,8 @@ final class AppModel {
             } else {
                 document = try await store.load()
                 await syncFromCloud()
+                await account?.restore()
+                await syncFromPlatform()
             }
         } catch {
             message = "Could not open your people."
@@ -84,6 +95,7 @@ final class AppModel {
         do {
             try document.upsert(person)
             persist()
+            enqueue(person)
             selectedPersonID = person.id
             isAddingPerson = false
         } catch KithError.emptyName {
@@ -103,6 +115,7 @@ final class AppModel {
         do {
             try document.add(entry)
             persist()
+            enqueue(entry)
         } catch {
             message = "Could not save that note."
         }
@@ -129,5 +142,84 @@ final class AppModel {
                 message = "Could not save."
             }
         }
+    }
+
+    func syncFromPlatform() async {
+        guard let platform else { return }
+        do {
+            let changes = try await platform.sync.synchronize()
+            guard !changes.isEmpty else { return }
+            for change in changes { apply(change) }
+            try await store.save(document)
+        } catch {
+            // The local document remains fully usable while offline.
+        }
+    }
+
+    private func enqueue(_ person: Person) {
+        guard let platform else { return }
+        Task {
+            do {
+                try await platform.sync.enqueue(
+                    recordId: person.id.uuidString.lowercased(),
+                    occurredAt: KithPlatformRecord.iso(person.updatedAt),
+                    record: KithPlatformRecord.person(person)
+                )
+                _ = try? await platform.sync.synchronize()
+            } catch {}
+        }
+    }
+
+    private func enqueue(_ entry: Entry) {
+        guard let platform, let person = document.person(id: entry.personID) else { return }
+        Task {
+            do {
+                try await platform.sync.enqueue(
+                    recordId: entry.id.uuidString.lowercased(),
+                    occurredAt: KithPlatformRecord.iso(entry.happenedOn),
+                    record: KithPlatformRecord.interaction(entry, person: person)
+                )
+                _ = try? await platform.sync.synchronize()
+            } catch {}
+        }
+    }
+
+    private func apply(_ change: SyncChange) {
+        switch change.operation {
+        case .delete:
+            guard let id = UUID(uuidString: change.id) else { return }
+            if document.people.contains(where: { $0.id == id }) { document.removePerson(id: id) }
+            else { document.removeEntry(id: id) }
+        case .upsert:
+            guard let object = change.record.objectValue,
+                  let recordType = object["recordType"]?.stringValue else { return }
+            if recordType == "person", let person = KithPlatformRecord.person(from: object) {
+                if let index = document.people.firstIndex(where: { $0.id == person.id }) {
+                    document.people[index] = person
+                    document.markSaved()
+                } else {
+                    try? document.upsert(person)
+                }
+            } else if recordType == "interaction",
+                      let pair = KithPlatformRecord.interaction(from: object, recordId: change.id) {
+                if document.person(id: pair.person.id) == nil { try? document.upsert(pair.person) }
+                if !document.entries.contains(where: { $0.id == pair.entry.id }) {
+                    try? document.add(pair.entry)
+                }
+            }
+        }
+    }
+
+    private static func makePlatformConnection() -> PersonalPlatformConnection? {
+        let defaults = UserDefaults.standard
+        let key = "personal-platform-device-id"
+        let deviceId = defaults.string(forKey: key) ?? UUID().uuidString.lowercased()
+        defaults.set(deviceId, forKey: key)
+        return try? PersonalPlatformConnection(
+            domain: .kith,
+            keychainService: "com.significanthobbies.kith",
+            supportDirectory: KithFiles.supportDirectory,
+            deviceId: deviceId
+        )
     }
 }

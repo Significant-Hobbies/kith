@@ -21,6 +21,9 @@ struct RootView: View {
         .sheet(isPresented: $model.isAddingPerson) {
             PersonEditor(person: nil)
         }
+        .sheet(isPresented: $model.isShowingConnection) {
+            KithConnectionView()
+        }
         .sheet(item: selectedPersonBinding) { person in
             PersonPage(personID: person.id)
         }
@@ -78,6 +81,15 @@ struct FieldChrome: View {
                     .font(.largeTitle.weight(.semibold))
                 Spacer()
                 Button {
+                    model.isShowingConnection = true
+                } label: {
+                    Image(systemName: model.account?.isSignedIn == true ? "checkmark.icloud" : "icloud")
+                        .font(.title3.weight(.semibold))
+                        .frame(width: 44, height: 44)
+                        .background(KithPalette.cream, in: Circle())
+                }
+                .accessibilityLabel("Cloudflare connection")
+                Button {
                     model.isShowingList.toggle()
                 } label: {
                     Image(systemName: model.isShowingList ? "sparkles" : "list.bullet")
@@ -113,6 +125,7 @@ struct FieldChrome: View {
         .padding(.top, 8)
     }
 }
+
 
 struct EmptyConstellation: View {
     @Environment(AppModel.self) private var model

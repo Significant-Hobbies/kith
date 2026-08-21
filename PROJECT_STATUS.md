@@ -23,6 +23,8 @@ reminders as a notification product, messaging, and a web client.
 - SwiftUI on iOS 17+
 - Personal Apple Developer team `8F7LXHTJZR` (Sarthak Agrawal) and CloudKit
   container `iCloud.com.significanthobbies.kith`
+- PersonalSyncKit from `Significant-Hobbies/personal-platform` and the private
+  Cloudflare Personal Platform Worker
 - XcodeGen to generate the Xcode project
 - XCTest for domain, persistence, and interface coverage
 
@@ -32,6 +34,9 @@ reminders as a notification product, messaging, and a web client.
 
 ## Timeline
 
+- 2026-08-21 — added optional Sign in with Apple synchronization for people
+  and interactions through Personal Platform. Local JSON remains immediate and
+  offline-capable; the CloudKit mirror stays enabled as migration rollback.
 - 2026-08-21 — created the personal-team App Store Connect record as
   `Kith by Significant Hobbies` (ID `6803666674`) and uploaded iPhone build
   `1.0.0 (1)` for internal-only TestFlight; Apple accepted the package for
@@ -63,6 +68,8 @@ reminders as a notification product, messaging, and a web client.
 - Searchable list fallback and reduced-motion static layout
 - Empty state and a `--ui-demo` fixture for tests and screenshots
 - Private CloudKit mirror on the personal team when iCloud is signed in
+- Optional signed-in Cloudflare synchronization for people and interactions,
+  with a durable local outbox, foreground/manual sync, and no local-data import
 - Public factory landing at kith.significanthobbies.com
 
 ## Work queue
