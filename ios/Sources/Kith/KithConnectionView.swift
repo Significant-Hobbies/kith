@@ -1,3 +1,4 @@
+import AuthenticationServices
 import PersonalSyncKit
 import SwiftUI
 
@@ -28,7 +29,18 @@ struct KithConnectionView: View {
                             Task { await account.signOut() }
                         }
                     } else {
-                        Button("Connect Significant Hobbies") {
+                        SignInWithAppleButton(.continue) { request in
+                            account.prepareApple(request)
+                        } onCompletion: { result in
+                            Task {
+                                await account.completeApple(result)
+                                if account.isSignedIn { await model.syncFromPlatform() }
+                            }
+                        }
+                        .signInWithAppleButtonStyle(.black)
+                        .frame(minHeight: 46)
+                        .disabled(account.isConnecting)
+                        Button("Continue with Google") {
                             Task {
                                 await account.connect()
                                 await model.syncFromPlatform()

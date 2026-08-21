@@ -2,6 +2,10 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
+	<key>com.apple.developer.applesignin</key>
+	<array>
+		<string>Default</string>
+	</array>
 	<!--
 	  Private CloudKit on Sarthak Agrawal's personal team (8F7LXHTJZR).
 	  One person's people and notes, in that person's iCloud only.
