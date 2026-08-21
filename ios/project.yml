@@ -21,7 +21,7 @@ settings:
 packages:
   PersonalSyncKit:
     url: https://github.com/Significant-Hobbies/personal-platform.git
-    branch: main
+    revision: a254f77f883e0ff3a85841ea9620754875a21666
 targets:
   KithCore:
     type: framework

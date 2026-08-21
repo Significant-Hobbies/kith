@@ -774,8 +774,8 @@
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/Significant-Hobbies/personal-platform.git";
 			requirement = {
-				branch = main;
-				kind = branch;
+				kind = revision;
+				revision = a254f77f883e0ff3a85841ea9620754875a21666;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
