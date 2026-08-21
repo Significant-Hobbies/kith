@@ -2,8 +2,8 @@
 
 - Read `PROJECT_STATUS.md`, `PRODUCT.md`, and `DESIGN.md` before broad work.
 - Keep Kith's source, product planning, tests, and release configuration in
-  this repository. Fleet Workspace may catalog Kith but does not own its
-  product source.
+  this repository. Site Health may catalog Kith but does not own its product
+  source.
 - Kith is device-first. People and logs live in one local JSON document. The
   private CloudKit mirror remains during transition; signed-in synchronization
   uses PersonalSyncKit and Personal Platform. Do not make network access block
