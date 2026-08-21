@@ -22,7 +22,7 @@ final class AppModel {
     private let store: KithStore
     private let cloud: KithCloudStore?
     private let platform: PersonalPlatformConnection?
-    let account: PersonalWebSignInModel?
+    let account: PersonalAccountModel?
 
     init(
         store: KithStore = KithStore(),
@@ -32,7 +32,7 @@ final class AppModel {
         self.store = store
         self.platform = platform
         account = platform.map {
-            PersonalWebSignInModel(identity: $0.identity, callbackScheme: "kith")
+            PersonalAccountModel(identity: $0.identity, callbackScheme: "kith")
         }
         let arguments = ProcessInfo.processInfo.arguments
         self.cloud = Self.isDemoLaunch(arguments) ? nil : cloud
