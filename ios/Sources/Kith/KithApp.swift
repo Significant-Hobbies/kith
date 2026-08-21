@@ -13,7 +13,10 @@ struct KithApp: App {
                 .task { await model.load() }
                 .onChange(of: scenePhase) { _, phase in
                     guard phase == .active else { return }
-                    Task { await model.syncFromCloud() }
+                    Task {
+                        await model.syncFromCloud()
+                        await model.syncFromPlatform()
+                    }
                 }
         }
     }
