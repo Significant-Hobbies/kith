@@ -1,6 +1,6 @@
 # Kith — PROJECT STATUS
 
-Last updated: 2026-08-22
+Last updated: 2026-08-23
 
 ## Why / What
 
@@ -35,6 +35,12 @@ reminders as a notification product, messaging, and a web client.
   handoff; local JSON remains the immediate store.
 
 ## Timeline
+
+- 2026-08-23 — bumped the app build number to `1.0.0 (4)` so the already-landed
+  constellation onboarding ships in its own unique internal TestFlight build.
+  Build 3 predates the onboarding delivery (it was prepared in #14 before #16
+  landed). Build 4 is prepared in source only; it has not been uploaded and is
+  not yet available on TestFlight. Tracks #18.
 
 - 2026-08-22 — added first-run constellation onboarding through the real local
   person and log services: explicit closeness, one dated memory, resumable
