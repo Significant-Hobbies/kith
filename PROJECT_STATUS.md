@@ -42,8 +42,8 @@ reminders as a notification product, messaging, and a web client.
   education only after local value.
 
 - 2026-08-22 — Apple completed processing Kith 1.0.0 (3) on personal team
-  `8F7LXHTJZR`; the build still needs internal tester assignment before it
-  appears in TestFlight.
+  `8F7LXHTJZR`. The valid build is assigned to the owner in the internal
+  `Personal Testing` group with automatic distribution.
 
 - 2026-08-21 — Personal Platform-enabled Kith 1.0.0 (2) completed
   internal-only TestFlight processing on personal team `8F7LXHTJZR` after the
@@ -68,8 +68,9 @@ reminders as a notification product, messaging, and a web client.
 ## Products
 
 - Native iPhone app `com.significanthobbies.kith`; Personal Platform-enabled
-  build `1.0.0 (2)` completed internal-only TestFlight processing on personal
-  team `8F7LXHTJZR`. No App Store submission.
+  build `1.0.0 (3)` is available to the owner through the internal
+  `Personal Testing` group on personal team `8F7LXHTJZR`. No App Store
+  submission.
 - Public landing at https://kith.significanthobbies.com (ios-landings,
   Cloudflare Pages project `kith`)
 
