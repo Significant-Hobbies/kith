@@ -14,7 +14,8 @@
   recency, log volume, or circle.
 - Run `ios/scripts/check.sh` after changes under `ios/`. It regenerates the
   Xcode project, runs unit and UI tests, and builds Release unsigned.
-- The public site source of truth is `ios-landings` (`PRODUCT=kith`).
-  This repo still has a buildable `site/` copy so Kith stays independent.
-  After local site edits run `pnpm --dir site check`. Do not invent a
-  second page set.
+- The public site source of truth is `ios-landings` (`PRODUCT=kith`), and it
+  is the only one. The `site/` copy that used to sit here declared Pages
+  project `kith` — the project the factory deploys — so it could overwrite the
+  live site. Landing edits belong in `ios-landings/products/kith/`. Do not
+  invent a second page set.
