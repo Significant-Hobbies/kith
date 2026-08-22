@@ -349,7 +349,7 @@
 			mainGroup = F35B7C939F8B4E95D11CD4D9;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				59D3BF0695ED34B8D6D4043A /* XCRemoteSwiftPackageReference "personal-platform" */,
+				E68067ACC664B232138E2C16 /* XCRemoteSwiftPackageReference "significanthobbies" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B53CC26908B713C18F8BDABE /* Products */;
@@ -774,12 +774,12 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		59D3BF0695ED34B8D6D4043A /* XCRemoteSwiftPackageReference "personal-platform" */ = {
+		E68067ACC664B232138E2C16 /* XCRemoteSwiftPackageReference "significanthobbies" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/Significant-Hobbies/personal-platform.git";
+			repositoryURL = "https://github.com/Significant-Hobbies/significanthobbies.git";
 			requirement = {
 				kind = revision;
-				revision = 55176cac008d3857ef815d9bc5c8e74b68e7c3f3;
+				revision = 007cc255e75d291d10528ea9b123759d7e050be3;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
@@ -787,7 +787,7 @@
 /* Begin XCSwiftPackageProductDependency section */
 		89477B67A2352008C58A6078 /* PersonalSyncKit */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 59D3BF0695ED34B8D6D4043A /* XCRemoteSwiftPackageReference "personal-platform" */;
+			package = E68067ACC664B232138E2C16 /* XCRemoteSwiftPackageReference "significanthobbies" */;
 			productName = PersonalSyncKit;
 		};
 /* End XCSwiftPackageProductDependency section */
