@@ -1,6 +1,6 @@
 # Kith — PROJECT STATUS
 
-Last updated: 2026-08-21
+Last updated: 2026-08-22
 
 ## Why / What
 
@@ -35,6 +35,11 @@ reminders as a notification product, messaging, and a web client.
   handoff; local JSON remains the immediate store.
 
 ## Timeline
+
+- 2026-08-22 — added first-run constellation onboarding through the real local
+  person and log services: explicit closeness, one dated memory, resumable
+  progress, existing-document bypass, optional continuation, and privacy/sync
+  education only after local value.
 
 - 2026-08-22 — Apple completed processing Kith 1.0.0 (3) on personal team
   `8F7LXHTJZR`; the build still needs internal tester assignment before it
