@@ -23,14 +23,14 @@ reminders as a notification product, messaging, and a web client.
 - SwiftUI on iOS 17+
 - Personal Apple Developer team `8F7LXHTJZR` (Sarthak Agrawal) and CloudKit
   container `iCloud.com.significanthobbies.kith`
-- PersonalSyncKit from `Significant-Hobbies/personal-platform` and the private
-  Cloudflare Personal Platform Worker
+- PersonalSyncKit from `Significant-Hobbies/significanthobbies` and the private
+  Cloudflare Hub Worker
 - XcodeGen to generate the Xcode project
 - XCTest for domain, persistence, and interface coverage
 
 ### Internal
 
-- Cloudflare Personal Platform for optional semantic people and interaction
+- Cloudflare Hub backend for optional semantic people and interaction
   synchronization. Significant Hobbies provides the shared browser sign-in
   handoff; local JSON remains the immediate store.
 
@@ -51,11 +51,11 @@ reminders as a notification product, messaging, and a web client.
   `8F7LXHTJZR`. The valid build is assigned to the owner in the internal
   `Personal Testing` group with automatic distribution.
 
-- 2026-08-21 — Personal Platform-enabled Kith 1.0.0 (2) completed
+- 2026-08-21 — Hub-enabled Kith 1.0.0 (2) completed
   internal-only TestFlight processing on personal team `8F7LXHTJZR` after the
   browser handoff replaced bundle-specific native Apple identity.
 - 2026-08-21 — added optional Sign in with Apple synchronization for people
-  and interactions through Personal Platform. Local JSON remains immediate and
+  and interactions through the Hub. Local JSON remains immediate and
   offline-capable; the CloudKit mirror stays enabled as migration rollback.
 - 2026-08-21 — created the personal-team App Store Connect record as
   `Kith by Significant Hobbies` (ID `6803666674`) and uploaded iPhone build
@@ -73,7 +73,7 @@ reminders as a notification product, messaging, and a web client.
 
 ## Products
 
-- Native iPhone app `com.significanthobbies.kith`; Personal Platform-enabled
+- Native iPhone app `com.significanthobbies.kith`; Hub-enabled
   build `1.0.0 (3)` is available to the owner through the internal
   `Personal Testing` group on personal team `8F7LXHTJZR`. No App Store
   submission.

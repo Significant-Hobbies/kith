@@ -6,7 +6,7 @@
   source.
 - Kith is device-first. People and logs live in one local JSON document. The
   private CloudKit mirror remains during transition; signed-in synchronization
-  uses PersonalSyncKit and Personal Platform. Do not make network access block
+  uses PersonalSyncKit and the Significant Hobbies Hub. Do not make network access block
   local use or add a third-party analytics SDK.
 - Speak about people, closeness, and notes — never contacts, CRM, pipelines,
   or leads.

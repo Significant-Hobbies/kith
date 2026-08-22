@@ -6,7 +6,7 @@ import PersonalSyncKit
 /// Owns the one Kith document and every action that changes it.
 ///
 /// The phone is the working copy. CloudKit remains a transition mirror, while
-/// an explicit Personal Platform sign-in synchronizes typed people and notes.
+/// an explicit Hub sign-in synchronizes typed people and notes.
 @MainActor
 @Observable
 final class AppModel {

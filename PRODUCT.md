@@ -31,7 +31,7 @@ scores.
 - The repeated action is "open someone, write a short note, leave."
 - Data is intimate. The local document remains immediately usable offline.
   When explicitly signed in, structured people and notes also synchronize
-  through the private Personal Platform account.
+  through the private Significant Hobbies Hub account.
 
 ## Capabilities and Constraints
 
@@ -43,7 +43,7 @@ scores.
   short body.
 - The home surface is a floating constellation. A list with search exists
   for finding someone quickly and for VoiceOver.
-- Everything is stored first in one local JSON document. Personal Platform
+- Everything is stored first in one local JSON document. The Hub
   synchronization is optional and uses Sign in with Apple; the existing
   personal-team CloudKit mirror remains available during transition.
 - Contact import, notifications, photos, and a public site remain deferred.
