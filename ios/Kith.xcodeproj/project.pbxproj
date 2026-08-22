@@ -27,6 +27,7 @@
 		9AE67972B45E3203D786E267 /* KithApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBCFD88B8B1F5D94999E4F0C /* KithApp.swift */; };
 		9CD8FB3118B722E7027AF697 /* CloudStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A8B5ADE80477C15D5324428 /* CloudStore.swift */; };
 		A076BAE8EDA2DF34808A76E6 /* PersonViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 283EE3AFA2ADACAC47EDC05F /* PersonViews.swift */; };
+		A3E58ADFB234FD1407023392 /* KithOnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 416A75C69650AAD584FEE064 /* KithOnboardingView.swift */; };
 		B11A9EBD171FF12E6F7B0045 /* KithUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69B0BA41F320166AEA1728A2 /* KithUITests.swift */; };
 		F3C48A6CA9EC720182B123BC /* Design.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE4DDB782CAF5D8FD571DC3B /* Design.swift */; };
 		F680576C1F45EE52AFBA44DE /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 2C466A859325D15A49C22248 /* PrivacyInfo.xcprivacy */; };
@@ -88,6 +89,7 @@
 		283EE3AFA2ADACAC47EDC05F /* PersonViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonViews.swift; sourceTree = "<group>"; };
 		2C466A859325D15A49C22248 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		30859487C6430E18E645A7E1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		416A75C69650AAD584FEE064 /* KithOnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KithOnboardingView.swift; sourceTree = "<group>"; };
 		5EBF5537116C0DE3DA6726C5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		69B0BA41F320166AEA1728A2 /* KithUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KithUITests.swift; sourceTree = "<group>"; };
 		6B63B598C54DF2994E3A9AF0 /* Kith.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Kith.entitlements; sourceTree = "<group>"; };
@@ -205,6 +207,7 @@
 				6B63B598C54DF2994E3A9AF0 /* Kith.entitlements */,
 				BBCFD88B8B1F5D94999E4F0C /* KithApp.swift */,
 				F2AF9D313021EF3F3623DE6D /* KithConnectionView.swift */,
+				416A75C69650AAD584FEE064 /* KithOnboardingView.swift */,
 				09DA028D29EAA834DF9E94A7 /* KithPlatformRecord.swift */,
 				BC05AFA81D366A2F3F3657C9 /* LogViews.swift */,
 				283EE3AFA2ADACAC47EDC05F /* PersonViews.swift */,
@@ -394,6 +397,7 @@
 				F3C48A6CA9EC720182B123BC /* Design.swift in Sources */,
 				9AE67972B45E3203D786E267 /* KithApp.swift in Sources */,
 				83B5015F25ACE804801B8CD0 /* KithConnectionView.swift in Sources */,
+				A3E58ADFB234FD1407023392 /* KithOnboardingView.swift in Sources */,
 				1D9712691351162D15E59B82 /* KithPlatformRecord.swift in Sources */,
 				43362B2B8A40AEC6FFBF4E34 /* LogViews.swift in Sources */,
 				A076BAE8EDA2DF34808A76E6 /* PersonViews.swift in Sources */,

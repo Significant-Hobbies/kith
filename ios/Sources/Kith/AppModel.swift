@@ -12,6 +12,8 @@ import PersonalSyncKit
 final class AppModel {
     private(set) var document: KithDocument = .empty
     var isLoading = true
+    var isOnboardingPresented = false
+    private(set) var onboardingPersonID: UUID?
     var selectedPersonID: UUID?
     var isAddingPerson = false
     var isShowingList = false
@@ -45,6 +47,8 @@ final class AppModel {
         arguments.contains("--ui-demo")
             || arguments.contains("--fresh-demo")
             || arguments.contains("--person-demo")
+            || arguments.contains("--onboarding-demo")
+            || arguments.contains("--onboarding-resume-demo")
     }
 
     var visiblePeople: [Person] {
@@ -61,18 +65,78 @@ final class AppModel {
         do {
             if arguments.contains("--ui-demo") || arguments.contains("--person-demo") {
                 document = .sample
+            } else if arguments.contains("--onboarding-resume-demo") {
+                let person = Person(
+                    id: Self.demoOnboardingPersonID,
+                    name: "Leela",
+                    circle: .close,
+                    closeness: 4,
+                    hue: .apricot
+                )
+                document = KithDocument(people: [person], savedAt: .now)
+                onboardingPersonID = person.id
             } else if arguments.contains("--fresh-demo") {
                 document = .empty
+            } else if arguments.contains("--onboarding-demo") {
+                document = .empty
+                onboardingPersonID = nil
             } else {
                 document = try await store.load()
                 await syncFromCloud()
                 await account?.restore()
                 await syncFromPlatform()
             }
+            configureOnboarding(arguments: arguments)
         } catch {
             message = "Could not open your people."
             document = .empty
         }
+    }
+
+    static let onboardingCompletionKey = "kith.onboarding.completed.v1"
+    static let onboardingPersonKey = "kith.onboarding.person.v1"
+    static let demoOnboardingPersonID = UUID(uuidString: "BBBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB")!
+
+    var onboardingPerson: Person? {
+        onboardingPersonID.flatMap { document.person(id: $0) }
+    }
+
+    static func shouldPresentOnboarding(
+        document: KithDocument,
+        completed: Bool,
+        resumablePersonID: UUID?
+    ) -> Bool {
+        guard !completed else { return false }
+        if document.people.isEmpty { return true }
+        guard let resumablePersonID,
+              document.person(id: resumablePersonID) != nil,
+              document.entries(for: resumablePersonID).isEmpty else { return false }
+        return true
+    }
+
+    private func configureOnboarding(arguments: [String]) {
+        if arguments.contains("--fresh-demo") {
+            isOnboardingPresented = false
+            return
+        }
+        if arguments.contains("--onboarding-demo") {
+            isOnboardingPresented = true
+            return
+        }
+        if arguments.contains("--onboarding-resume-demo") {
+            isOnboardingPresented = true
+            return
+        }
+        let defaults = UserDefaults.standard
+        if onboardingPersonID == nil,
+           let rawID = defaults.string(forKey: Self.onboardingPersonKey) {
+            onboardingPersonID = UUID(uuidString: rawID)
+        }
+        isOnboardingPresented = Self.shouldPresentOnboarding(
+            document: document,
+            completed: defaults.bool(forKey: Self.onboardingCompletionKey),
+            resumablePersonID: onboardingPersonID
+        )
     }
 
     func syncFromCloud() async {
@@ -94,17 +158,44 @@ final class AppModel {
     }
 
     func savePerson(_ person: Person) {
+        upsertPerson(person, selectAfterSave: true)
+    }
+
+    func saveOnboardingPerson(_ person: Person) {
+        upsertPerson(person, selectAfterSave: false)
+        guard document.person(id: person.id) != nil else { return }
+        onboardingPersonID = person.id
+        UserDefaults.standard.set(person.id.uuidString, forKey: Self.onboardingPersonKey)
+    }
+
+    private func upsertPerson(_ person: Person, selectAfterSave: Bool) {
         do {
             try document.upsert(person)
             persist()
             enqueue(person)
-            selectedPersonID = person.id
+            if selectAfterSave { selectedPersonID = person.id }
             isAddingPerson = false
         } catch KithError.emptyName {
             message = "A person needs a name."
         } catch {
             message = "Could not save that person."
         }
+    }
+
+    func saveOnboardingEntry(kind: LogKind, happenedOn: Date, body: String) {
+        guard let person = onboardingPerson else { return }
+        addEntry(Entry(personID: person.id, kind: kind, happenedOn: happenedOn, body: body))
+        guard !document.entries(for: person.id).isEmpty else { return }
+        let defaults = UserDefaults.standard
+        defaults.set(true, forKey: Self.onboardingCompletionKey)
+        defaults.removeObject(forKey: Self.onboardingPersonKey)
+        onboardingPersonID = person.id
+    }
+
+    func finishOnboarding(addAnother: Bool = false) {
+        isOnboardingPresented = false
+        onboardingPersonID = nil
+        if addAnother { isAddingPerson = true }
     }
 
     func deletePerson(id: UUID) {
@@ -133,7 +224,7 @@ final class AppModel {
 
     private func persist() {
         let arguments = ProcessInfo.processInfo.arguments
-        if arguments.contains("--ui-demo") || arguments.contains("--fresh-demo") {
+        if Self.isDemoLaunch(arguments) {
             return
         }
         let snapshot = document

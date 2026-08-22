@@ -11,6 +11,8 @@ struct RootView: View {
             if model.isLoading {
                 ProgressView()
                     .tint(KithPalette.clay)
+            } else if model.isOnboardingPresented {
+                KithOnboardingView()
             } else if model.isShowingList {
                 PeopleListView()
             } else {

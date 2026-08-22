@@ -1,0 +1,51 @@
+{
+  "$schema": "fleet.design-review.v1",
+  "version": 1,
+  "project": "kith-onboarding-11",
+  "target": "Kith constellation-building onboarding",
+  "mode": "preserve",
+  "register": "product",
+  "context": {
+    "product": "PRODUCT.md",
+    "design": "DESIGN.md"
+  },
+  "direction": {
+    "references": [],
+    "probes": [],
+    "selected": "existing-design",
+    "approval": "not-required",
+    "before": "artifacts/design/before.png"
+  },
+  "evidence": {
+    "screenshots": [
+      {
+        "width": 390,
+        "path": "ios/artifacts/design/onboarding/welcome-iphone.png"
+      }
+    ],
+    "projectCheck": {
+      "command": "ios/scripts/check.sh",
+      "status": "passed"
+    },
+    "critique": {
+      "score": 35,
+      "maximum": 40
+    },
+    "audit": {
+      "score": 18,
+      "maximum": 20
+    },
+    "unresolved": {
+      "p0": 0,
+      "p1": 0
+    },
+    "detector": {
+      "posture": "advisory",
+      "findings": []
+    }
+  },
+  "ownerFeedback": {
+    "decision": "delegated",
+    "note": "The owner delegated end-to-end issue resolution; the existing Kith visual language was preserved."
+  }
+}
