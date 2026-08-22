@@ -9,22 +9,8 @@ permissions:
   contents: read
 
 jobs:
-  site:
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
-        with:
-          node-version: 24
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10
-      - run: pnpm install --frozen-lockfile
-        working-directory: site
-      - run: pnpm check
-        working-directory: site
-
+  # No landing job: the public site is built and released from the shared
+  # ios-landings factory, not from this repo.
   native:
     runs-on: macos-15
     timeout-minutes: 25
