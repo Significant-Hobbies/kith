@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		09E8E56D1B58E87EC470F8DE /* KithCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 706248B78A28D30986A34B42 /* KithCore.framework */; };
+		0D21685BEDBF76C6AE714CEF /* PersonalSyncKit in Frameworks */ = {isa = PBXBuildFile; productRef = 06F16ED7DD7305671AC61A80 /* PersonalSyncKit */; };
 		15835961CE7BABD27EA30295 /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8E3415A5E88E90361208B65E /* CloudKit.framework */; };
 		1D8DB7DB42B1154E40F56ED6 /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = A662AC2BCD668AE688D25BB5 /* Persistence.swift */; };
 		1D9712691351162D15E59B82 /* KithPlatformRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09DA028D29EAA834DF9E94A7 /* KithPlatformRecord.swift */; };
@@ -28,6 +29,7 @@
 		9CD8FB3118B722E7027AF697 /* CloudStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A8B5ADE80477C15D5324428 /* CloudStore.swift */; };
 		A076BAE8EDA2DF34808A76E6 /* PersonViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = 283EE3AFA2ADACAC47EDC05F /* PersonViews.swift */; };
 		A3E58ADFB234FD1407023392 /* KithOnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 416A75C69650AAD584FEE064 /* KithOnboardingView.swift */; };
+		A4336E3A96ACF2FE47DA6C35 /* HubSyncIssueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A41324D637F7A736FAD6B80A /* HubSyncIssueTests.swift */; };
 		B11A9EBD171FF12E6F7B0045 /* KithUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69B0BA41F320166AEA1728A2 /* KithUITests.swift */; };
 		F3C48A6CA9EC720182B123BC /* Design.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE4DDB782CAF5D8FD571DC3B /* Design.swift */; };
 		F680576C1F45EE52AFBA44DE /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 2C466A859325D15A49C22248 /* PrivacyInfo.xcprivacy */; };
@@ -54,6 +56,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = FBF266D51143FD491CAAD363;
 			remoteInfo = KithCore;
+		};
+		B1D830B797180E77DC3EAEFC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 9551192361D22AAFCE735BA5 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = BCC96A7E8083614AFEF97660;
+			remoteInfo = Kith;
 		};
 /* End PBXContainerItemProxy section */
 
@@ -99,6 +108,7 @@
 		7AA76B6FCE2A1BD2FDDE7D45 /* BubbleField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BubbleField.swift; sourceTree = "<group>"; };
 		8E3415A5E88E90361208B65E /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
 		8FDEF1D744F055053CB588A9 /* KithCoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KithCoreTests.swift; sourceTree = "<group>"; };
+		A41324D637F7A736FAD6B80A /* HubSyncIssueTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HubSyncIssueTests.swift; sourceTree = "<group>"; };
 		A662AC2BCD668AE688D25BB5 /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
 		A6982529B80DE3228F8C45F4 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		B10F1C159C3DA6714FD52E7A /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
@@ -107,10 +117,19 @@
 		BC05AFA81D366A2F3F3657C9 /* LogViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogViews.swift; sourceTree = "<group>"; };
 		DC4EA45455B6FF74E4BCFC21 /* Domain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain.swift; sourceTree = "<group>"; };
 		DE4DDB782CAF5D8FD571DC3B /* Design.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Design.swift; sourceTree = "<group>"; };
+		E01B4D3A257D3291B92EA865 /* KithAppTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = KithAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		F2AF9D313021EF3F3623DE6D /* KithConnectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KithConnectionView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		02C2804E9384EE13DC6C648A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0D21685BEDBF76C6AE714CEF /* PersonalSyncKit in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		72D5C2DB9641C125B2C3B696 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -139,6 +158,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		325F938B013767DA2643EE8C /* KithAppTests */ = {
+			isa = PBXGroup;
+			children = (
+				A41324D637F7A736FAD6B80A /* HubSyncIssueTests.swift */,
+			);
+			name = KithAppTests;
+			path = Tests/KithAppTests;
+			sourceTree = "<group>";
+		};
 		397EE5C7F585780678D6EA3B /* Resources */ = {
 			isa = PBXGroup;
 			children = (
@@ -169,6 +197,7 @@
 			isa = PBXGroup;
 			children = (
 				B5055DD36BBAD17F586CE183 /* Kith.app */,
+				E01B4D3A257D3291B92EA865 /* KithAppTests.xctest */,
 				706248B78A28D30986A34B42 /* KithCore.framework */,
 				093BCDF0FE2F82258D1A28E0 /* KithCoreTests.xctest */,
 				09C2DC255CA3B902918900FB /* KithUITests.xctest */,
@@ -222,6 +251,7 @@
 			isa = PBXGroup;
 			children = (
 				DA78E00117DC2C243A41A595 /* Kith */,
+				325F938B013767DA2643EE8C /* KithAppTests */,
 				C95DED6552F603708C492B95 /* KithCore */,
 				C1BA66230AAF4E8FA087C9D8 /* KithCoreTests */,
 				9F523A73087559EADBF4E41D /* KithUITests */,
@@ -293,6 +323,26 @@
 			productReference = B5055DD36BBAD17F586CE183 /* Kith.app */;
 			productType = "com.apple.product-type.application";
 		};
+		F427138298980ACAA39B1881 /* KithAppTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 31C77360362EBD87E22BEF91 /* Build configuration list for PBXNativeTarget "KithAppTests" */;
+			buildPhases = (
+				2516FF8BADB9B5EA74957D0A /* Sources */,
+				02C2804E9384EE13DC6C648A /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				D31B901635A9AF506201C254 /* PBXTargetDependency */,
+			);
+			name = KithAppTests;
+			packageProductDependencies = (
+				06F16ED7DD7305671AC61A80 /* PersonalSyncKit */,
+			);
+			productName = KithAppTests;
+			productReference = E01B4D3A257D3291B92EA865 /* KithAppTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		FBF266D51143FD491CAAD363 /* KithCore */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 49C9377BCA132EF97A2917E4 /* Build configuration list for PBXNativeTarget "KithCore" */;
@@ -333,6 +383,10 @@
 						DevelopmentTeam = 8F7LXHTJZR;
 						ProvisioningStyle = Automatic;
 					};
+					F427138298980ACAA39B1881 = {
+						DevelopmentTeam = 8F7LXHTJZR;
+						ProvisioningStyle = Automatic;
+					};
 					FBF266D51143FD491CAAD363 = {
 						DevelopmentTeam = 8F7LXHTJZR;
 						ProvisioningStyle = Automatic;
@@ -359,6 +413,7 @@
 				FBF266D51143FD491CAAD363 /* KithCore */,
 				BCC96A7E8083614AFEF97660 /* Kith */,
 				5754601C9787A40EE381E8E8 /* KithCoreTests */,
+				F427138298980ACAA39B1881 /* KithAppTests */,
 				00D81C67312E33339B9E2E76 /* KithUITests */,
 			);
 		};
@@ -377,6 +432,14 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		2516FF8BADB9B5EA74957D0A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A4336E3A96ACF2FE47DA6C35 /* HubSyncIssueTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		60738BEDC80337F5C7693E30 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -433,6 +496,11 @@
 			isa = PBXTargetDependency;
 			target = FBF266D51143FD491CAAD363 /* KithCore */;
 			targetProxy = 3ADFFFC10B1726C575911AC8 /* PBXContainerItemProxy */;
+		};
+		D31B901635A9AF506201C254 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = BCC96A7E8083614AFEF97660 /* Kith */;
+			targetProxy = B1D830B797180E77DC3EAEFC /* PBXContainerItemProxy */;
 		};
 		DF6867AC7DB039F012F2C38D /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -543,6 +611,23 @@
 				TEST_TARGET_NAME = Kith;
 			};
 			name = Release;
+		};
+		905830463A4E834774C06D9C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.significanthobbies.kith.app-tests";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Kith.app/Kith";
+			};
+			name = Debug;
 		};
 		95768831B27A65EBC4D6E96C /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -723,9 +808,35 @@
 			};
 			name = Release;
 		};
+		FE50467991B9CCF657129D40 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = "com.significanthobbies.kith.app-tests";
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/Kith.app/Kith";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		31C77360362EBD87E22BEF91 /* Build configuration list for PBXNativeTarget "KithAppTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				905830463A4E834774C06D9C /* Debug */,
+				FE50467991B9CCF657129D40 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
 		46B564538F5B7F86F2202233 /* Build configuration list for PBXNativeTarget "Kith" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -779,12 +890,17 @@
 			repositoryURL = "https://github.com/Significant-Hobbies/significanthobbies.git";
 			requirement = {
 				kind = revision;
-				revision = 007cc255e75d291d10528ea9b123759d7e050be3;
+				revision = e350a86b2c255861f528d5a22bca1196d5a2898e;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		06F16ED7DD7305671AC61A80 /* PersonalSyncKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E68067ACC664B232138E2C16 /* XCRemoteSwiftPackageReference "significanthobbies" */;
+			productName = PersonalSyncKit;
+		};
 		89477B67A2352008C58A6078 /* PersonalSyncKit */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = E68067ACC664B232138E2C16 /* XCRemoteSwiftPackageReference "significanthobbies" */;

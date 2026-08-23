@@ -90,7 +90,7 @@ struct FieldChrome: View {
                         .frame(width: 44, height: 44)
                         .background(KithPalette.cream, in: Circle())
                 }
-                .accessibilityLabel("Cloudflare connection")
+                .accessibilityLabel("Significant Hobbies connection")
                 Button {
                     model.isShowingList.toggle()
                 } label: {

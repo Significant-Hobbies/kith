@@ -87,4 +87,14 @@ final class KithUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Kith"].waitForExistence(timeout: 4))
         XCTAssertFalse(app.staticTexts["The people you keep close."].exists)
     }
+
+    func testConnectionExplainsStorageRolesAndWaitingChanges() {
+        let app = launch(["--sync-status-demo"])
+
+        XCTAssertTrue(app.navigationBars["Connection"].waitForExistence(timeout: 4))
+        XCTAssertTrue(app.staticTexts["Saved on this iPhone"].exists)
+        XCTAssertTrue(app.staticTexts["Kept across your Apple devices"].exists)
+        XCTAssertTrue(app.staticTexts["Visible in your private Hub"].exists)
+        XCTAssertTrue(app.staticTexts["2 changes are waiting safely"].exists)
+    }
 }
