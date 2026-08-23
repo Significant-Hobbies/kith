@@ -20,7 +20,11 @@ devices = json.load(sys.stdin).get("devices", {})
 candidates = []
 for runtime, entries in devices.items():
     for device in entries:
-        if device.get("isAvailable") and device.get("name") == "iPhone 17 Pro":
+        if (
+            device.get("isAvailable")
+            and device.get("deviceTypeIdentifier")
+            == "com.apple.CoreSimulator.SimDeviceType.iPhone-17-Pro"
+        ):
             candidates.append((runtime != "com.apple.CoreSimulator.SimRuntime.iOS-26-2", runtime, device["udid"]))
 if candidates:
     print(sorted(candidates)[0][2])
