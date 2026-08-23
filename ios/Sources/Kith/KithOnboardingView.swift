@@ -86,6 +86,10 @@ struct KithOnboardingView: View {
                     .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                     .opacity(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? 0.5 : 1)
 
+                Button("Open Kith first") { model.finishOnboarding() }
+                    .font(.headline)
+                    .frame(maxWidth: .infinity, minHeight: 44)
+
                 Text("No Contacts permission. This is saved on your iPhone first and works offline.")
                     .font(.footnote)
                     .foregroundStyle(KithPalette.espresso.opacity(0.58))

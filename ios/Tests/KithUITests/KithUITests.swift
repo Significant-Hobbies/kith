@@ -73,6 +73,18 @@ final class KithUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Coffee after the market."].waitForExistence(timeout: 4))
     }
 
+    func testOnboardingCanOpenKithWithoutCreatingAPerson() {
+        let app = launch(["--onboarding-demo"])
+
+        let openKith = app.buttons["Open Kith first"]
+        XCTAssertTrue(openKith.waitForExistence(timeout: 4))
+        openKith.tap()
+
+        XCTAssertTrue(app.staticTexts["Who do you want to keep close?"].waitForExistence(timeout: 4))
+        XCTAssertTrue(app.buttons["Add someone"].exists)
+        XCTAssertFalse(app.buttons.matching(NSPredicate(format: "label CONTAINS[c] %@", "Leela")).firstMatch.exists)
+    }
+
     func testOnboardingResumesAtContextForItsSavedPerson() {
         let app = launch(["--onboarding-resume-demo"])
 
