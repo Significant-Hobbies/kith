@@ -50,8 +50,8 @@ struct KithOnboardingView: View {
                     .frame(maxHeight: 220)
                     .frame(maxWidth: .infinity)
                     .accessibilityLabel("A hand-drawn figure ties one remembered moment to the lantern of someone close.")
-                if model.isReplayingOnboarding {
-                    replayActions
+                if model.isExistingOwnerOrientation {
+                    existingOwnerActions
                 } else {
                     lanternPreview
                 VStack(alignment: .leading, spacing: 16) {
@@ -99,7 +99,7 @@ struct KithOnboardingView: View {
         .navigationBarTitleDisplayMode(.inline)
     }
 
-    private var replayActions: some View {
+    private var existingOwnerActions: some View {
         VStack(alignment: .leading, spacing: 14) {
             Text("Your existing constellation stays exactly as it is.")
                 .font(.body)

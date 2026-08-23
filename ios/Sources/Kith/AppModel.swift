@@ -13,7 +13,7 @@ final class AppModel {
     private(set) var document: KithDocument = .empty
     var isLoading = true
     var isOnboardingPresented = false
-    private(set) var isReplayingOnboarding = false
+    private(set) var isExistingOwnerOrientation = false
     private(set) var onboardingPersonID: UUID?
     var selectedPersonID: UUID?
     var isAddingPerson = false
@@ -107,7 +107,7 @@ final class AppModel {
         }
     }
 
-    static let onboardingCompletionKey = "kith.onboarding.completed.v1"
+    static let onboardingCompletionKey = "kith.illustrated-onboarding.seen.v1"
     static let onboardingPersonKey = "kith.onboarding.person.v1"
     static let lastPlatformSyncKey = "kith.hub.last-sync.v1"
     static let demoOnboardingPersonID = UUID(uuidString: "BBBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB")!
@@ -121,25 +121,34 @@ final class AppModel {
         completed: Bool,
         resumablePersonID: UUID?
     ) -> Bool {
-        guard !completed else { return false }
-        if document.people.isEmpty { return true }
+        !completed
+    }
+
+    static func isExistingOwnerOrientation(
+        document: KithDocument,
+        resumablePersonID: UUID?
+    ) -> Bool {
+        guard !document.people.isEmpty else { return false }
         guard let resumablePersonID,
               document.person(id: resumablePersonID) != nil,
-              document.entries(for: resumablePersonID).isEmpty else { return false }
-        return true
+              document.entries(for: resumablePersonID).isEmpty else { return true }
+        return false
     }
 
     private func configureOnboarding(arguments: [String]) {
         if arguments.contains("--fresh-demo") {
             isOnboardingPresented = false
+            isExistingOwnerOrientation = false
             return
         }
         if arguments.contains("--onboarding-demo") {
             isOnboardingPresented = true
+            isExistingOwnerOrientation = false
             return
         }
         if arguments.contains("--onboarding-resume-demo") {
             isOnboardingPresented = true
+            isExistingOwnerOrientation = false
             return
         }
         let defaults = UserDefaults.standard
@@ -147,6 +156,10 @@ final class AppModel {
            let rawID = defaults.string(forKey: Self.onboardingPersonKey) {
             onboardingPersonID = UUID(uuidString: rawID)
         }
+        isExistingOwnerOrientation = Self.isExistingOwnerOrientation(
+            document: document,
+            resumablePersonID: onboardingPersonID
+        )
         isOnboardingPresented = Self.shouldPresentOnboarding(
             document: document,
             completed: defaults.bool(forKey: Self.onboardingCompletionKey),
@@ -208,18 +221,12 @@ final class AppModel {
     }
 
     func finishOnboarding(addAnother: Bool = false) {
+        UserDefaults.standard.set(true, forKey: Self.onboardingCompletionKey)
+        UserDefaults.standard.removeObject(forKey: Self.onboardingPersonKey)
         isOnboardingPresented = false
-        isReplayingOnboarding = false
+        isExistingOwnerOrientation = false
         onboardingPersonID = nil
         if addAnother { isAddingPerson = true }
-    }
-
-    /// Reopens the product tour without creating or editing a person.
-    func replayOnboarding() {
-        onboardingPersonID = nil
-        isReplayingOnboarding = true
-        isShowingConnection = false
-        isOnboardingPresented = true
     }
 
     func deletePerson(id: UUID) {
