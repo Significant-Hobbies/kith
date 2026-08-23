@@ -31,7 +31,7 @@
 		A3E58ADFB234FD1407023392 /* KithOnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 416A75C69650AAD584FEE064 /* KithOnboardingView.swift */; };
 		A4336E3A96ACF2FE47DA6C35 /* HubSyncIssueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A41324D637F7A736FAD6B80A /* HubSyncIssueTests.swift */; };
 		B11A9EBD171FF12E6F7B0045 /* KithUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69B0BA41F320166AEA1728A2 /* KithUITests.swift */; };
-		DAC253113D3DD2E0BB7067CC /* KithOnboardingReplayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 80E19BA6F30BC6EADC0EA7CD /* KithOnboardingReplayTests.swift */; };
+		B71A3A7A7503BACD158CAAF1 /* KithOnboardingPresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2497D4CF5603E39B52F3EEE /* KithOnboardingPresentationTests.swift */; };
 		F3C48A6CA9EC720182B123BC /* Design.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE4DDB782CAF5D8FD571DC3B /* Design.swift */; };
 		F680576C1F45EE52AFBA44DE /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 2C466A859325D15A49C22248 /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
@@ -107,7 +107,6 @@
 		79D378032A9722C9555ED8AE /* DemoData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoData.swift; sourceTree = "<group>"; };
 		7A8B5ADE80477C15D5324428 /* CloudStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudStore.swift; sourceTree = "<group>"; };
 		7AA76B6FCE2A1BD2FDDE7D45 /* BubbleField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BubbleField.swift; sourceTree = "<group>"; };
-		80E19BA6F30BC6EADC0EA7CD /* KithOnboardingReplayTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KithOnboardingReplayTests.swift; sourceTree = "<group>"; };
 		8E3415A5E88E90361208B65E /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
 		8FDEF1D744F055053CB588A9 /* KithCoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KithCoreTests.swift; sourceTree = "<group>"; };
 		A41324D637F7A736FAD6B80A /* HubSyncIssueTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HubSyncIssueTests.swift; sourceTree = "<group>"; };
@@ -120,6 +119,7 @@
 		DC4EA45455B6FF74E4BCFC21 /* Domain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain.swift; sourceTree = "<group>"; };
 		DE4DDB782CAF5D8FD571DC3B /* Design.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Design.swift; sourceTree = "<group>"; };
 		E01B4D3A257D3291B92EA865 /* KithAppTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = KithAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		E2497D4CF5603E39B52F3EEE /* KithOnboardingPresentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KithOnboardingPresentationTests.swift; sourceTree = "<group>"; };
 		F2AF9D313021EF3F3623DE6D /* KithConnectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KithConnectionView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -164,7 +164,7 @@
 			isa = PBXGroup;
 			children = (
 				A41324D637F7A736FAD6B80A /* HubSyncIssueTests.swift */,
-				80E19BA6F30BC6EADC0EA7CD /* KithOnboardingReplayTests.swift */,
+				E2497D4CF5603E39B52F3EEE /* KithOnboardingPresentationTests.swift */,
 			);
 			name = KithAppTests;
 			path = Tests/KithAppTests;
@@ -440,7 +440,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A4336E3A96ACF2FE47DA6C35 /* HubSyncIssueTests.swift in Sources */,
-				DAC253113D3DD2E0BB7067CC /* KithOnboardingReplayTests.swift in Sources */,
+				B71A3A7A7503BACD158CAAF1 /* KithOnboardingPresentationTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

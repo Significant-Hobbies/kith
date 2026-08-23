@@ -107,14 +107,6 @@ struct KithConnectionView: View {
                             .foregroundStyle(KithPalette.rust)
                     }
 
-                    Button {
-                        model.replayOnboarding()
-                    } label: {
-                        Label("Replay onboarding", systemImage: "sparkles")
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-                    .font(.headline)
-                    .frame(minHeight: 44)
                 }
                 .padding(28)
             }

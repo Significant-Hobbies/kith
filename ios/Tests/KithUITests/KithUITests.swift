@@ -20,7 +20,7 @@ final class KithUITests: XCTestCase {
     }
 
     func testDemoConstellationOpensAPersonAndTheirLog() {
-        let app = launch(["--ui-demo"])
+        let app = launch(["--ui-demo", "-kith.illustrated-onboarding.seen.v1", "YES"])
         let maya = app.buttons.matching(NSPredicate(format: "label CONTAINS[c] %@", "Maya Rao")).firstMatch
         XCTAssertTrue(maya.waitForExistence(timeout: 4))
         maya.tap()
@@ -82,7 +82,7 @@ final class KithUITests: XCTestCase {
     }
 
     func testExistingPeopleBypassOnboarding() {
-        let app = launch(["--ui-demo"])
+        let app = launch(["--ui-demo", "-kith.illustrated-onboarding.seen.v1", "YES"])
 
         XCTAssertTrue(app.staticTexts["Kith"].waitForExistence(timeout: 4))
         XCTAssertFalse(app.staticTexts["The people you keep close."].exists)
