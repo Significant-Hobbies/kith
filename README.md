@@ -12,7 +12,7 @@ into iCloud, in your personal private CloudKit database (team
 
 The public landing is the ios-landings factory at
 https://kith.significanthobbies.com. Deploy it from that repo with
-`pnpm run deploy:kith`. The `site/` folder here is leftover.
+`pnpm run deploy:kith`. This repo holds no landing source.
 
 ## Run
 

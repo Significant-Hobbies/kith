@@ -36,6 +36,13 @@ reminders as a notification product, messaging, and a web client.
 
 ## Timeline
 
+- 2026-08-23 — Removed the leftover `site/` landing fork. Its `wrangler.jsonc`
+  declared Pages project `kith`, the project the `ios-landings` factory
+  deploys, so a deploy from here would have replaced the live site. The live
+  page is byte-identical to the factory build; the fork differed by 6 lines of
+  inlined CSS reset — a stale copy of the same engine. README already called it
+  leftover.
+
 - 2026-08-23 — prepared Kith `1.0.0 (5)` from the merged truthful Hub-sync
   release. App Store Connect rejected a build-4 upload as a duplicate, proving
   build 4 already exists remotely even though the earlier repository note had
