@@ -13,6 +13,7 @@ final class AppModel {
     private(set) var document: KithDocument = .empty
     var isLoading = true
     var isOnboardingPresented = false
+    private(set) var isReplayingOnboarding = false
     private(set) var onboardingPersonID: UUID?
     var selectedPersonID: UUID?
     var isAddingPerson = false
@@ -208,8 +209,17 @@ final class AppModel {
 
     func finishOnboarding(addAnother: Bool = false) {
         isOnboardingPresented = false
+        isReplayingOnboarding = false
         onboardingPersonID = nil
         if addAnother { isAddingPerson = true }
+    }
+
+    /// Reopens the product tour without creating or editing a person.
+    func replayOnboarding() {
+        onboardingPersonID = nil
+        isReplayingOnboarding = true
+        isShowingConnection = false
+        isOnboardingPresented = true
     }
 
     func deletePerson(id: UUID) {

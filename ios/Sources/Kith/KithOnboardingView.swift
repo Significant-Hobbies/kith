@@ -44,7 +44,16 @@ struct KithOnboardingView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 24) {
                 introduction
-                lanternPreview
+                Image("KithOnboarding")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(maxHeight: 220)
+                    .frame(maxWidth: .infinity)
+                    .accessibilityLabel("A hand-drawn figure ties one remembered moment to the lantern of someone close.")
+                if model.isReplayingOnboarding {
+                    replayActions
+                } else {
+                    lanternPreview
                 VStack(alignment: .leading, spacing: 16) {
                     TextField("Their name", text: $name)
                         .textFieldStyle(.roundedBorder)
@@ -81,12 +90,27 @@ struct KithOnboardingView: View {
                     .font(.footnote)
                     .foregroundStyle(KithPalette.espresso.opacity(0.58))
                     .frame(maxWidth: .infinity, alignment: .center)
+                }
             }
             .frame(maxWidth: 620)
             .padding(24)
         }
         .navigationTitle("Kith")
         .navigationBarTitleDisplayMode(.inline)
+    }
+
+    private var replayActions: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            Text("Your existing constellation stays exactly as it is.")
+                .font(.body)
+                .foregroundStyle(KithPalette.espresso.opacity(0.66))
+            Button("Return to Kith") { model.finishOnboarding() }
+                .buttonStyle(ClayButtonStyle())
+                .frame(maxWidth: .infinity)
+            Button("Add someone in Kith") { model.finishOnboarding(addAnother: true) }
+                .font(.headline)
+                .frame(maxWidth: .infinity, minHeight: 44)
+        }
     }
 
     private var introduction: some View {
