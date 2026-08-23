@@ -29,6 +29,20 @@
             buildForAnalyzing = "NO">
             <BuildableReference
                BuildableIdentifier = "primary"
+               BlueprintIdentifier = "F427138298980ACAA39B1881"
+               BuildableName = "KithAppTests.xctest"
+               BlueprintName = "KithAppTests"
+               ReferencedContainer = "container:Kith.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
                BlueprintIdentifier = "5754601C9787A40EE381E8E8"
                BuildableName = "KithCoreTests.xctest"
                BlueprintName = "KithCoreTests"
@@ -76,6 +90,17 @@
                BlueprintIdentifier = "5754601C9787A40EE381E8E8"
                BuildableName = "KithCoreTests.xctest"
                BlueprintName = "KithCoreTests"
+               ReferencedContainer = "container:Kith.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+         <TestableReference
+            skipped = "NO"
+            parallelizable = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "F427138298980ACAA39B1881"
+               BuildableName = "KithAppTests.xctest"
+               BlueprintName = "KithAppTests"
                ReferencedContainer = "container:Kith.xcodeproj">
             </BuildableReference>
          </TestableReference>

@@ -36,6 +36,13 @@ reminders as a notification product, messaging, and a web client.
 
 ## Timeline
 
+- 2026-08-23 — made the Significant Hobbies connection truthful: Kith now
+  distinguishes account authentication from successful Hub synchronization,
+  shows last success and durable waiting changes, explains local/iCloud/Hub
+  roles, and gives different recovery guidance for expired sign-in, offline,
+  and service failures. The change is verified in source and awaits its next
+  TestFlight build.
+
 - 2026-08-23 — bumped the app build number to `1.0.0 (4)` so the already-landed
   constellation onboarding ships in its own unique internal TestFlight build.
   Build 3 predates the onboarding delivery (it was prepared in #14 before #16
@@ -89,8 +96,10 @@ reminders as a notification product, messaging, and a web client.
 - Searchable list fallback and reduced-motion static layout
 - Empty state and a `--ui-demo` fixture for tests and screenshots
 - Private CloudKit mirror on the personal team when iCloud is signed in
-- Optional signed-in Cloudflare synchronization for people and interactions,
+- Optional signed-in Hub synchronization for people and interactions,
   with a durable local outbox, foreground/manual sync, and no local-data import
+- Truthful Hub connection state with last success, waiting-change count, and
+  actionable authentication/network/service recovery
 - Public factory landing at kith.significanthobbies.com
 
 ## Work queue

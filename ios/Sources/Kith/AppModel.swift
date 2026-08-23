@@ -20,6 +20,10 @@ final class AppModel {
     var isShowingConnection = false
     var searchText = ""
     var message: String?
+    private(set) var isPlatformSyncing = false
+    private(set) var lastPlatformSyncAt: Date?
+    private(set) var platformPendingMutationCount = 0
+    private(set) var platformSyncIssue: HubSyncIssue?
 
     private let store: KithStore
     private let cloud: KithCloudStore?
@@ -33,6 +37,7 @@ final class AppModel {
     ) {
         self.store = store
         self.platform = platform
+        lastPlatformSyncAt = UserDefaults.standard.object(forKey: Self.lastPlatformSyncKey) as? Date
         account = platform.map {
             PersonalAccountModel(identity: $0.identity, callbackScheme: "kith")
         }
@@ -40,6 +45,11 @@ final class AppModel {
         self.cloud = Self.isDemoLaunch(arguments) ? nil : cloud
         if arguments.contains("--person-demo") {
             selectedPersonID = UUID(uuidString: "11111111-1111-1111-1111-111111111111")
+        }
+        if arguments.contains("--sync-status-demo") {
+            isShowingConnection = true
+            platformPendingMutationCount = 2
+            lastPlatformSyncAt = nil
         }
     }
 
@@ -49,6 +59,7 @@ final class AppModel {
             || arguments.contains("--person-demo")
             || arguments.contains("--onboarding-demo")
             || arguments.contains("--onboarding-resume-demo")
+            || arguments.contains("--sync-status-demo")
     }
 
     var visiblePeople: [Person] {
@@ -63,7 +74,9 @@ final class AppModel {
         defer { isLoading = false }
         let arguments = ProcessInfo.processInfo.arguments
         do {
-            if arguments.contains("--ui-demo") || arguments.contains("--person-demo") {
+            if arguments.contains("--sync-status-demo") {
+                document = .empty
+            } else if arguments.contains("--ui-demo") || arguments.contains("--person-demo") {
                 document = .sample
             } else if arguments.contains("--onboarding-resume-demo") {
                 let person = Person(
@@ -95,6 +108,7 @@ final class AppModel {
 
     static let onboardingCompletionKey = "kith.onboarding.completed.v1"
     static let onboardingPersonKey = "kith.onboarding.person.v1"
+    static let lastPlatformSyncKey = "kith.hub.last-sync.v1"
     static let demoOnboardingPersonID = UUID(uuidString: "BBBBBBBB-BBBB-BBBB-BBBB-BBBBBBBBBBBB")!
 
     var onboardingPerson: Person? {
@@ -233,24 +247,50 @@ final class AppModel {
         Task {
             do {
                 try await store.save(snapshot)
-                try await cloud?.save(snapshot)
             } catch {
                 message = "Could not save."
+                return
+            }
+            do {
+                try await cloud?.save(snapshot)
+            } catch {
+                message = "Saved on this iPhone. iCloud did not update."
             }
         }
     }
 
     func syncFromPlatform() async {
+        guard !ProcessInfo.processInfo.arguments.contains("--sync-status-demo") else { return }
         guard let platform else { return }
+        platformPendingMutationCount = await platform.sync.pendingMutationCount()
+        guard account?.isSignedIn == true else {
+            isPlatformSyncing = false
+            platformSyncIssue = nil
+            return
+        }
+        guard !isPlatformSyncing else { return }
+        isPlatformSyncing = true
+        platformSyncIssue = nil
+        defer { isPlatformSyncing = false }
         do {
             try await enqueueLocalRecords(using: platform)
             let changes = try await platform.sync.synchronize()
-            guard !changes.isEmpty else { return }
             for change in changes { apply(change) }
-            try await store.save(document)
+            if !changes.isEmpty { try await store.save(document) }
+            platformPendingMutationCount = await platform.sync.pendingMutationCount()
+            let syncedAt = Date()
+            lastPlatformSyncAt = syncedAt
+            UserDefaults.standard.set(syncedAt, forKey: Self.lastPlatformSyncKey)
         } catch {
-            // The local document remains fully usable while offline.
+            platformPendingMutationCount = await platform.sync.pendingMutationCount()
+            platformSyncIssue = HubSyncIssue(error: error)
         }
+    }
+
+    func refreshPlatformStatus() async {
+        guard !ProcessInfo.processInfo.arguments.contains("--sync-status-demo") else { return }
+        guard let platform else { return }
+        platformPendingMutationCount = await platform.sync.pendingMutationCount()
     }
 
     private func enqueueLocalRecords(using platform: PersonalPlatformConnection) async throws {
@@ -274,14 +314,19 @@ final class AppModel {
     private func enqueueDeletions(_ ids: [UUID]) {
         guard let platform, !ids.isEmpty else { return }
         Task {
-            for id in ids {
-                try? await platform.sync.enqueue(
-                    recordId: id.uuidString.lowercased(),
-                    operation: .delete,
-                    occurredAt: KithPlatformRecord.iso(.now)
-                )
+            do {
+                for id in ids {
+                    try await platform.sync.enqueue(
+                        recordId: id.uuidString.lowercased(),
+                        operation: .delete,
+                        occurredAt: KithPlatformRecord.iso(.now)
+                    )
+                }
+                await syncFromPlatform()
+            } catch {
+                platformPendingMutationCount = await platform.sync.pendingMutationCount()
+                platformSyncIssue = HubSyncIssue(error: error)
             }
-            _ = try? await platform.sync.synchronize()
         }
     }
 
@@ -294,8 +339,11 @@ final class AppModel {
                     occurredAt: KithPlatformRecord.iso(person.updatedAt),
                     record: KithPlatformRecord.person(person)
                 )
-                _ = try? await platform.sync.synchronize()
-            } catch {}
+                await syncFromPlatform()
+            } catch {
+                platformPendingMutationCount = await platform.sync.pendingMutationCount()
+                platformSyncIssue = HubSyncIssue(error: error)
+            }
         }
     }
 
@@ -308,8 +356,11 @@ final class AppModel {
                     occurredAt: KithPlatformRecord.iso(entry.happenedOn),
                     record: KithPlatformRecord.interaction(entry, person: person)
                 )
-                _ = try? await platform.sync.synchronize()
-            } catch {}
+                await syncFromPlatform()
+            } catch {
+                platformPendingMutationCount = await platform.sync.pendingMutationCount()
+                platformSyncIssue = HubSyncIssue(error: error)
+            }
         }
     }
 
@@ -350,5 +401,49 @@ final class AppModel {
             supportDirectory: KithFiles.supportDirectory,
             deviceId: deviceId
         )
+    }
+}
+
+enum HubSyncIssue: Equatable {
+    case reconnect
+    case offline
+    case serviceUnavailable
+    case couldNotFinish
+
+    init(error: Error) {
+        if let syncError = error as? PersonalSyncError {
+            switch syncError {
+            case let .server(status, _):
+                if status == 401 || status == 403 {
+                    self = .reconnect
+                } else if status >= 500 {
+                    self = .serviceUnavailable
+                } else {
+                    self = .couldNotFinish
+                }
+            case .invalidResponse:
+                self = .serviceUnavailable
+            }
+            return
+        }
+        if let urlError = error as? URLError,
+           [.notConnectedToInternet, .networkConnectionLost, .timedOut].contains(urlError.code) {
+            self = .offline
+            return
+        }
+        self = .couldNotFinish
+    }
+
+    var message: String {
+        switch self {
+        case .reconnect:
+            "Your connection expired. Sign in again to resume Hub sync."
+        case .offline:
+            "Kith is offline. Your changes are safe and will retry when you reconnect."
+        case .serviceUnavailable:
+            "The Hub is temporarily unavailable. Your changes are safe on this iPhone."
+        case .couldNotFinish:
+            "Hub sync could not finish. Your changes are safe and ready to retry."
+        }
     }
 }
