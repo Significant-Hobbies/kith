@@ -1,0 +1,106 @@
+{
+  "$schema": "fleet.design-review.v1",
+  "version": 1,
+  "project": "kith",
+  "target": "Private relationship-memory landing and internal beta entry",
+  "surfaceMode": "persuade",
+  "mode": "preserve",
+  "register": "product",
+  "context": {
+    "product": "PRODUCT.md",
+    "design": "DESIGN.md"
+  },
+  "direction": {
+    "references": [],
+    "probes": [],
+    "selected": "warm-private-constellation",
+    "approval": "not-required",
+    "before": "artifacts/design/before.png",
+    "library": {
+      "strategy": "upstream-first",
+      "primary": "existing-project-system",
+      "sources": [],
+      "runtime": "existing",
+      "customReplacement": {
+        "used": false,
+        "authorization": "not-required",
+        "reason": ""
+      }
+    },
+    "contract": {
+      "purpose": "Explain Kith as a private iPhone memory app for people, chosen closeness, standing context, and dated moments.",
+      "purposeSource": "site-health/docs/project-dossiers/kith.yaml plus PRODUCT.md, DESIGN.md, PROJECT_STATUS.md, and current Swift source",
+      "canonicalPurpose": "Kith helps a person remember the people they genuinely want to stay close to and act with more thoughtfulness.",
+      "purposeAlignment": "match",
+      "driftNote": "",
+      "audience": "An iPhone user who values a small set of relationships and dislikes treating them like a sales CRM.",
+      "job": "Show the explicit-closeness constellation, one-person memory loop, local working copy, optional private sync, and honest beta availability.",
+      "thesis": "A name in a phone is not the context of a relationship; small remembered details make care specific.",
+      "system": "Warm linen-and-clay landing with a real constellation screen, lantern geometry, three-part memory loop, fit boundaries, privacy, beta status, project strip, and Ask AI footer.",
+      "signature": "The real Kith constellation sits inside a gridded field, with bubble size visibly tied to the closeness the user chose.",
+      "risk": "Avoid CRM language, inferred closeness, contact import, reminders, public profiles, web or iPad clients, public download, and permanent pricing claims."
+    }
+  },
+  "evidence": {
+    "screenshots": [
+      {
+        "width": 390,
+        "path": ".fleet/evidence/landing-audit/after-390.png"
+      },
+      {
+        "width": 768,
+        "path": ".fleet/evidence/landing-audit/after-768.png"
+      },
+      {
+        "width": 1440,
+        "path": ".fleet/evidence/landing-audit/after-1440.png"
+      }
+    ],
+    "projectCheck": {
+      "command": "ios/scripts/check.sh",
+      "status": "pass"
+    },
+    "critique": {
+      "score": 39,
+      "maximum": 40
+    },
+    "audit": {
+      "score": 19,
+      "maximum": 20
+    },
+    "unresolved": {
+      "p0": 0,
+      "p1": 0
+    },
+    "detector": {
+      "posture": "advisory",
+      "findings": []
+    },
+    "comprehension": {
+      "status": "pass",
+      "reviewer": "Codex fresh-visitor purpose readback",
+      "answers": {
+        "product": "A private iPhone app that keeps a small constellation of people and a dated memory log for each one.",
+        "audience": "Someone who wants to remember the people they care about without using a CRM, contact importer, or social network.",
+        "value": "It keeps how you met, standing notes, birthdays, and small dated moments close enough to help you show up thoughtfully.",
+        "mechanism": "The user sets closeness from 1 to 5, opens a person from the constellation or list, and adds a short dated entry to the local document.",
+        "proof": "The page uses real constellation, person, and onboarding screens and names the exact storage and sync roles.",
+        "nextAction": "Inspect the real screens or read the honest internal TestFlight status."
+      },
+      "purposeScore": {
+        "product": 25,
+        "audience": 15,
+        "value": 15,
+        "mechanism": 15,
+        "proof": 14,
+        "nextAction": 15,
+        "total": 99
+      },
+      "mismatches": []
+    }
+  },
+  "ownerFeedback": {
+    "decision": "delegated",
+    "note": "The owner delegated fleet landing repairs and asked the agent to continue without project-by-project feedback pauses."
+  }
+}

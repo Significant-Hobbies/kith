@@ -1,0 +1,44 @@
+{
+  "$schema": "fleet.landing-audit.v1",
+  "project": "kith",
+  "priority": "P2",
+  "candidate": "https://marilyn-physicians-lewis-exposed.trycloudflare.com/",
+  "production": "https://kith.significanthobbies.com/",
+  "productionChanged": false,
+  "scores": {
+    "purpose": 99,
+    "visualDesign": 97,
+    "seo": 98,
+    "geoAgentReadiness": 100,
+    "performance": 100
+  },
+  "truth": {
+    "form": "Device-first native iPhone relationship-memory app with a static public product site, private CloudKit mirror, and optional private Hub sync",
+    "availability": "Internal TestFlight build 1.0.0 (3) is the latest verified processed build; current source is build 7; no public invite or App Store listing",
+    "commercialState": "No paid plan, subscription, or checkout; no permanent future pricing promise",
+    "productBoundary": "People, explicit closeness, standing context, and dated memories; no contact import, inferred scores, social graph, messaging, or reminders"
+  },
+  "checks": {
+    "quality": "pass: 20 native tests on iPhone simulator and unsigned Release build, plus 19 generated public surfaces and 8 internal links",
+    "responsive": "pass: exact 390, 768, and 1440 CSS viewports with zero horizontal overflow",
+    "footer": "pass: cycling project strip and Ask AI composer both visibly present",
+    "seo": "pass: 16 critical checks, 0 failures; valid application JSON-LD without invented review evidence",
+    "linkGraph": "pass: 6 sitemap pages, 0 internal errors, 0 redirects, 0 orphan candidates",
+    "geo": "pass: production S tier, 100 percent across llms.txt, api/ai, homepage markdown, robots, sitemap, and JSON-LD",
+    "performance": "pass: 20 of 20 PSI Swarm runs; weighted LCP 850ms, slow-mobile p75 2253ms, CLS 0, TBT 0, and no actionable Lighthouse opportunities"
+  },
+  "evidence": {
+    "mobile": ".fleet/evidence/landing-audit/after-390.png",
+    "tablet": ".fleet/evidence/landing-audit/after-768.png",
+    "desktop": ".fleet/evidence/landing-audit/after-1440.png",
+    "mobileFooter": ".fleet/evidence/landing-audit/footer-390.png",
+    "desktopFooter": ".fleet/evidence/landing-audit/footer-1440.png",
+    "performanceReport": ".fleet/evidence/landing-audit/performance.html"
+  },
+  "limitations": [
+    "The candidate is a temporary local Cloudflare tunnel, not a production deployment.",
+    "The public install path remains intentionally unavailable until a real public TestFlight or App Store URL exists.",
+    "CloudKit remains a transition mirror while the optional Significant Hobbies Hub path is validated.",
+    "Performance is lab evidence; INP requires real-user interaction data."
+  ]
+}
