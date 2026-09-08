@@ -6,9 +6,16 @@ People you add float as warm bubbles. Closer relationships are larger. Tap
 someone to write down what matters — a dinner, a call, a birthday, a thing
 you want to remember.
 
-There is no Kith account. Notes live on the phone and, when you are signed
-into iCloud, in your personal private CloudKit database (team
-`8F7LXHTJZR`).
+Kith works without an account. People and notes save on the phone first;
+private iCloud continuity and a Significant Hobbies Hub account are optional.
+Local use does not wait for either service. Hub downloads commit locally
+before their sync cursor advances, so a failed save can be retried.
+
+Build 10 was signature-verified and installed on the owner's iPhone on
+8 September 2026. Its launch was rejected because the phone was locked.
+Physical use, real-account synchronization and public distribution remain
+unqualified. Follow the current installation and usage checks in
+[issue 27](https://github.com/Significant-Hobbies/kith/issues/27).
 
 The public landing is the ios-landings factory at
 https://kith.significanthobbies.com. Deploy it from that repo with
