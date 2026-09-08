@@ -29,6 +29,14 @@ final class AppModel {
     private(set) var lastPlatformSyncAt: Date?
     private(set) var platformPendingMutationCount = 0
     private(set) var platformSyncIssue: HubSyncIssue?
+    private(set) var platformAccountNotice: String?
+    private(set) var cloudAccountNotice: String?
+
+    var needsPlatformApproval: Bool { account?.isSignedIn == true && document.hubAccountID == nil }
+    var platformAccountMatches: Bool {
+        guard let owner = document.hubAccountID else { return false }
+        return account?.session?.userId == owner
+    }
 
     private let store: KithStore
     private let cloud: (any KithCloudStorage)?
@@ -184,6 +192,11 @@ final class AppModel {
         guard await cloud.availability() == .available else { return }
         do {
             if let remote = try await cloud.fetch() {
+                guard remote.hubAccountID == document.hubAccountID else {
+                    cloudAccountNotice = "The iCloud copy has a different Hub connection. Your people stay on this iPhone; the iCloud mirror is paused."
+                    return
+                }
+                cloudAccountNotice = nil
                 let chosen = KithDocument.newer(document, remote)
                 if chosen != document {
                     guard await commitLocal(mirror: false, { candidate in
@@ -310,6 +323,41 @@ final class AppModel {
         return false
     }
 
+    /// Atomically associate the retained document before any Hub backfill.
+    /// Called only after an explicit account approval, with a verified user ID.
+    func approveLocalHubOwner(_ userID: String) async -> Bool {
+        guard !userID.isEmpty else { return false }
+        return await commitLocal(mirror: false) { candidate in
+            guard candidate.hubAccountID == nil || candidate.hubAccountID == userID else {
+                throw KithError.accountMismatch
+            }
+            candidate.hubAccountID = userID
+            candidate.markSaved()
+        }
+    }
+
+    func approvePlatformAccount() async {
+        guard !isPlatformSyncing, let platform else { return }
+        do {
+            guard let verified = try await platform.identity.verifiedSyncAccount(),
+                  account?.session?.userId == verified.userID else { return }
+            guard await approveLocalHubOwner(verified.userID) else { return }
+            try await platform.identity.requireCurrentAccount(verified)
+            try await platform.sync.bindAccount(verified, adoptingUnownedData: true)
+            platformAccountNotice = nil
+            await syncFromPlatform()
+        } catch {
+            platformAccountNotice = "Could not connect these people to this account. Your local people and waiting changes are preserved."
+        }
+    }
+
+    func disconnectPlatform() async {
+        platformAccountNotice = nil
+        lastPlatformSyncAt = nil
+        UserDefaults.standard.removeObject(forKey: Self.lastPlatformSyncKey)
+        await account?.signOut()
+    }
+
     func syncFromPlatform() async {
         guard hasLoadedDocument else { return }
         guard !ProcessInfo.processInfo.arguments.contains("--sync-status-demo") else { return }
@@ -324,36 +372,56 @@ final class AppModel {
             return
         }
         platformSyncIssue = nil
+        guard let expectedOwner = document.hubAccountID else {
+            platformAccountNotice = "Choose whether to connect the people and notes on this iPhone to the account shown above. Nothing has been uploaded."
+            return
+        }
+        guard account?.session?.userId == expectedOwner else {
+            platformAccountNotice = "These people are connected to another Hub account. Sign in to that account to sync, or keep using Kith locally."
+            return
+        }
         do {
+            guard let verified = try await platform.identity.verifiedSyncAccount(),
+                  verified.userID == expectedOwner else { throw KithError.accountMismatch }
+            try await platform.sync.bindAccount(verified)
+            platformAccountNotice = nil
             var attempts = 0
             repeat {
                 attempts += 1
                 platformSyncRequested = false
-                try await enqueueLocalRecords(using: platform.sync)
-                try await platform.sync.synchronize { changes in
-                    try await self.commitPlatformChanges(changes)
+                try await enqueueLocalRecords(using: platform.sync, account: verified)
+                try await platform.sync.synchronize(account: verified) { changes in
+                    try await platform.identity.requireCurrentAccount(verified)
+                    try await self.commitPlatformChanges(changes, ownerID: verified.userID)
+                    try await platform.identity.requireCurrentAccount(verified)
                 }
                 // A conflicting remote upsert can replace the delete fingerprint.
                 // Re-stage saved deletions at the newly learned server version.
-                try await enqueueDeletionRecords(using: platform.sync)
+                try await enqueueDeletionRecords(using: platform.sync, account: verified)
                 let pending = await platform.sync.pendingMutationCount()
                 if pending > 0 { platformSyncRequested = true }
                 if attempts >= 3, platformSyncRequested { throw KithSyncCommitError.retryRequired }
             } while platformSyncRequested
             platformPendingMutationCount = await platform.sync.pendingMutationCount()
+            try await platform.identity.requireCurrentAccount(verified)
+            guard account?.session?.userId == expectedOwner else { throw KithError.accountMismatch }
             let syncedAt = Date()
             lastPlatformSyncAt = syncedAt
             UserDefaults.standard.set(syncedAt, forKey: Self.lastPlatformSyncKey)
         } catch {
             platformPendingMutationCount = await platform.sync.pendingMutationCount()
-            platformSyncIssue = HubSyncIssue(error: error)
+            guard account?.session?.userId == expectedOwner else { return }
+            if error is PersonalSyncOwnershipError {
+                platformAccountNotice = "This connection needs your approval, or belongs to another account. Your people and waiting changes are preserved."
+            } else { platformSyncIssue = HubSyncIssue(error: error) }
         }
     }
 
     /// Throw until the app's atomic save succeeds so the Hub cursor cannot
     /// acknowledge records missing from this phone. Replaying a batch is safe.
-    func commitPlatformChanges(_ changes: [SyncChange]) async throws {
+    func commitPlatformChanges(_ changes: [SyncChange], ownerID: String? = nil) async throws {
         guard await commitLocal(mirror: false, { candidate in
+            guard candidate.hubAccountID == ownerID else { throw KithError.accountMismatch }
             for change in changes { Self.apply(change, to: &candidate) }
         }) else { throw KithSyncCommitError.localSaveFailed }
     }
@@ -364,14 +432,15 @@ final class AppModel {
         platformPendingMutationCount = await platform.sync.pendingMutationCount()
     }
 
-    func enqueueLocalRecords(using sync: PersonalSyncRuntime) async throws {
+    func enqueueLocalRecords(using sync: PersonalSyncRuntime, account: PersonalSyncAccount? = nil) async throws {
         let snapshot = document
-        try await enqueueDeletionRecords(using: sync)
+        guard snapshot.hubAccountID == account?.userID else { throw KithError.accountMismatch }
+        try await enqueueDeletionRecords(using: sync, account: account)
         for person in snapshot.people where snapshot.deletionDates[person.id] == nil {
             try await sync.enqueue(
                 recordId: person.id.uuidString.lowercased(),
                 occurredAt: KithPlatformRecord.iso(person.updatedAt),
-                record: KithPlatformRecord.person(person)
+                record: KithPlatformRecord.person(person), account: account
             )
         }
         for entry in snapshot.entries where snapshot.deletionDates[entry.id] == nil {
@@ -380,17 +449,18 @@ final class AppModel {
             try await sync.enqueue(
                 recordId: entry.id.uuidString.lowercased(),
                 occurredAt: KithPlatformRecord.iso(entry.happenedOn),
-                record: KithPlatformRecord.interaction(entry, person: person)
+                record: KithPlatformRecord.interaction(entry, person: person), account: account
             )
         }
     }
 
-    private func enqueueDeletionRecords(using sync: PersonalSyncRuntime) async throws {
+    private func enqueueDeletionRecords(using sync: PersonalSyncRuntime, account: PersonalSyncAccount? = nil) async throws {
         let snapshot = document
+        guard snapshot.hubAccountID == account?.userID else { throw KithError.accountMismatch }
         for (id, deletedAt) in snapshot.deletionDates {
             try await sync.enqueue(
                 recordId: id.uuidString.lowercased(), operation: .delete,
-                occurredAt: KithPlatformRecord.iso(deletedAt)
+                occurredAt: KithPlatformRecord.iso(deletedAt), account: account
             )
         }
     }

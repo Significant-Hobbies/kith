@@ -47,3 +47,15 @@ builds an unsigned Release.
 
 Launch with `--ui-demo` to load a fixed sample constellation instead of the
 on-device document. `--fresh-demo` starts empty.
+
+### Hub account ownership
+
+Kith asks before connecting existing local people and notes to the displayed Hub
+account. That approval is saved in the local document before upload. Signing in
+to a different account leaves the original people available locally and asks
+you to return to their original account to sync; it never transfers them
+implicitly. A failed ownership save leaves the document unapproved and retryable.
+
+The optional iCloud mirror pauses when its document has a different or unapproved
+Hub owner, preserving both copies. Real account switching, reconciliation and
+phone journeys remain in issue 27 and Significant Hobbies Hub issue 156.

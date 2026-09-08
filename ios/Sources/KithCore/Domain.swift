@@ -1,6 +1,7 @@
 import Foundation
 
 public enum KithError: Error, Equatable, Sendable {
+    case accountMismatch
     case unsupportedSchema(Int)
     case missingPerson
     case emptyName
@@ -175,6 +176,7 @@ public struct KithDocument: Codable, Equatable, Sendable {
     public var entries: [Entry]
     public var savedAt: Date
     public var deletionDates: [UUID: Date]
+    public var hubAccountID: String?
 
     enum CodingKeys: String, CodingKey {
         case schemaVersion
@@ -182,6 +184,7 @@ public struct KithDocument: Codable, Equatable, Sendable {
         case entries
         case savedAt
         case deletionDates
+        case hubAccountID
     }
 
     public init(
@@ -189,13 +192,15 @@ public struct KithDocument: Codable, Equatable, Sendable {
         people: [Person] = [],
         entries: [Entry] = [],
         savedAt: Date = .distantPast,
-        deletionDates: [UUID: Date] = [:]
+        deletionDates: [UUID: Date] = [:],
+        hubAccountID: String? = nil
     ) {
         self.schemaVersion = schemaVersion
         self.people = people
         self.entries = entries
         self.savedAt = savedAt
         self.deletionDates = deletionDates
+        self.hubAccountID = hubAccountID
     }
 
     public init(from decoder: Decoder) throws {
@@ -205,6 +210,7 @@ public struct KithDocument: Codable, Equatable, Sendable {
         entries = try container.decode([Entry].self, forKey: .entries)
         savedAt = try container.decodeIfPresent(Date.self, forKey: .savedAt) ?? .distantPast
         deletionDates = try container.decodeIfPresent([UUID: Date].self, forKey: .deletionDates) ?? [:]
+        hubAccountID = try container.decodeIfPresent(String.self, forKey: .hubAccountID)
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -214,10 +220,14 @@ public struct KithDocument: Codable, Equatable, Sendable {
         try container.encode(entries, forKey: .entries)
         try container.encode(savedAt, forKey: .savedAt)
         try container.encode(deletionDates, forKey: .deletionDates)
+        try container.encodeIfPresent(hubAccountID, forKey: .hubAccountID)
     }
 
     /// Keep the newer working copy while retaining deletions from either copy.
     public static func newer(_ lhs: KithDocument, _ rhs: KithDocument) -> KithDocument {
+        // The first argument is the retained working copy. Never merge records
+        // or deletion markers across different (including unapproved) owners.
+        guard lhs.hubAccountID == rhs.hubAccountID else { return lhs }
         var chosen = lhs.savedAt >= rhs.savedAt ? lhs : rhs
         chosen.deletionDates = lhs.deletionDates.merging(rhs.deletionDates, uniquingKeysWith: max)
         chosen.people.removeAll { chosen.deletionDates[$0.id] != nil }

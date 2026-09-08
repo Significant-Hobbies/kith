@@ -18,6 +18,7 @@
 		28DC706C84B926D801903C80 /* KithCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 706248B78A28D30986A34B42 /* KithCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		3D16CCA4E369961726F5EC1F /* KithCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 706248B78A28D30986A34B42 /* KithCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		3D2725D7CF8A07FC80223E4E /* KithCoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FDEF1D744F055053CB588A9 /* KithCoreTests.swift */; };
+		3D608572C9F810EEB4FD2452 /* KithAccountOwnershipTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E29D7827C0D85077597AC59 /* KithAccountOwnershipTests.swift */; };
 		43362B2B8A40AEC6FFBF4E34 /* LogViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC05AFA81D366A2F3F3657C9 /* LogViews.swift */; };
 		4DAC407477F1CDC34376B408 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 30859487C6430E18E645A7E1 /* Assets.xcassets */; };
 		50198B83B77FCE3BB74868B9 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6982529B80DE3228F8C45F4 /* RootView.swift */; };
@@ -110,6 +111,7 @@
 		79D378032A9722C9555ED8AE /* DemoData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoData.swift; sourceTree = "<group>"; };
 		7A8B5ADE80477C15D5324428 /* CloudStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudStore.swift; sourceTree = "<group>"; };
 		7AA76B6FCE2A1BD2FDDE7D45 /* BubbleField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BubbleField.swift; sourceTree = "<group>"; };
+		7E29D7827C0D85077597AC59 /* KithAccountOwnershipTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KithAccountOwnershipTests.swift; sourceTree = "<group>"; };
 		8E3415A5E88E90361208B65E /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
 		8FDEF1D744F055053CB588A9 /* KithCoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KithCoreTests.swift; sourceTree = "<group>"; };
 		A41324D637F7A736FAD6B80A /* HubSyncIssueTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HubSyncIssueTests.swift; sourceTree = "<group>"; };
@@ -168,6 +170,7 @@
 			isa = PBXGroup;
 			children = (
 				A41324D637F7A736FAD6B80A /* HubSyncIssueTests.swift */,
+				7E29D7827C0D85077597AC59 /* KithAccountOwnershipTests.swift */,
 				AB6F67C1D3316B6D68F196B2 /* KithLocalSaveTests.swift */,
 				E2497D4CF5603E39B52F3EEE /* KithOnboardingPresentationTests.swift */,
 				056D480C2E910CDB1764A58E /* KithSyncCommitTests.swift */,
@@ -446,6 +449,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A4336E3A96ACF2FE47DA6C35 /* HubSyncIssueTests.swift in Sources */,
+				3D608572C9F810EEB4FD2452 /* KithAccountOwnershipTests.swift in Sources */,
 				0D90BFD259DC9B30AFEC91D7 /* KithLocalSaveTests.swift in Sources */,
 				B71A3A7A7503BACD158CAAF1 /* KithOnboardingPresentationTests.swift in Sources */,
 				0084AEA16B3FC65A619B57C3 /* KithSyncCommitTests.swift in Sources */,
@@ -573,7 +577,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 12;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 8F7LXHTJZR;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -770,7 +774,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 11;
+				CURRENT_PROJECT_VERSION = 12;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 8F7LXHTJZR;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -902,7 +906,7 @@
 			repositoryURL = "https://github.com/Significant-Hobbies/significanthobbies.git";
 			requirement = {
 				kind = revision;
-				revision = e52fc1cffbb86b4a04f10ec2799f5bb7ed024b17;
+				revision = 118fc5552b08078ac06e3339c0c65a304e103e7d;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

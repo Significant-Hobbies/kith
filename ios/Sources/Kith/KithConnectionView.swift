@@ -40,6 +40,9 @@ struct KithConnectionView: View {
                     .padding(18)
                     .background(KithPalette.cream, in: RoundedRectangle(cornerRadius: 22))
 
+                    if let notice = model.cloudAccountNotice {
+                        Text(notice).font(.footnote).foregroundStyle(KithPalette.rust)
+                    }
                     if let account = model.account {
                         VStack(alignment: .leading, spacing: 14) {
                             if account.isSignedIn {
@@ -55,21 +58,34 @@ struct KithConnectionView: View {
                                 }
                                 syncDetails
 
+                                if let notice = model.platformAccountNotice {
+                                    Text(notice).font(.subheadline).foregroundStyle(KithPalette.rust)
+                                }
+                                if model.needsPlatformApproval || (model.platformAccountMatches && model.platformAccountNotice != nil) {
+                                    Text("Connect the people and notes on this iPhone to the account shown above? They will be included in its private Hub copy.")
+                                        .font(.subheadline)
+                                    Button("Connect these people to this account") {
+                                        Task { await model.approvePlatformAccount() }
+                                    }
+                                    .buttonStyle(ClayButtonStyle())
+                                    .disabled(model.isPlatformSyncing)
+                                    Button("Keep using Kith locally") { dismiss() }
+                                }
                                 Button("Sync now") {
                                     Task { await model.syncFromPlatform() }
                                 }
                                 .buttonStyle(ClayButtonStyle())
-                                .disabled(model.isPlatformSyncing)
+                                .disabled(model.isPlatformSyncing || !model.platformAccountMatches)
                                 Button("Sign out", role: .destructive) {
                                     Task {
-                                        await account.signOut()
+                                        await model.disconnectPlatform()
                                         await model.refreshPlatformStatus()
                                     }
                                 }
                             } else {
                                 Text("Connect your Significant Hobbies account")
                                     .font(.headline)
-                                Text("Your local Kith stays exactly where it is. Any waiting changes sync after you connect.")
+                                Text("Your people stay on this iPhone. Kith asks before connecting them to a Hub account, and keeps an existing connection tied to its original account.")
                                     .font(.subheadline)
                                     .foregroundStyle(KithPalette.espresso.opacity(0.62))
                                 syncDetails

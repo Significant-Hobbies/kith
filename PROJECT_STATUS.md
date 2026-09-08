@@ -36,6 +36,17 @@ reminders as a notification product, messaging, and a web client.
 
 ## Timeline
 
+- 2026-09-08 — Build 12 prepares explicit Hub account ownership under issue 27
+  and Hub issue 156. Approval persists with the local document before runtime
+  binding or backfill. Another account cannot reassign the document, enqueue
+  its records, or commit downloads into it. Shared source `118fc55` binds the
+  durable queue and rejects stale identity/sync callbacks. Incompatible iCloud
+  copies are kept separate and the mirror pauses with an explanation. Four
+  new ownership tests cover restart, failed approval save/retry, reassignment
+  refusal and mismatched cloud copies. The full local native unit/UI/Release
+  gate passed. Hosted CI and physical account journeys remain pending;
+  build 11 remains installed.
+
 - 2026-09-08 — Build 11 prepares durable deletion recovery under issue 27.
   Regressions reproduced deleted people and notes returning from an old Hub
   download after restart. Deletion markers now commit in the same local

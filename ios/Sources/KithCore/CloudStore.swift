@@ -71,6 +71,9 @@ public actor KithCloudStore: KithCloudStorage {
             record = CKRecord(recordType: Self.recordType, recordID: recordID)
         }
         let retained = try (record[Self.payloadKey] as? Data).map(KithStore.decode)
+        if let retained, retained.hubAccountID != document.hubAccountID {
+            throw KithError.accountMismatch
+        }
         let merged = retained.map { KithDocument.newer(document, $0) } ?? document
         record[Self.payloadKey] = try KithStore.encode(merged) as CKRecordValue
         _ = try await container.privateCloudDatabase.save(record)
