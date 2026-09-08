@@ -11,6 +11,14 @@ struct RootView: View {
             if model.isLoading {
                 ProgressView()
                     .tint(KithPalette.clay)
+            } else if !model.hasLoadedDocument {
+                ContentUnavailableView {
+                    Label("Your people could not be opened", systemImage: "exclamationmark.folder")
+                } description: {
+                    Text("Your saved file has not been changed. Reopen it before adding or changing anything.")
+                } actions: {
+                    Button("Try again") { Task { await model.load() } }
+                }
             } else if model.isOnboardingPresented {
                 KithOnboardingView()
             } else if model.isShowingList {
@@ -19,6 +27,7 @@ struct RootView: View {
                 ConstellationView()
             }
         }
+        .disabled(model.isSaving)
         .kithBackground()
         .sheet(isPresented: $model.isAddingPerson) {
             PersonEditor(person: nil)

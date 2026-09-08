@@ -186,10 +186,11 @@ struct KithOnboardingView: View {
         .navigationBarTitleDisplayMode(.inline)
         .safeAreaInset(edge: .bottom) {
             Button("Save this memory") {
-                model.saveOnboardingEntry(kind: kind, happenedOn: happenedOn, body: note)
-                guard let person = model.onboardingPerson,
-                      !model.document.entries(for: person.id).isEmpty else { return }
-                step = .constellation
+                Task {
+                    if await model.saveOnboardingEntry(kind: kind, happenedOn: happenedOn, body: note) {
+                        step = .constellation
+                    }
+                }
             }
             .buttonStyle(ClayButtonStyle())
             .disabled(note.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
@@ -236,8 +237,8 @@ struct KithOnboardingView: View {
 
     private func savePerson() {
         let person = Person(name: name, circle: circle, closeness: closeness, hue: hue)
-        model.saveOnboardingPerson(person)
-        guard model.onboardingPerson != nil else { return }
-        step = .context
+        Task {
+            if await model.saveOnboardingPerson(person) { step = .context }
+        }
     }
 }

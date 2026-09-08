@@ -38,6 +38,12 @@ struct LogEditor: View {
     var body: some View {
         NavigationStack {
             Form {
+                if let message = model.message {
+                    Section {
+                        Label(message, systemImage: "exclamationmark.triangle")
+                            .foregroundStyle(KithPalette.rust)
+                    }
+                }
                 Section("What happened") {
                     Picker("Kind", selection: $kind) {
                         ForEach(LogKind.allCases, id: \.self) { option in
@@ -62,13 +68,15 @@ struct LogEditor: View {
                 }
             }
         }
+        .disabled(model.isSaving)
+        .interactiveDismissDisabled(model.isSaving)
         .kithBackground()
     }
 
     private func save() {
-        model.addEntry(
-            Entry(personID: person.id, kind: kind, happenedOn: happenedOn, body: bodyText)
-        )
-        dismiss()
+        let entry = Entry(personID: person.id, kind: kind, happenedOn: happenedOn, body: bodyText)
+        Task {
+            if await model.addEntry(entry) { dismiss() }
+        }
     }
 }

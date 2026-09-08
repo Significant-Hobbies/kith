@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		09E8E56D1B58E87EC470F8DE /* KithCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 706248B78A28D30986A34B42 /* KithCore.framework */; };
 		0D21685BEDBF76C6AE714CEF /* PersonalSyncKit in Frameworks */ = {isa = PBXBuildFile; productRef = 06F16ED7DD7305671AC61A80 /* PersonalSyncKit */; };
+		0D90BFD259DC9B30AFEC91D7 /* KithLocalSaveTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB6F67C1D3316B6D68F196B2 /* KithLocalSaveTests.swift */; };
 		15835961CE7BABD27EA30295 /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8E3415A5E88E90361208B65E /* CloudKit.framework */; };
 		1D8DB7DB42B1154E40F56ED6 /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = A662AC2BCD668AE688D25BB5 /* Persistence.swift */; };
 		1D9712691351162D15E59B82 /* KithPlatformRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09DA028D29EAA834DF9E94A7 /* KithPlatformRecord.swift */; };
@@ -112,6 +113,7 @@
 		A41324D637F7A736FAD6B80A /* HubSyncIssueTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HubSyncIssueTests.swift; sourceTree = "<group>"; };
 		A662AC2BCD668AE688D25BB5 /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
 		A6982529B80DE3228F8C45F4 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
+		AB6F67C1D3316B6D68F196B2 /* KithLocalSaveTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KithLocalSaveTests.swift; sourceTree = "<group>"; };
 		B10F1C159C3DA6714FD52E7A /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
 		B5055DD36BBAD17F586CE183 /* Kith.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Kith.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BBCFD88B8B1F5D94999E4F0C /* KithApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KithApp.swift; sourceTree = "<group>"; };
@@ -164,6 +166,7 @@
 			isa = PBXGroup;
 			children = (
 				A41324D637F7A736FAD6B80A /* HubSyncIssueTests.swift */,
+				AB6F67C1D3316B6D68F196B2 /* KithLocalSaveTests.swift */,
 				E2497D4CF5603E39B52F3EEE /* KithOnboardingPresentationTests.swift */,
 			);
 			name = KithAppTests;
@@ -440,6 +443,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A4336E3A96ACF2FE47DA6C35 /* HubSyncIssueTests.swift in Sources */,
+				0D90BFD259DC9B30AFEC91D7 /* KithLocalSaveTests.swift in Sources */,
 				B71A3A7A7503BACD158CAAF1 /* KithOnboardingPresentationTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -565,7 +569,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 8;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 8F7LXHTJZR;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -762,7 +766,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 7;
+				CURRENT_PROJECT_VERSION = 8;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 8F7LXHTJZR;
 				ENABLE_NS_ASSERTIONS = NO;

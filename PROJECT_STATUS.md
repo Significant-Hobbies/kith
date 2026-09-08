@@ -1,6 +1,6 @@
 # Kith — PROJECT STATUS
 
-Last updated: 2026-08-23
+Last updated: 2026-09-08
 
 ## Why / What
 
@@ -35,6 +35,19 @@ reminders as a notification product, messaging, and a web client.
   handoff; local JSON remains the immediate store.
 
 ## Timeline
+
+- 2026-09-08 — Priority save-integrity repair prepared as build 8. The old
+  person/note editors and onboarding treated an asynchronous file write as
+  successful immediately. Regressions reproduced false saves and mutation
+  after a failed document load. Local writes now serialize, publish only after
+  an atomic save, and retain drafts/records on failure. Five focused regressions
+  pass. The full native gate passed 9 core tests, 8 app tests, 8 UI tests and
+  an unsigned Release build. Device installation and physical journeys remain in [issue 27](https://github.com/Significant-Hobbies/kith/issues/27).
+- 2026-09-07 — Development build 7 installed on the owner's iPhone from
+  source 916e876ede113ea1ba2eb13b56105502ca88bf68. Launch remains blocked by
+  FBS Locked on 8 September. This is a development installation, not a
+  TestFlight or physical-use qualification. Earlier TestFlight receipts below
+  remain historical.
 
 - 2026-08-23 — Removed the leftover `site/` landing fork. Its `wrangler.jsonc`
   declared Pages project `kith`, the project the `ios-landings` factory

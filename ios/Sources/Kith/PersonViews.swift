@@ -38,13 +38,16 @@ struct PersonPage: View {
             }
             .confirmationDialog("Remove this person?", isPresented: $confirmDelete, titleVisibility: .visible) {
                 Button("Remove", role: .destructive) {
-                    model.deletePerson(id: personID)
-                    dismiss()
+                    Task {
+                        if await model.deletePerson(id: personID) { dismiss() }
+                    }
                 }
             } message: {
                 Text("Their notes go with them. This stays on this phone.")
             }
         }
+        .disabled(model.isSaving)
+        .interactiveDismissDisabled(model.isSaving)
         .kithBackground()
         .presentationDetents([.large])
     }
@@ -80,7 +83,7 @@ struct PersonPage: View {
                         LogCard(entry: entry)
                             .contextMenu {
                                 Button("Delete", role: .destructive) {
-                                    model.deleteEntry(id: entry.id)
+                                    Task { await model.deleteEntry(id: entry.id) }
                                 }
                             }
                     }
@@ -153,6 +156,12 @@ struct PersonEditor: View {
     var body: some View {
         NavigationStack {
             Form {
+                if let message = model.message {
+                    Section {
+                        Label(message, systemImage: "exclamationmark.triangle")
+                            .foregroundStyle(KithPalette.rust)
+                    }
+                }
                 Section("Who") {
                     TextField("Name", text: $name)
                     Picker("Circle", selection: $circle) {
@@ -192,6 +201,8 @@ struct PersonEditor: View {
                 }
             }
         }
+        .disabled(model.isSaving)
+        .interactiveDismissDisabled(model.isSaving)
         .kithBackground()
     }
 
@@ -204,7 +215,8 @@ struct PersonEditor: View {
         next.closeness = closeness
         next.hue = hue
         next.birthday = hasBirthday ? birthday : nil
-        model.savePerson(next)
-        dismiss()
+        Task {
+            if await model.savePerson(next) { dismiss() }
+        }
     }
 }

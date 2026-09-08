@@ -12,6 +12,9 @@ import PersonalSyncKit
 final class AppModel {
     private(set) var document: KithDocument = .empty
     var isLoading = true
+    private(set) var hasLoadedDocument = false
+    private(set) var isSaving = false
+    private var localWriteWaiters: [CheckedContinuation<Void, Never>] = []
     var isOnboardingPresented = false
     private(set) var isExistingOwnerOrientation = false
     private(set) var onboardingPersonID: UUID?
@@ -72,6 +75,7 @@ final class AppModel {
     }
 
     func load() async {
+        isLoading = true
         defer { isLoading = false }
         let arguments = ProcessInfo.processInfo.arguments
         do {
@@ -96,14 +100,16 @@ final class AppModel {
                 onboardingPersonID = nil
             } else {
                 document = try await store.load()
+                hasLoadedDocument = true
                 await syncFromCloud()
                 await account?.restore()
                 await syncFromPlatform()
             }
+            hasLoadedDocument = true
             configureOnboarding(arguments: arguments)
         } catch {
-            message = "Could not open your people."
-            document = .empty
+            hasLoadedDocument = false
+            message = "Could not open your people. Your saved file has not been changed. Try opening it again."
         }
     }
 
@@ -174,8 +180,9 @@ final class AppModel {
             if let remote = try await cloud.fetch() {
                 let chosen = KithDocument.newer(document, remote)
                 if chosen.savedAt != document.savedAt {
-                    document = chosen
-                    try await store.save(chosen)
+                    _ = await commitLocal(mirror: false) { candidate in
+                        candidate = KithDocument.newer(candidate, remote)
+                    }
                 }
             } else if document.savedAt > .distantPast {
                 try await cloud.save(document)
@@ -185,42 +192,43 @@ final class AppModel {
         }
     }
 
-    func savePerson(_ person: Person) {
-        upsertPerson(person, selectAfterSave: true)
+    @discardableResult
+    func savePerson(_ person: Person) async -> Bool {
+        guard await upsertPerson(person) else { return false }
+        selectedPersonID = person.id
+        isAddingPerson = false
+        return true
     }
 
-    func saveOnboardingPerson(_ person: Person) {
-        upsertPerson(person, selectAfterSave: false)
-        guard document.person(id: person.id) != nil else { return }
+    @discardableResult
+    func saveOnboardingPerson(_ person: Person) async -> Bool {
+        guard await upsertPerson(person) else { return false }
         onboardingPersonID = person.id
         UserDefaults.standard.set(person.id.uuidString, forKey: Self.onboardingPersonKey)
+        return true
     }
 
-    private func upsertPerson(_ person: Person, selectAfterSave: Bool) {
-        do {
-            try document.upsert(person)
-            persist()
-            enqueue(person)
-            if selectAfterSave { selectedPersonID = person.id }
-            isAddingPerson = false
-        } catch KithError.emptyName {
-            message = "A person needs a name."
-        } catch {
-            message = "Could not save that person."
+    private func upsertPerson(_ person: Person) async -> Bool {
+        guard await commitLocal({ try $0.upsert(person) }) else { return false }
+        if let saved = document.person(id: person.id) { enqueue(saved) }
+        return true
+    }
+
+    @discardableResult
+    func saveOnboardingEntry(kind: LogKind, happenedOn: Date, body: String) async -> Bool {
+        guard let person = onboardingPerson else { return false }
+        guard await addEntry(Entry(personID: person.id, kind: kind, happenedOn: happenedOn, body: body)) else {
+            return false
         }
-    }
-
-    func saveOnboardingEntry(kind: LogKind, happenedOn: Date, body: String) {
-        guard let person = onboardingPerson else { return }
-        addEntry(Entry(personID: person.id, kind: kind, happenedOn: happenedOn, body: body))
-        guard !document.entries(for: person.id).isEmpty else { return }
         let defaults = UserDefaults.standard
         defaults.set(true, forKey: Self.onboardingCompletionKey)
         defaults.removeObject(forKey: Self.onboardingPersonKey)
         onboardingPersonID = person.id
+        return true
     }
 
     func finishOnboarding(addAnother: Bool = false) {
+        guard !isSaving else { return }
         UserDefaults.standard.set(true, forKey: Self.onboardingCompletionKey)
         UserDefaults.standard.removeObject(forKey: Self.onboardingPersonKey)
         isOnboardingPresented = false
@@ -229,51 +237,72 @@ final class AppModel {
         if addAnother { isAddingPerson = true }
     }
 
-    func deletePerson(id: UUID) {
-        let deletedIDs = [id] + document.entries.filter { $0.personID == id }.map(\.id)
-        document.removePerson(id: id)
+    @discardableResult
+    func deletePerson(id: UUID) async -> Bool {
+        var deletedIDs: [UUID] = []
+        guard await commitLocal({ candidate in
+            deletedIDs = [id] + candidate.entries.filter { $0.personID == id }.map(\.id)
+            candidate.removePerson(id: id)
+        }) else { return false }
         if selectedPersonID == id { selectedPersonID = nil }
-        persist()
         enqueueDeletions(deletedIDs)
+        return true
     }
 
-    func addEntry(_ entry: Entry) {
-        do {
-            try document.add(entry)
-            persist()
-            enqueue(entry)
-        } catch {
-            message = "Could not save that note."
-        }
+    @discardableResult
+    func addEntry(_ entry: Entry) async -> Bool {
+        guard await commitLocal({ try $0.add(entry) }) else { return false }
+        enqueue(entry)
+        return true
     }
 
-    func deleteEntry(id: UUID) {
-        document.removeEntry(id: id)
-        persist()
+    @discardableResult
+    func deleteEntry(id: UUID) async -> Bool {
+        guard await commitLocal({ $0.removeEntry(id: id) }) else { return false }
         enqueueDeletions([id])
+        return true
     }
 
-    private func persist() {
-        let arguments = ProcessInfo.processInfo.arguments
-        if Self.isDemoLaunch(arguments) {
-            return
+    /// Publish only committed local state. Each queued mutation starts from the
+    /// latest committed document, including changes arriving from synchronization.
+    private func commitLocal(
+        mirror: Bool = true,
+        _ change: (inout KithDocument) throws -> Void
+    ) async -> Bool {
+        guard hasLoadedDocument else {
+            message = "Your people could not be opened. Reopen them before saving; the existing file has not been changed."
+            return false
         }
-        let snapshot = document
-        let store = store
-        let cloud = cloud
-        Task {
-            do {
-                try await store.save(snapshot)
-            } catch {
-                message = "Could not save."
-                return
-            }
-            do {
-                try await cloud?.save(snapshot)
-            } catch {
-                message = "Saved on this iPhone. iCloud did not update."
-            }
+        if isSaving {
+            await withCheckedContinuation { localWriteWaiters.append($0) }
+        } else {
+            isSaving = true
         }
+        defer {
+            if localWriteWaiters.isEmpty { isSaving = false }
+            else { localWriteWaiters.removeFirst().resume() }
+        }
+        do {
+            var candidate = document
+            try change(&candidate)
+            if !Self.isDemoLaunch(ProcessInfo.processInfo.arguments) {
+                try await store.save(candidate)
+            }
+            document = candidate
+            message = nil
+            if mirror, let cloud {
+                Task {
+                    do { try await cloud.save(candidate) }
+                    catch { message = "Saved on this iPhone. iCloud did not update." }
+                }
+            }
+            return true
+        } catch KithError.emptyName {
+            message = "A person needs a name."
+        } catch {
+            message = "Could not save on this iPhone. Please try again."
+        }
+        return false
     }
 
     func syncFromPlatform() async {
@@ -292,8 +321,14 @@ final class AppModel {
         do {
             try await enqueueLocalRecords(using: platform)
             let changes = try await platform.sync.synchronize()
-            for change in changes { apply(change) }
-            if !changes.isEmpty { try await store.save(document) }
+            if !changes.isEmpty {
+                guard await commitLocal(mirror: false, { candidate in
+                    for change in changes { Self.apply(change, to: &candidate) }
+                }) else {
+                    platformSyncIssue = .couldNotFinish
+                    return
+                }
+            }
             platformPendingMutationCount = await platform.sync.pendingMutationCount()
             let syncedAt = Date()
             lastPlatformSyncAt = syncedAt
@@ -381,7 +416,7 @@ final class AppModel {
         }
     }
 
-    private func apply(_ change: SyncChange) {
+    private static func apply(_ change: SyncChange, to document: inout KithDocument) {
         switch change.operation {
         case .delete:
             guard let id = UUID(uuidString: change.id) else { return }
