@@ -36,6 +36,18 @@ reminders as a notification product, messaging, and a web client.
 
 ## Timeline
 
+- 2026-09-08 — Build 11 prepares durable deletion recovery under issue 27.
+  Regressions reproduced deleted people and notes returning from an old Hub
+  download after restart. Deletion markers now commit in the same local
+  document, recover failed outbox writes, prevent stale downloads from
+  restoring records, and survive iCloud document selection and writes.
+  Reconnect queues saved current state and retries deletion conflicts with
+  updated versions. All 25 core/app tests pass with temporary data, and the
+  full local native gate passes unit/UI tests and unsigned Release compilation.
+  Hosted qualification is recorded in issue 27. Build 10 remains the verified
+  installed phone app until those gates pass; actual signed-in use and public
+  distribution remain unqualified.
+
 - 2026-09-08 — Build 10 adopts PersonalSyncKit `e52fc1c` and commits downloaded
   people and notes before acknowledging the Hub cursor. A native integration
   regression injects a failed app write, retries the same download, reopens the

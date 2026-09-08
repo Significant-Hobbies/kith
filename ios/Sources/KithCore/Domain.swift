@@ -4,6 +4,7 @@ public enum KithError: Error, Equatable, Sendable {
     case unsupportedSchema(Int)
     case missingPerson
     case emptyName
+    case deletedRecord
 }
 
 public enum CircleKind: String, Codable, CaseIterable, Sendable {
@@ -173,24 +174,28 @@ public struct KithDocument: Codable, Equatable, Sendable {
     public var people: [Person]
     public var entries: [Entry]
     public var savedAt: Date
+    public var deletionDates: [UUID: Date]
 
     enum CodingKeys: String, CodingKey {
         case schemaVersion
         case people
         case entries
         case savedAt
+        case deletionDates
     }
 
     public init(
         schemaVersion: Int = currentSchemaVersion,
         people: [Person] = [],
         entries: [Entry] = [],
-        savedAt: Date = .distantPast
+        savedAt: Date = .distantPast,
+        deletionDates: [UUID: Date] = [:]
     ) {
         self.schemaVersion = schemaVersion
         self.people = people
         self.entries = entries
         self.savedAt = savedAt
+        self.deletionDates = deletionDates
     }
 
     public init(from decoder: Decoder) throws {
@@ -199,6 +204,7 @@ public struct KithDocument: Codable, Equatable, Sendable {
         people = try container.decode([Person].self, forKey: .people)
         entries = try container.decode([Entry].self, forKey: .entries)
         savedAt = try container.decodeIfPresent(Date.self, forKey: .savedAt) ?? .distantPast
+        deletionDates = try container.decodeIfPresent([UUID: Date].self, forKey: .deletionDates) ?? [:]
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -207,11 +213,23 @@ public struct KithDocument: Codable, Equatable, Sendable {
         try container.encode(people, forKey: .people)
         try container.encode(entries, forKey: .entries)
         try container.encode(savedAt, forKey: .savedAt)
+        try container.encode(deletionDates, forKey: .deletionDates)
     }
 
-    /// Newer document wins. Used when the phone and personal iCloud disagree.
+    /// Keep the newer working copy while retaining deletions from either copy.
     public static func newer(_ lhs: KithDocument, _ rhs: KithDocument) -> KithDocument {
-        lhs.savedAt >= rhs.savedAt ? lhs : rhs
+        var chosen = lhs.savedAt >= rhs.savedAt ? lhs : rhs
+        chosen.deletionDates = lhs.deletionDates.merging(rhs.deletionDates, uniquingKeysWith: max)
+        chosen.people.removeAll { chosen.deletionDates[$0.id] != nil }
+        for entry in chosen.entries {
+            if let deletedAt = chosen.deletionDates[entry.personID], chosen.deletionDates[entry.id] == nil {
+                chosen.deletionDates[entry.id] = deletedAt
+            }
+        }
+        chosen.entries.removeAll {
+            chosen.deletionDates[$0.id] != nil || chosen.deletionDates[$0.personID] != nil
+        }
+        return chosen
     }
 
     public mutating func markSaved(at date: Date = Date()) {
@@ -238,6 +256,7 @@ public struct KithDocument: Codable, Equatable, Sendable {
     }
 
     public mutating func upsert(_ person: Person) throws {
+        guard deletionDates[person.id] == nil else { throw KithError.deletedRecord }
         let name = person.name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !name.isEmpty else { throw KithError.emptyName }
         var saved = person
@@ -255,12 +274,19 @@ public struct KithDocument: Codable, Equatable, Sendable {
     }
 
     public mutating func removePerson(id: UUID) {
+        let deletedAt = Date()
+        for recordID in [id] + entries.filter({ $0.personID == id }).map(\.id) {
+            if deletionDates[recordID] == nil { deletionDates[recordID] = deletedAt }
+        }
         people.removeAll { $0.id == id }
         entries.removeAll { $0.personID == id }
         markSaved()
     }
 
     public mutating func add(_ entry: Entry) throws {
+        guard deletionDates[entry.id] == nil, deletionDates[entry.personID] == nil else {
+            throw KithError.deletedRecord
+        }
         guard people.contains(where: { $0.id == entry.personID }) else {
             throw KithError.missingPerson
         }
@@ -269,6 +295,7 @@ public struct KithDocument: Codable, Equatable, Sendable {
     }
 
     public mutating func removeEntry(id: UUID) {
+        if deletionDates[id] == nil { deletionDates[id] = Date() }
         entries.removeAll { $0.id == id }
         markSaved()
     }

@@ -6,6 +6,132 @@ import XCTest
 
 @MainActor
 final class KithSyncCommitTests: XCTestCase {
+    func testDeletedPersonAndNotesDoNotReturnFromAnOldDownloadAfterRestart() async throws {
+        try await checkDeletionSurvivesRestart(deletePerson: true)
+    }
+
+    func testDeletedNoteDoesNotReturnFromAnOldDownloadAfterRestart() async throws {
+        try await checkDeletionSurvivesRestart(deletePerson: false)
+    }
+
+    private func checkDeletionSurvivesRestart(deletePerson: Bool) async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = KithStore(fileURL: root.appending(path: "people.json"))
+        let person = Person(name: "Synthetic friend", closeness: 4, hue: .clay)
+        let note = Entry(personID: person.id, kind: .note, happenedOn: .now, body: "Delete this synthetic note")
+        try await store.save(KithDocument(people: [person], entries: [note]))
+        // No platform connection represents a local deletion before optional
+        // sync can durably enqueue anything. Only the saved journal survives.
+        let model = AppModel(store: store, cloud: nil, platform: nil)
+        await model.load()
+        let deleted = deletePerson ? await model.deletePerson(id: person.id) : await model.deleteEntry(id: note.id)
+        XCTAssertTrue(deleted)
+        let reopened = AppModel(store: store, cloud: nil, platform: nil)
+        await reopened.load()
+        let transport = KithDownloadTransport(person: person, note: note)
+        let oldDownload = try await transport.pull(domain: .kith, cursor: 0, bearerToken: "synthetic")
+        try await reopened.commitPlatformChanges(oldDownload.changes)
+        let persisted = try await store.load()
+        XCTAssertTrue(persisted.entries.isEmpty, "An older Hub note must not undo a saved deletion")
+        XCTAssertEqual(persisted.people.count, deletePerson ? 0 : 1)
+    }
+
+    func testDeletionQueueWriteFailureRecoversFromReopenedDocument() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = KithStore(fileURL: root.appending(path: "people.json"))
+        let person = Person(name: "Synthetic friend", closeness: 4, hue: .clay)
+        let note = Entry(personID: person.id, kind: .note, happenedOn: .now, body: "Synthetic note")
+        try await store.save(KithDocument(people: [person], entries: [note]))
+        let model = AppModel(store: store, cloud: nil, platform: nil)
+        await model.load()
+        let deleted = await model.deletePerson(id: person.id)
+        XCTAssertTrue(deleted)
+        let syncRoot = root.appending(path: "sync")
+        let identity = PersonalIdentityClient(baseURL: URL(string: "https://synthetic.invalid")!, tokenStore: KithTestTokenStore())
+        let runtime = try PersonalSyncRuntime(domain: .kith, deviceId: "synthetic", supportDirectory: syncRoot,
+                                             identity: identity, client: PersonalSyncClient(baseURL: URL(string: "https://synthetic.invalid")!))
+        let outboxFile = syncRoot.appending(path: "personal-sync-outbox.json")
+        try FileManager.default.createDirectory(at: outboxFile, withIntermediateDirectories: true)
+        do {
+            try await model.enqueueLocalRecords(using: runtime)
+            XCTFail("A failed queue write must be reported")
+        } catch { }
+        let saved = try await store.load()
+        XCTAssertEqual(Set(saved.deletionDates.keys), Set([person.id, note.id]))
+        try FileManager.default.removeItem(at: outboxFile)
+        let reopened = AppModel(store: store, cloud: nil, platform: nil)
+        await reopened.load()
+        try await reopened.enqueueLocalRecords(using: runtime)
+        let queued = try await MutationOutbox(fileURL: outboxFile).pending(for: .kith)
+        XCTAssertEqual(Set(queued.map { $0.mutation.id }), Set([person.id, note.id].map { $0.uuidString.lowercased() }))
+        XCTAssertTrue(queued.allSatisfy { $0.mutation.operation == .delete })
+        try await reopened.enqueueLocalRecords(using: runtime)
+        let count = await runtime.pendingMutationCount()
+        XCTAssertEqual(count, 2, "Replaying retained deletion markers must not duplicate durable work")
+    }
+
+    func testNewerCloudCopyCannotDiscardLocalDeletionMarkers() throws {
+        let person = Person(name: "Synthetic friend", closeness: 4, hue: .clay)
+        let note = Entry(personID: person.id, kind: .note, happenedOn: .now, body: "Synthetic note")
+        var local = KithDocument(people: [person], entries: [note])
+        local.removePerson(id: person.id)
+        let remote = KithDocument(people: [person], entries: [note], savedAt: local.savedAt.addingTimeInterval(60))
+        for merged in [KithDocument.newer(local, remote), KithDocument.newer(remote, local)] {
+            XCTAssertTrue(merged.people.isEmpty)
+            XCTAssertTrue(merged.entries.isEmpty)
+            XCTAssertEqual(Set(merged.deletionDates.keys), Set([person.id, note.id]))
+            let reopened = try KithStore.decode(KithStore.encode(merged))
+            XCTAssertEqual(Set(reopened.deletionDates.keys), Set(merged.deletionDates.keys))
+            for (id, date) in reopened.deletionDates {
+                let expected = try XCTUnwrap(merged.deletionDates[id])
+                XCTAssertEqual(date.timeIntervalSince1970, expected.timeIntervalSince1970, accuracy: 1,
+                               "The journal's ISO-8601 format preserves dates to whole seconds")
+            }
+        }
+    }
+
+    func testUnseenDownloadedNoteForDeletedPersonIsAlsoQueuedForDeletion() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = KithStore(fileURL: root.appending(path: "people.json"))
+        let person = Person(name: "Synthetic friend", closeness: 4, hue: .clay)
+        var local = KithDocument(people: [person])
+        local.removePerson(id: person.id)
+        try await store.save(local)
+        let model = AppModel(store: store, cloud: nil, platform: nil)
+        await model.load()
+        let unseen = Entry(personID: person.id, kind: .note, happenedOn: .now, body: "Unseen other-device note")
+        let transport = KithDownloadTransport(person: person, note: unseen)
+        let batch = try await transport.pull(domain: .kith, cursor: 0, bearerToken: "synthetic")
+        try await model.commitPlatformChanges(batch.changes)
+        let persisted = try await store.load()
+        XCTAssertTrue(persisted.people.isEmpty)
+        XCTAssertTrue(persisted.entries.isEmpty)
+        XCTAssertNotNil(persisted.deletionDates[unseen.id])
+        let remote = KithDocument(people: [person], entries: [unseen], savedAt: local.savedAt.addingTimeInterval(60))
+        XCTAssertNotNil(KithDocument.newer(local, remote).deletionDates[unseen.id])
+    }
+
+    func testCloudRefreshMirrorsRetainedLocalDeletionsBackToCloud() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = KithStore(fileURL: root.appending(path: "people.json"))
+        let person = Person(name: "Synthetic friend", closeness: 4, hue: .clay)
+        var local = KithDocument(people: [person])
+        local.removePerson(id: person.id)
+        try await store.save(local)
+        let remote = KithDocument(people: [person], savedAt: local.savedAt.addingTimeInterval(60))
+        let cloud = KithDeletionMirror(remote)
+        let model = AppModel(store: store, cloud: cloud, platform: nil)
+        await model.load()
+        XCTAssertTrue(model.document.people.isEmpty)
+        let mirrored = await cloud.saved
+        XCTAssertTrue(try XCTUnwrap(mirrored).people.isEmpty)
+        XCTAssertNotNil(mirrored?.deletionDates[person.id])
+    }
+
     func testDownloadedPersonAndNoteRetryAfterFailedAppWrite() async throws {
         let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: root) }
@@ -87,4 +213,19 @@ private actor KithDownloadTransport: PersonalSyncTransport {
         let response = JSONValue.object(["changes": .array(changes), "cursor": .number(2), "hasMore": .bool(false)])
         return try JSONDecoder().decode(PullResponse.self, from: JSONEncoder().encode(response))
     }
+}
+
+private actor KithTestTokenStore: PersonalBearerTokenStore {
+    func load() -> String? { nil }
+    func save(_ token: String) { }
+    func delete() { }
+}
+
+private actor KithDeletionMirror: KithCloudStorage {
+    let remote: KithDocument
+    private(set) var saved: KithDocument?
+    init(_ remote: KithDocument) { self.remote = remote }
+    func availability() -> CloudAvailability { .available }
+    func fetch() -> KithDocument? { remote }
+    func save(_ document: KithDocument) { saved = document }
 }

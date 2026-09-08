@@ -70,7 +70,9 @@ public actor KithCloudStore: KithCloudStorage {
         } catch let error as CKError where error.code == .unknownItem {
             record = CKRecord(recordType: Self.recordType, recordID: recordID)
         }
-        record[Self.payloadKey] = try KithStore.encode(document) as CKRecordValue
+        let retained = try (record[Self.payloadKey] as? Data).map(KithStore.decode)
+        let merged = retained.map { KithDocument.newer(document, $0) } ?? document
+        record[Self.payloadKey] = try KithStore.encode(merged) as CKRecordValue
         _ = try await container.privateCloudDatabase.save(record)
     }
 }

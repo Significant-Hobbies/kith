@@ -101,6 +101,7 @@ final class KithLocalSaveTests: XCTestCase {
         XCTAssertFalse(added)
         XCTAssertFalse(deletedNote)
         XCTAssertFalse(deletedPerson)
+        XCTAssertTrue(model.document.deletionDates.isEmpty, "Failed deletion must not publish a marker")
         XCTAssertEqual(model.document.entries.map(\.id), [existing.id])
         XCTAssertNotNil(model.document.person(id: person.id))
 

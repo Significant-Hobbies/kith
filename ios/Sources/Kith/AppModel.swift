@@ -25,6 +25,7 @@ final class AppModel {
     var searchText = ""
     var message: String?
     private(set) var isPlatformSyncing = false
+    private var platformSyncRequested = false
     private(set) var lastPlatformSyncAt: Date?
     private(set) var platformPendingMutationCount = 0
     private(set) var platformSyncIssue: HubSyncIssue?
@@ -184,11 +185,12 @@ final class AppModel {
         do {
             if let remote = try await cloud.fetch() {
                 let chosen = KithDocument.newer(document, remote)
-                if chosen.savedAt != document.savedAt {
-                    _ = await commitLocal(mirror: false) { candidate in
+                if chosen != document {
+                    guard await commitLocal(mirror: false, { candidate in
                         candidate = KithDocument.newer(candidate, remote)
-                    }
+                    }) else { return }
                 }
+                if document != remote { try await cloud.save(document) }
             } else if document.savedAt > .distantPast {
                 try await cloud.save(document)
             }
@@ -215,7 +217,7 @@ final class AppModel {
 
     private func upsertPerson(_ person: Person) async -> Bool {
         guard await commitLocal({ try $0.upsert(person) }) else { return false }
-        if let saved = document.person(id: person.id) { enqueue(saved) }
+        requestPlatformSync()
         return true
     }
 
@@ -244,27 +246,23 @@ final class AppModel {
 
     @discardableResult
     func deletePerson(id: UUID) async -> Bool {
-        var deletedIDs: [UUID] = []
-        guard await commitLocal({ candidate in
-            deletedIDs = [id] + candidate.entries.filter { $0.personID == id }.map(\.id)
-            candidate.removePerson(id: id)
-        }) else { return false }
+        guard await commitLocal({ $0.removePerson(id: id) }) else { return false }
         if selectedPersonID == id { selectedPersonID = nil }
-        enqueueDeletions(deletedIDs)
+        requestPlatformSync()
         return true
     }
 
     @discardableResult
     func addEntry(_ entry: Entry) async -> Bool {
         guard await commitLocal({ try $0.add(entry) }) else { return false }
-        enqueue(entry)
+        requestPlatformSync()
         return true
     }
 
     @discardableResult
     func deleteEntry(id: UUID) async -> Bool {
         guard await commitLocal({ $0.removeEntry(id: id) }) else { return false }
-        enqueueDeletions([id])
+        requestPlatformSync()
         return true
     }
 
@@ -302,6 +300,8 @@ final class AppModel {
                 }
             }
             return true
+        } catch KithError.deletedRecord {
+            message = "This person or note was deleted. Add a new person or note to start again."
         } catch KithError.emptyName {
             message = "A person needs a name."
         } catch {
@@ -314,21 +314,32 @@ final class AppModel {
         guard hasLoadedDocument else { return }
         guard !ProcessInfo.processInfo.arguments.contains("--sync-status-demo") else { return }
         guard let platform else { return }
+        guard !isPlatformSyncing else { platformSyncRequested = true; return }
+        isPlatformSyncing = true
+        defer { isPlatformSyncing = false }
         platformPendingMutationCount = await platform.sync.pendingMutationCount()
         guard account?.isSignedIn == true else {
             isPlatformSyncing = false
             platformSyncIssue = nil
             return
         }
-        guard !isPlatformSyncing else { return }
-        isPlatformSyncing = true
         platformSyncIssue = nil
-        defer { isPlatformSyncing = false }
         do {
-            try await enqueueLocalRecords(using: platform)
-            try await platform.sync.synchronize { changes in
-                try await self.commitPlatformChanges(changes)
-            }
+            var attempts = 0
+            repeat {
+                attempts += 1
+                platformSyncRequested = false
+                try await enqueueLocalRecords(using: platform.sync)
+                try await platform.sync.synchronize { changes in
+                    try await self.commitPlatformChanges(changes)
+                }
+                // A conflicting remote upsert can replace the delete fingerprint.
+                // Re-stage saved deletions at the newly learned server version.
+                try await enqueueDeletionRecords(using: platform.sync)
+                let pending = await platform.sync.pendingMutationCount()
+                if pending > 0 { platformSyncRequested = true }
+                if attempts >= 3, platformSyncRequested { throw KithSyncCommitError.retryRequired }
+            } while platformSyncRequested
             platformPendingMutationCount = await platform.sync.pendingMutationCount()
             let syncedAt = Date()
             lastPlatformSyncAt = syncedAt
@@ -353,17 +364,20 @@ final class AppModel {
         platformPendingMutationCount = await platform.sync.pendingMutationCount()
     }
 
-    private func enqueueLocalRecords(using platform: PersonalPlatformConnection) async throws {
-        for person in document.people {
-            try await platform.sync.enqueue(
+    func enqueueLocalRecords(using sync: PersonalSyncRuntime) async throws {
+        let snapshot = document
+        try await enqueueDeletionRecords(using: sync)
+        for person in snapshot.people where snapshot.deletionDates[person.id] == nil {
+            try await sync.enqueue(
                 recordId: person.id.uuidString.lowercased(),
                 occurredAt: KithPlatformRecord.iso(person.updatedAt),
                 record: KithPlatformRecord.person(person)
             )
         }
-        for entry in document.entries {
-            guard let person = document.person(id: entry.personID) else { continue }
-            try await platform.sync.enqueue(
+        for entry in snapshot.entries where snapshot.deletionDates[entry.id] == nil {
+            guard snapshot.deletionDates[entry.personID] == nil,
+                  let person = snapshot.person(id: entry.personID) else { continue }
+            try await sync.enqueue(
                 recordId: entry.id.uuidString.lowercased(),
                 occurredAt: KithPlatformRecord.iso(entry.happenedOn),
                 record: KithPlatformRecord.interaction(entry, person: person)
@@ -371,57 +385,21 @@ final class AppModel {
         }
     }
 
-    private func enqueueDeletions(_ ids: [UUID]) {
-        guard let platform, !ids.isEmpty else { return }
-        Task {
-            do {
-                for id in ids {
-                    try await platform.sync.enqueue(
-                        recordId: id.uuidString.lowercased(),
-                        operation: .delete,
-                        occurredAt: KithPlatformRecord.iso(.now)
-                    )
-                }
-                await syncFromPlatform()
-            } catch {
-                platformPendingMutationCount = await platform.sync.pendingMutationCount()
-                platformSyncIssue = HubSyncIssue(error: error)
-            }
+    private func enqueueDeletionRecords(using sync: PersonalSyncRuntime) async throws {
+        let snapshot = document
+        for (id, deletedAt) in snapshot.deletionDates {
+            try await sync.enqueue(
+                recordId: id.uuidString.lowercased(), operation: .delete,
+                occurredAt: KithPlatformRecord.iso(deletedAt)
+            )
         }
     }
 
-    private func enqueue(_ person: Person) {
-        guard let platform else { return }
-        Task {
-            do {
-                try await platform.sync.enqueue(
-                    recordId: person.id.uuidString.lowercased(),
-                    occurredAt: KithPlatformRecord.iso(person.updatedAt),
-                    record: KithPlatformRecord.person(person)
-                )
-                await syncFromPlatform()
-            } catch {
-                platformPendingMutationCount = await platform.sync.pendingMutationCount()
-                platformSyncIssue = HubSyncIssue(error: error)
-            }
-        }
-    }
-
-    private func enqueue(_ entry: Entry) {
-        guard let platform, let person = document.person(id: entry.personID) else { return }
-        Task {
-            do {
-                try await platform.sync.enqueue(
-                    recordId: entry.id.uuidString.lowercased(),
-                    occurredAt: KithPlatformRecord.iso(entry.happenedOn),
-                    record: KithPlatformRecord.interaction(entry, person: person)
-                )
-                await syncFromPlatform()
-            } catch {
-                platformPendingMutationCount = await platform.sync.pendingMutationCount()
-                platformSyncIssue = HubSyncIssue(error: error)
-            }
-        }
+    private func requestPlatformSync() {
+        // The saved document, including deletion markers, is the durable
+        // source. A stopped task never loses an operation on the next launch.
+        guard platform != nil else { return }
+        Task { await syncFromPlatform() }
     }
 
     private static func apply(_ change: SyncChange, to document: inout KithDocument) {
@@ -434,6 +412,7 @@ final class AppModel {
             guard let object = change.record.objectValue,
                   let recordType = object["recordType"]?.stringValue else { return }
             if recordType == "person", let person = KithPlatformRecord.person(from: object) {
+                guard document.deletionDates[person.id] == nil else { return }
                 if let index = document.people.firstIndex(where: { $0.id == person.id }) {
                     document.people[index] = person
                     document.markSaved()
@@ -442,6 +421,11 @@ final class AppModel {
                 }
             } else if recordType == "interaction",
                       let pair = KithPlatformRecord.interaction(from: object, recordId: change.id) {
+                if document.deletionDates[pair.person.id] != nil {
+                    document.removeEntry(id: pair.entry.id)
+                    return
+                }
+                guard document.deletionDates[pair.entry.id] == nil else { return }
                 if document.person(id: pair.person.id) == nil { try? document.upsert(pair.person) }
                 if !document.entries.contains(where: { $0.id == pair.entry.id }) {
                     try? document.add(pair.entry)
@@ -464,7 +448,7 @@ final class AppModel {
     }
 }
 
-enum KithSyncCommitError: Error { case localSaveFailed }
+enum KithSyncCommitError: Error { case localSaveFailed, retryRequired }
 
 enum HubSyncIssue: Equatable {
     case reconnect
