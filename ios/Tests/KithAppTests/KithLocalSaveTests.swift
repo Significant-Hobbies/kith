@@ -6,6 +6,39 @@ import XCTest
 
 @MainActor
 final class KithLocalSaveTests: XCTestCase {
+    func testLocalPeopleAndNotesRemainUsableWhileCloudStartupIsSuspended() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = KithStore(fileURL: root.appending(path: "people.json"))
+        let person = Person(name: "Offline friend", closeness: 4, hue: .clay)
+        var original = KithDocument.empty
+        try original.upsert(person)
+        try await store.save(original)
+        let cloudStarted = expectation(description: "Cloud availability is suspended")
+        let cloud = SuspendedStartupCloud(started: cloudStarted)
+        let model = AppModel(store: store, cloud: cloud, platform: nil)
+        let loading = Task { await model.load() }
+        await fulfillment(of: [cloudStarted], timeout: 3)
+
+        XCTAssertFalse(model.isLoading, "Local use must not wait for iCloud")
+        XCTAssertTrue(model.hasLoadedDocument)
+        XCTAssertTrue(model.isExistingOwnerOrientation)
+        XCTAssertEqual(model.document.person(id: person.id)?.name, person.name)
+        var edited = person
+        edited.name = "Locally edited friend"
+        let savedPerson = await model.savePerson(edited)
+        let note = Entry(personID: person.id, kind: .note, happenedOn: .now, body: "Saved without a network")
+        let savedNote = await model.addEntry(note)
+        XCTAssertTrue(savedPerson)
+        XCTAssertTrue(savedNote)
+
+        await cloud.resume()
+        await loading.value
+        let reopened = try await store.load()
+        XCTAssertEqual(reopened.person(id: person.id)?.name, edited.name)
+        XCTAssertEqual(reopened.entries.map(\.id), [note.id])
+    }
+
     func testFailedPersonSaveKeepsDocumentAndEditorUntilRetry() async throws {
         let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: root) }
@@ -132,4 +165,27 @@ final class KithLocalSaveTests: XCTestCase {
         XCTAssertEqual(defaults.string(forKey: AppModel.onboardingPersonKey), person.id.uuidString)
     }
 
+}
+
+private actor SuspendedStartupCloud: KithCloudStorage {
+    let started: XCTestExpectation
+    private var waiter: CheckedContinuation<Void, Never>?
+
+    init(started: XCTestExpectation) { self.started = started }
+
+    func availability() async -> CloudAvailability {
+        await withCheckedContinuation { continuation in
+            waiter = continuation
+            started.fulfill()
+        }
+        return .noAccount
+    }
+
+    func resume() {
+        waiter?.resume()
+        waiter = nil
+    }
+
+    func fetch() async throws -> KithDocument? { nil }
+    func save(_ document: KithDocument) async throws {}
 }

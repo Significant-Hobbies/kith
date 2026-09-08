@@ -7,11 +7,17 @@ public enum CloudAvailability: Equatable, Sendable {
     case unavailable(String)
 }
 
+public protocol KithCloudStorage: Sendable {
+    func availability() async -> CloudAvailability
+    func fetch() async throws -> KithDocument?
+    func save(_ document: KithDocument) async throws
+}
+
 /// One JSON document in the owner's private iCloud database.
 ///
 /// The container is on Sarthak's personal team (`8F7LXHTJZR`). There is no
 /// Kith server and no public or shared CloudKit zone.
-public actor KithCloudStore {
+public actor KithCloudStore: KithCloudStorage {
     public static let containerIdentifier = "iCloud.com.significanthobbies.kith"
 
     private static let recordType = "KithDocument"

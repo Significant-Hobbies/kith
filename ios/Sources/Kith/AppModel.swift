@@ -30,13 +30,13 @@ final class AppModel {
     private(set) var platformSyncIssue: HubSyncIssue?
 
     private let store: KithStore
-    private let cloud: KithCloudStore?
+    private let cloud: (any KithCloudStorage)?
     private let platform: PersonalPlatformConnection?
     let account: PersonalAccountModel?
 
     init(
         store: KithStore = KithStore(),
-        cloud: KithCloudStore? = KithCloudStore(),
+        cloud: (any KithCloudStorage)? = KithCloudStore(),
         platform: PersonalPlatformConnection? = AppModel.makePlatformConnection()
     ) {
         self.store = store
@@ -100,13 +100,17 @@ final class AppModel {
                 onboardingPersonID = nil
             } else {
                 document = try await store.load()
-                hasLoadedDocument = true
+            }
+            hasLoadedDocument = true
+            configureOnboarding(arguments: arguments)
+            // Local people and notes are ready even if optional network work
+            // stalls. Do not leave RootView behind its loading screen.
+            isLoading = false
+            if !Self.isDemoLaunch(arguments) {
                 await syncFromCloud()
                 await account?.restore()
                 await syncFromPlatform()
             }
-            hasLoadedDocument = true
-            configureOnboarding(arguments: arguments)
         } catch {
             hasLoadedDocument = false
             message = "Could not open your people. Your saved file has not been changed. Try opening it again."
@@ -174,6 +178,7 @@ final class AppModel {
     }
 
     func syncFromCloud() async {
+        guard hasLoadedDocument else { return }
         guard let cloud else { return }
         guard await cloud.availability() == .available else { return }
         do {
@@ -306,6 +311,7 @@ final class AppModel {
     }
 
     func syncFromPlatform() async {
+        guard hasLoadedDocument else { return }
         guard !ProcessInfo.processInfo.arguments.contains("--sync-status-demo") else { return }
         guard let platform else { return }
         platformPendingMutationCount = await platform.sync.pendingMutationCount()

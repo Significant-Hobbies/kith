@@ -36,6 +36,15 @@ reminders as a notification product, messaging, and a web client.
 
 ## Timeline
 
+- 2026-09-08 — Build 9 removes a network-dependent loading screen. Local people,
+  notes and onboarding become available immediately after the file opens,
+  before optional iCloud availability, account restoration and Hub sync finish.
+  A suspended-iCloud regression failed on build-8 behavior and now verifies
+  local editing, note creation and disk persistence while the network remains
+  suspended. The full native check passed 18 unit tests, 8 UI tests and unsigned
+  Release compilation. Build 9 is not yet installed or distributed; build 8
+  remains the last verified phone installation. Physical use and signed-in sync
+  remain in [issue 27](https://github.com/Significant-Hobbies/kith/issues/27).
 - 2026-09-08 — Priority save-integrity repair prepared as build 8. The old
   person/note editors and onboarding treated an asynchronous file write as
   successful immediately. Regressions reproduced false saves and mutation
