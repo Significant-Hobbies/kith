@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0084AEA16B3FC65A619B57C3 /* KithSyncCommitTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 056D480C2E910CDB1764A58E /* KithSyncCommitTests.swift */; };
 		09E8E56D1B58E87EC470F8DE /* KithCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 706248B78A28D30986A34B42 /* KithCore.framework */; };
 		0D21685BEDBF76C6AE714CEF /* PersonalSyncKit in Frameworks */ = {isa = PBXBuildFile; productRef = 06F16ED7DD7305671AC61A80 /* PersonalSyncKit */; };
 		0D90BFD259DC9B30AFEC91D7 /* KithLocalSaveTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB6F67C1D3316B6D68F196B2 /* KithLocalSaveTests.swift */; };
@@ -94,6 +95,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		056D480C2E910CDB1764A58E /* KithSyncCommitTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KithSyncCommitTests.swift; sourceTree = "<group>"; };
 		093BCDF0FE2F82258D1A28E0 /* KithCoreTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = KithCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		09C2DC255CA3B902918900FB /* KithUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = KithUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		09DA028D29EAA834DF9E94A7 /* KithPlatformRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KithPlatformRecord.swift; sourceTree = "<group>"; };
@@ -168,6 +170,7 @@
 				A41324D637F7A736FAD6B80A /* HubSyncIssueTests.swift */,
 				AB6F67C1D3316B6D68F196B2 /* KithLocalSaveTests.swift */,
 				E2497D4CF5603E39B52F3EEE /* KithOnboardingPresentationTests.swift */,
+				056D480C2E910CDB1764A58E /* KithSyncCommitTests.swift */,
 			);
 			name = KithAppTests;
 			path = Tests/KithAppTests;
@@ -445,6 +448,7 @@
 				A4336E3A96ACF2FE47DA6C35 /* HubSyncIssueTests.swift in Sources */,
 				0D90BFD259DC9B30AFEC91D7 /* KithLocalSaveTests.swift in Sources */,
 				B71A3A7A7503BACD158CAAF1 /* KithOnboardingPresentationTests.swift in Sources */,
+				0084AEA16B3FC65A619B57C3 /* KithSyncCommitTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -569,7 +573,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = 8F7LXHTJZR;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -766,7 +770,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 9;
+				CURRENT_PROJECT_VERSION = 10;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = 8F7LXHTJZR;
 				ENABLE_NS_ASSERTIONS = NO;
@@ -898,7 +902,7 @@
 			repositoryURL = "https://github.com/Significant-Hobbies/significanthobbies.git";
 			requirement = {
 				kind = revision;
-				revision = e350a86b2c255861f528d5a22bca1196d5a2898e;
+				revision = e52fc1cffbb86b4a04f10ec2799f5bb7ed024b17;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

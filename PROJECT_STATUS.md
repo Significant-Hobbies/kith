@@ -36,6 +36,14 @@ reminders as a notification product, messaging, and a web client.
 
 ## Timeline
 
+- 2026-09-08 — Build 10 adopts PersonalSyncKit `e52fc1c` and commits downloaded
+  people and notes before acknowledging the Hub cursor. A native integration
+  regression injects a failed app write, retries the same download, reopens the
+  saved person/note and verifies replay creates no duplicates. The full local
+  native gate passed 19 unit tests, 8 UI tests and unsigned Release compilation.
+  Build 8 remains the last verified phone installation. Physical signed-in use
+  and distribution remain open in issue 27; shared consumer migration is
+  tracked in Significant-Hobbies/significanthobbies#155.
 - 2026-09-08 — Build 9 removes a network-dependent loading screen. Local people,
   notes and onboarding become available immediately after the file opens,
   before optional iCloud availability, account restoration and Hub sync finish.

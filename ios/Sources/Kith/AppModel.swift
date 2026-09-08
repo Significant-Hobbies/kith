@@ -326,14 +326,8 @@ final class AppModel {
         defer { isPlatformSyncing = false }
         do {
             try await enqueueLocalRecords(using: platform)
-            let changes = try await platform.sync.synchronize()
-            if !changes.isEmpty {
-                guard await commitLocal(mirror: false, { candidate in
-                    for change in changes { Self.apply(change, to: &candidate) }
-                }) else {
-                    platformSyncIssue = .couldNotFinish
-                    return
-                }
+            try await platform.sync.synchronize { changes in
+                try await self.commitPlatformChanges(changes)
             }
             platformPendingMutationCount = await platform.sync.pendingMutationCount()
             let syncedAt = Date()
@@ -343,6 +337,14 @@ final class AppModel {
             platformPendingMutationCount = await platform.sync.pendingMutationCount()
             platformSyncIssue = HubSyncIssue(error: error)
         }
+    }
+
+    /// Throw until the app's atomic save succeeds so the Hub cursor cannot
+    /// acknowledge records missing from this phone. Replaying a batch is safe.
+    func commitPlatformChanges(_ changes: [SyncChange]) async throws {
+        guard await commitLocal(mirror: false, { candidate in
+            for change in changes { Self.apply(change, to: &candidate) }
+        }) else { throw KithSyncCommitError.localSaveFailed }
     }
 
     func refreshPlatformStatus() async {
@@ -461,6 +463,8 @@ final class AppModel {
         )
     }
 }
+
+enum KithSyncCommitError: Error { case localSaveFailed }
 
 enum HubSyncIssue: Equatable {
     case reconnect

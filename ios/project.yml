@@ -15,13 +15,13 @@ settings:
     DEVELOPMENT_TEAM: 8F7LXHTJZR
     CODE_SIGN_STYLE: Automatic
     TARGETED_DEVICE_FAMILY: "1"
-    CURRENT_PROJECT_VERSION: 9
+    CURRENT_PROJECT_VERSION: 10
     MARKETING_VERSION: 1.0.0
     ENABLE_USER_SCRIPT_SANDBOXING: YES
 packages:
   PersonalSyncKit:
     url: https://github.com/Significant-Hobbies/significanthobbies.git
-    revision: e350a86b2c255861f528d5a22bca1196d5a2898e
+    revision: e52fc1cffbb86b4a04f10ec2799f5bb7ed024b17
 targets:
   KithCore:
     type: framework
