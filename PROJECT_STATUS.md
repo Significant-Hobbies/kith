@@ -1,6 +1,6 @@
 # Kith — PROJECT STATUS
 
-Last updated: 2026-09-08
+Last updated: 2026-09-09
 
 ## Why / What
 
@@ -35,6 +35,19 @@ reminders as a notification product, messaging, and a web client.
   handoff; local JSON remains the immediate store.
 
 ## Timeline
+
+- 2026-09-09 — Hub date compatibility repair: the server contract permits dates,
+  whole-second timestamps and timestamps with one to three fractional digits,
+  using Z or numeric offsets. Kith's old decoder silently dropped valid date-only
+  and fractional records while the coordinator acknowledged their cursor. A native
+  regression reproduced the loss; the decoder now accepts these forms, interpreting
+  date-only values at UTC midnight. Nine sync tests pass, including disk reopen,
+  duplicate-free replay, malformed-date rejection and earlier deletion/retry cases.
+  The full native gate passed 39 tests (eight UI) and unsigned Release compilation
+  through XcodeBuildMCP with stable Xcode 26.6. Hosted CI is recorded in issue 27. This does not reset an
+  existing cursor or recover already-skipped historical records. Prior build 12
+  from `8d661d8` is installed but its phone launch was locked; this new source is
+  not a fresh phone/account or public distribution qualification.
 
 - 2026-09-08 — Build 12 prepares explicit Hub account ownership under issue 27
   and Hub issue 156. Approval persists with the local document before runtime

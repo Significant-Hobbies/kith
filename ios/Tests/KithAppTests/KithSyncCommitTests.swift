@@ -132,6 +132,56 @@ final class KithSyncCommitTests: XCTestCase {
         XCTAssertNotNil(mirrored?.deletionDates[person.id])
     }
 
+    func testMalformedRequiredDatesStillRejectDownloadedRecords() throws {
+        let person = Person(name: "Date validation fixture")
+        let note = Entry(personID: person.id, kind: .note, happenedOn: .now, body: "Fixture")
+        for invalid in ["not-a-date", "2026-09-09T", "2026-09-09T10:15:30", ""] {
+            var personRecord = try XCTUnwrap(KithPlatformRecord.person(person).objectValue)
+            personRecord["createdAt"] = .string(invalid)
+            XCTAssertNil(KithPlatformRecord.person(from: personRecord), invalid)
+            var noteRecord = try XCTUnwrap(KithPlatformRecord.interaction(note, person: person).objectValue)
+            noteRecord["occurredAt"] = .string(invalid)
+            XCTAssertNil(KithPlatformRecord.interaction(from: noteRecord, recordId: note.id.uuidString), invalid)
+        }
+    }
+
+    func testHubAcceptedDatesCommitBeforeCursorAdvancesAndSurviveReopen() async throws {
+        // services/hub-backend/src/contracts.ts accepts dates, whole seconds,
+        // and one to three fractional digits, with Z or a numeric offset.
+        for timestamp in ["2026-09-09T10:15:30Z", "2026-09-09T10:15:30.123Z",
+                          "2026-09-09T15:45:30.1+05:30", "2026-09-09"] {
+            let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+            defer { try? FileManager.default.removeItem(at: root) }
+            let store = KithStore(fileURL: root.appending(path: "people.json"))
+            let model = AppModel(store: store, cloud: nil, platform: nil)
+            await model.load()
+            let person = Person(name: "Hub date fixture", closeness: 4, hue: .clay)
+            let note = Entry(personID: person.id, kind: .note, happenedOn: .now, body: "Keep the dated memory")
+            let transport = KithDownloadTransport(person: person, note: note, timestamp: timestamp)
+            let cursorFile = root.appending(path: "cursor.json")
+            let coordinator = try SyncCoordinator(
+                client: transport, outbox: MutationOutbox(fileURL: root.appending(path: "outbox.json")),
+                cursors: SyncCursorStore(fileURL: cursorFile),
+                versions: SyncVersionStore(fileURL: root.appending(path: "versions.json")),
+                fingerprints: SyncFingerprintStore(fileURL: root.appending(path: "fingerprints.json"))
+            )
+            try await coordinator.synchronize(domain: .kith, deviceId: "date-fixture", bearerToken: "synthetic") { changes in
+                try await model.commitPlatformChanges(changes)
+            }
+            let persisted = try await store.load()
+            XCTAssertEqual(persisted.person(id: person.id)?.name, person.name, timestamp)
+            XCTAssertEqual(persisted.entries.map(\.body), [note.body], timestamp)
+            XCTAssertNotNil(persisted.person(id: person.id)?.birthday, timestamp)
+            let cursor = try await SyncCursorStore(fileURL: cursorFile).cursor(for: .kith)
+            XCTAssertEqual(cursor, 2)
+            // Replaying the acknowledged batch must not duplicate either record.
+            let batch = try await transport.pull(domain: .kith, cursor: 0, bearerToken: "synthetic")
+            try await model.commitPlatformChanges(batch.changes)
+            XCTAssertEqual(model.document.people.count, 1, timestamp)
+            XCTAssertEqual(model.document.entries.count, 1, timestamp)
+        }
+    }
+
     func testDownloadedPersonAndNoteRetryAfterFailedAppWrite() async throws {
         let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: root) }
@@ -189,7 +239,10 @@ private actor KithDownloadTransport: PersonalSyncTransport {
     let person: Person
     let note: Entry
     private(set) var requestedCursors: [Int] = []
-    init(person: Person, note: Entry) { self.person = person; self.note = note }
+    let timestamp: String?
+    init(person: Person, note: Entry, timestamp: String? = nil) {
+        self.person = person; self.note = note; self.timestamp = timestamp
+    }
 
     func push(domain: PersonalDomain, deviceId: String, mutations: [SyncMutation], bearerToken: String) async throws -> PushResponse {
         try JSONDecoder().decode(PushResponse.self, from: Data("{\"results\":[]}".utf8))
@@ -197,9 +250,16 @@ private actor KithDownloadTransport: PersonalSyncTransport {
 
     func pull(domain: PersonalDomain, cursor: Int, bearerToken: String) async throws -> PullResponse {
         requestedCursors.append(cursor)
+        var personRecord = KithPlatformRecord.person(person).objectValue!
+        var noteRecord = KithPlatformRecord.interaction(note, person: person).objectValue!
+        if let timestamp {
+            personRecord["createdAt"] = .string(timestamp)
+            personRecord["birthday"] = .string(timestamp)
+            noteRecord["occurredAt"] = .string(timestamp)
+        }
         let records: [(UUID, JSONValue)] = [
-            (person.id, KithPlatformRecord.person(person)),
-            (note.id, KithPlatformRecord.interaction(note, person: person)),
+            (person.id, .object(personRecord)),
+            (note.id, .object(noteRecord)),
         ]
         let changes: [JSONValue] = cursor == 0 ? records.enumerated().map { index, record in
             .object([

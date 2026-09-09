@@ -79,7 +79,19 @@ enum KithPlatformRecord {
     }
 
     private static func date(_ text: String) -> Date? {
-        ISO8601DateFormatter().date(from: text)
+        // Match the Hub's ISO-8601 contract: calendar dates and timestamps
+        // with optional fractional seconds. Date-only values use UTC, as the
+        // server's Date.parse does, rather than the phone's local time zone.
+        let formatter = ISO8601DateFormatter()
+        if text.count == 10 {
+            formatter.formatOptions = [.withFullDate]
+            formatter.timeZone = TimeZone(secondsFromGMT: 0)
+            return formatter.date(from: text)
+        }
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        if let date = formatter.date(from: text) { return date }
+        formatter.formatOptions = [.withInternetDateTime]
+        return formatter.date(from: text)
     }
 
     private static func stableUUID(_ value: String) -> UUID {
