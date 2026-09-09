@@ -49,6 +49,88 @@ final class KithUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Coffee after the market."].waitForExistence(timeout: 3))
     }
 
+    func testPersonAndMemoryEditsAndDeletionsSurviveRelaunch() {
+        let arguments = ["--ui-persistence-store", UUID().uuidString,
+                         "-kith.illustrated-onboarding.seen.v1", "YES"]
+        let app = launch(arguments)
+        defer {
+            app.terminate()
+            app.launchArguments = arguments + ["--ui-persistence-cleanup"]
+            app.launch()
+            XCTAssertTrue(app.buttons["Add someone"].firstMatch.waitForExistence(timeout: 5))
+            app.terminate()
+        }
+        let addButton = app.buttons["Add someone"].firstMatch
+        XCTAssertTrue(addButton.waitForExistence(timeout: 5))
+        addButton.tap()
+        let name = app.textFields["Name"]
+        XCTAssertTrue(name.waitForExistence(timeout: 3))
+        name.tap()
+        name.typeText("Synthetic Leela")
+        app.buttons["Closeness 4"].tap()
+        app.buttons["Save"].tap()
+        XCTAssertTrue(app.staticTexts["Synthetic Leela"].waitForExistence(timeout: 4))
+
+        for note in ["Keep this synthetic memory.", "Delete this synthetic memory."] {
+            app.buttons["Add"].tap()
+            let body = app.textFields["A few words"]
+            XCTAssertTrue(body.waitForExistence(timeout: 3))
+            body.tap()
+            body.typeText(note)
+            app.buttons["Save"].tap()
+            XCTAssertTrue(app.staticTexts[note].waitForExistence(timeout: 4))
+        }
+        app.buttons["Edit"].tap()
+        XCTAssertTrue(name.waitForExistence(timeout: 3))
+        app.buttons["Closeness 5"].tap()
+        app.buttons["Save"].tap()
+        XCTAssertTrue(app.staticTexts["Synthetic Leela"].waitForExistence(timeout: 4))
+
+        func reopenPerson() {
+            app.terminate()
+            app.launchArguments = arguments
+            app.launch()
+            let person = app.buttons.matching(NSPredicate(format: "label CONTAINS[c] %@", "Synthetic Leela")).firstMatch
+            XCTAssertTrue(person.waitForExistence(timeout: 5))
+            person.tap()
+            XCTAssertTrue(app.staticTexts["Synthetic Leela"].waitForExistence(timeout: 3))
+            XCTAssertTrue(app.staticTexts["Friends · closeness 5"].exists)
+        }
+        reopenPerson()
+        XCTAssertTrue(app.staticTexts["Keep this synthetic memory."].exists)
+        let removedNote = app.staticTexts["Delete this synthetic memory."]
+        if !removedNote.isHittable { app.swipeUp() }
+        XCTAssertTrue(removedNote.waitForExistence(timeout: 3))
+        removedNote.press(forDuration: 1)
+        let delete = app.buttons["Delete"]
+        XCTAssertTrue(delete.waitForExistence(timeout: 3))
+        delete.tap()
+        XCTAssertTrue(removedNote.waitForNonExistence(timeout: 4))
+        reopenPerson()
+        XCTAssertTrue(app.staticTexts["Keep this synthetic memory."].exists)
+        XCTAssertFalse(app.staticTexts["Delete this synthetic memory."].exists)
+        let retained = XCTAttachment(screenshot: app.screenshot())
+        retained.name = "Synthetic person and memory after relaunch"
+        retained.lifetime = .keepAlways
+        add(retained)
+
+        let removePerson = app.buttons["Remove Synthetic"]
+        if !removePerson.isHittable { app.swipeUp() }
+        XCTAssertTrue(removePerson.waitForExistence(timeout: 3))
+        removePerson.tap()
+        app.buttons["Remove"].tap()
+        XCTAssertTrue(app.buttons["Add someone"].firstMatch.waitForExistence(timeout: 4))
+        app.terminate()
+        app.launchArguments = arguments
+        app.launch()
+        XCTAssertTrue(app.buttons["Add someone"].firstMatch.waitForExistence(timeout: 5))
+        XCTAssertFalse(app.buttons.matching(NSPredicate(format: "label CONTAINS[c] %@", "Synthetic Leela")).firstMatch.exists)
+        let empty = XCTAttachment(screenshot: app.screenshot())
+        empty.name = "Deleted synthetic person stays removed after relaunch"
+        empty.lifetime = .keepAlways
+        add(empty)
+    }
+
     func testOnboardingCreatesARealPersonAndDatedEntry() {
         let app = launch(["--onboarding-demo"])
 

@@ -36,6 +36,14 @@ reminders as a notification product, messaging, and a web client.
 
 ## Timeline
 
+- 2026-09-09 — qualified rendered create/edit/selective-delete/person-delete across
+  process relaunches using a DEBUG-only UUID-scoped synthetic file store with no
+  Hub or CloudKit connection. Full suite: 44 passed (nine UI), zero skips; unsigned
+  Release passed. Original screenshots and scope are in
+  `docs/qualification/2026-09-09/README.md`. No product defect was reproduced.
+  Installed build 12 / `34a6cae` and real account/device/distribution gates remain
+  unchanged; see issue 27.
+
 - 2026-09-09 — added two actual AppModel approval/sync caller regressions using
   memory-only identities and isolated transport. An in-flight A response cannot
   commit records/cursor or success state after switching to B; A's queue remains

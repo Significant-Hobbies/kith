@@ -99,3 +99,12 @@ compilation also passes on stable Xcode 26.6. This is synthetic caller
 proof, not Google sign-in, physical phone use, iCloud convergence or public
 distribution. The installed build and remaining acceptance in issue 27 are
 unchanged.
+
+### Rendered local persistence proof (9 September 2026)
+
+The isolated UI journey now creates a person and two dated notes, edits closeness,
+selectively deletes a note, and removes the person, checking actual rendered state
+across process relaunches. All 44 native tests (nine UI) and unsigned Release pass.
+[Original screenshots and scoped receipt](docs/qualification/2026-09-09/README.md)
+retain the evidence. No product defect was reproduced; physical/account/iCloud and
+distribution acceptance remain in issue 27. The installed build is unchanged.
