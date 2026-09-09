@@ -76,6 +76,16 @@ struct KithConnectionView: View {
                                 }
                                 .buttonStyle(ClayButtonStyle())
                                 .disabled(model.isPlatformSyncing || !model.platformAccountMatches)
+                                Button("Recover missing Hub records") {
+                                    Task { await model.syncFromPlatform(recoverMissingRecords: true) }
+                                }
+                                .disabled(model.isPlatformSyncing || !model.platformAccountMatches)
+                                Text("Checks this account’s history for people or notes an older app may have missed. Existing local details and deletions are kept.")
+                                    .font(.footnote)
+                                    .foregroundStyle(KithPalette.espresso.opacity(0.62))
+                                if let notice = model.platformRecoveryNotice {
+                                    Text(notice).font(.footnote)
+                                }
                                 Button("Sign out", role: .destructive) {
                                     Task {
                                         await model.disconnectPlatform()

@@ -68,10 +68,16 @@ coordinator regression reproduced the prior failure: valid downloaded people and
 notes were omitted while their cursor advanced. The repaired path commits them
 to the local document, survives disk reopen, and remains duplicate-free on replay.
 Malformed required dates remain rejected; ownership checks are unchanged.
-The full local native gate passed 39 tests (including eight UI tests) and unsigned
+The full local native gate passed 41 tests (including eight UI tests) and unsigned
 Release compilation using XcodeBuildMCP with stable Xcode 26.6.
 
-This source repair does not rewind an existing cursor or recover records already
-skipped by an older build. Safe historical replay and real signed-in/device
-acceptance remain in [issue 27](https://github.com/Significant-Hobbies/kith/issues/27).
+The optional **Recover missing Hub records** action now rechecks the approved
+account’s history using PersonalSyncKit `629d8e7`. It restores missing records even
+when an older build already saved their cursor, version and fingerprint. Current
+local details and deletion markers remain authoritative; edits during the request
+are preserved. Pagination finishes before a durable local commit and cursor update,
+so interrupted downloads or failed saves can be retried. Replay is bounded to 100
+pages of at most 500 changes and can fail without acknowledging a partial history.
+Real signed-in/device recovery acceptance remains in
+[issue 27](https://github.com/Significant-Hobbies/kith/issues/27).
 No phone records or provider settings were changed for the synthetic checks.

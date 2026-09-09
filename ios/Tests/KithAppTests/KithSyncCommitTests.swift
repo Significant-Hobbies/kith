@@ -132,6 +132,97 @@ final class KithSyncCommitTests: XCTestCase {
         XCTAssertNotNil(mirrored?.deletionDates[person.id])
     }
 
+    func testRecoveryRestoresPreviouslyAcknowledgedNoteAndPreservesLocalPersonAfterRetry() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let file = root.appending(path: "people.json")
+        let backup = root.appending(path: "retained.json")
+        let store = KithStore(fileURL: file)
+        let remote = Person(name: "Older Hub name", closeness: 2, hue: .clay)
+        var local = remote
+        local.name = "Current local name"
+        local.standingNotes = "Keep this local detail"
+        try await store.save(KithDocument(people: [local], hubAccountID: "a"))
+        let model = AppModel(store: store, cloud: nil, platform: nil)
+        await model.load()
+        let note = Entry(personID: remote.id, kind: .note, happenedOn: .now, body: "Previously skipped Hub memory")
+        let transport = KithDownloadTransport(person: remote, note: note, timestamp: "2026-09-09T10:15:30.123Z")
+        let cursorFile = root.appending(path: "cursor.json")
+        let coordinator = try SyncCoordinator(
+            client: transport, outbox: MutationOutbox(fileURL: root.appending(path: "outbox.json")),
+            cursors: SyncCursorStore(fileURL: cursorFile),
+            versions: SyncVersionStore(fileURL: root.appending(path: "versions.json")),
+            fingerprints: SyncFingerprintStore(fileURL: root.appending(path: "fingerprints.json"))
+        )
+        // Simulate the old decoder bug: all metadata acknowledged but no app records applied.
+        try await coordinator.synchronize(domain: .kith, deviceId: "fixture", bearerToken: "synthetic") { _ in }
+        let oldCursor = try await SyncCursorStore(fileURL: cursorFile).cursor(for: .kith)
+        XCTAssertEqual(oldCursor, 2)
+        let oldFingerprint = try await SyncFingerprintStore(fileURL: root.appending(path: "fingerprints.json")).fingerprint(for: note.id.uuidString.lowercased(), in: .kith)
+        XCTAssertNotNil(oldFingerprint)
+        try FileManager.default.moveItem(at: file, to: backup)
+        try FileManager.default.createDirectory(at: file, withIntermediateDirectories: true)
+        let baseline = model.document
+        do {
+            try await coordinator.synchronize(domain: .kith, deviceId: "fixture", bearerToken: "synthetic", replayFromStart: true) { changes in
+                try await model.commitRecoveredPlatformChanges(changes, ownerID: "a", baseline: baseline)
+            }
+            XCTFail("Failed recovery write must remain retryable")
+        } catch KithSyncCommitError.localSaveFailed {}
+        XCTAssertTrue(model.document.entries.isEmpty)
+        let retainedCursor = try await SyncCursorStore(fileURL: cursorFile).cursor(for: .kith)
+        XCTAssertEqual(retainedCursor, 2)
+        try FileManager.default.removeItem(at: file)
+        try FileManager.default.moveItem(at: backup, to: file)
+        for _ in 0..<2 {
+            try await coordinator.synchronize(domain: .kith, deviceId: "fixture", bearerToken: "synthetic", replayFromStart: true) { changes in
+                try await model.commitRecoveredPlatformChanges(changes, ownerID: "a", baseline: baseline)
+            }
+        }
+        let reopened = try await store.load()
+        XCTAssertEqual(reopened.person(id: local.id)?.name, local.name)
+        XCTAssertEqual(reopened.person(id: local.id)?.standingNotes, local.standingNotes)
+        XCTAssertEqual(reopened.entries.map(\.body), [note.body])
+        let calls = await transport.requestedCursors
+        XCTAssertEqual(calls, [0, 0, 0, 0])
+    }
+
+    func testRecoveryKeepsTombstonesAndPeopleEditedDuringDownload() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = KithStore(fileURL: root.appending(path: "people.json"))
+        let person = Person(name: "Local friend", closeness: 4, hue: .clay)
+        let note = Entry(personID: person.id, kind: .note, happenedOn: .now, body: "Old note")
+        var document = KithDocument(people: [person], entries: [note], hubAccountID: "a")
+        document.removeEntry(id: note.id)
+        try await store.save(document)
+        let model = AppModel(store: store, cloud: nil, platform: nil)
+        await model.load()
+        let baseline = model.document
+        var edited = person
+        edited.name = "Edited while downloading"
+        let saved = await model.savePerson(edited)
+        XCTAssertTrue(saved)
+        let transport = KithDownloadTransport(person: person, note: note)
+        let batch = try await transport.pull(domain: .kith, cursor: 0, bearerToken: "synthetic")
+        try await model.commitRecoveredPlatformChanges(batch.changes, ownerID: "a", baseline: baseline)
+        XCTAssertEqual(model.document.person(id: person.id)?.name, edited.name)
+        XCTAssertTrue(model.document.entries.isEmpty)
+        XCTAssertNotNil(model.document.deletionDates[note.id])
+        let deleteJSON = "{\"cursor\":3,\"changeId\":\"delete\",\"domain\":\"kith\",\"id\":\"\(person.id.uuidString.lowercased())\",\"operation\":\"delete\",\"version\":2,\"occurredAt\":\"2026-09-09\",\"recordedAt\":\"2026-09-09\",\"originDeviceId\":\"fixture\",\"record\":null}"
+        let deletion = try JSONDecoder().decode(SyncChange.self, from: Data(deleteJSON.utf8))
+        try await model.commitRecoveredPlatformChanges([deletion], ownerID: "a", baseline: baseline)
+        XCTAssertEqual(model.document.person(id: person.id)?.name, edited.name)
+        do {
+            try await model.commitRecoveredPlatformChanges(batch.changes, ownerID: "b", baseline: baseline)
+            XCTFail("Another owner cannot recover into this document")
+        } catch KithSyncCommitError.localSaveFailed {}
+        let persisted = try await store.load()
+        XCTAssertEqual(persisted.hubAccountID, "a")
+        XCTAssertEqual(persisted.person(id: person.id)?.name, edited.name)
+        XCTAssertNotNil(persisted.deletionDates[note.id])
+    }
+
     func testMalformedRequiredDatesStillRejectDownloadedRecords() throws {
         let person = Person(name: "Date validation fixture")
         let note = Entry(personID: person.id, kind: .note, happenedOn: .now, body: "Fixture")

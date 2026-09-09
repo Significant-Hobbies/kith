@@ -29,6 +29,7 @@ final class AppModel {
     private(set) var lastPlatformSyncAt: Date?
     private(set) var platformPendingMutationCount = 0
     private(set) var platformSyncIssue: HubSyncIssue?
+    private(set) var platformRecoveryNotice: String?
     private(set) var platformAccountNotice: String?
     private(set) var cloudAccountNotice: String?
 
@@ -353,17 +354,19 @@ final class AppModel {
 
     func disconnectPlatform() async {
         platformAccountNotice = nil
+        platformRecoveryNotice = nil
         lastPlatformSyncAt = nil
         UserDefaults.standard.removeObject(forKey: Self.lastPlatformSyncKey)
         await account?.signOut()
     }
 
-    func syncFromPlatform() async {
+    func syncFromPlatform(recoverMissingRecords: Bool = false) async {
         guard hasLoadedDocument else { return }
         guard !ProcessInfo.processInfo.arguments.contains("--sync-status-demo") else { return }
         guard let platform else { return }
         guard !isPlatformSyncing else { platformSyncRequested = true; return }
         isPlatformSyncing = true
+        platformRecoveryNotice = nil
         defer { isPlatformSyncing = false }
         platformPendingMutationCount = await platform.sync.pendingMutationCount()
         guard account?.isSignedIn == true else {
@@ -390,9 +393,14 @@ final class AppModel {
                 attempts += 1
                 platformSyncRequested = false
                 try await enqueueLocalRecords(using: platform.sync, account: verified)
-                try await platform.sync.synchronize(account: verified) { changes in
+                let recoveryBaseline = document
+                try await platform.sync.synchronize(account: verified, replayFromStart: recoverMissingRecords) { changes in
                     try await platform.identity.requireCurrentAccount(verified)
-                    try await self.commitPlatformChanges(changes, ownerID: verified.userID)
+                    if recoverMissingRecords {
+                        try await self.commitRecoveredPlatformChanges(changes, ownerID: verified.userID, baseline: recoveryBaseline)
+                    } else {
+                        try await self.commitPlatformChanges(changes, ownerID: verified.userID)
+                    }
                     try await platform.identity.requireCurrentAccount(verified)
                 }
                 // A conflicting remote upsert can replace the delete fingerprint.
@@ -408,6 +416,9 @@ final class AppModel {
             let syncedAt = Date()
             lastPlatformSyncAt = syncedAt
             UserDefaults.standard.set(syncedAt, forKey: Self.lastPlatformSyncKey)
+            if recoverMissingRecords {
+                platformRecoveryNotice = "Checked Hub history for missing people and notes. Your existing local details were kept."
+            }
         } catch {
             platformPendingMutationCount = await platform.sync.pendingMutationCount()
             guard account?.session?.userId == expectedOwner else { return }
@@ -423,6 +434,34 @@ final class AppModel {
         guard await commitLocal(mirror: false, { candidate in
             guard candidate.hubAccountID == ownerID else { throw KithError.accountMismatch }
             for change in changes { Self.apply(change, to: &candidate) }
+        }) else { throw KithSyncCommitError.localSaveFailed }
+    }
+
+    /// Replay restores missing records, never replaces a current local edit.
+    /// The shared runtime supplies only latest versions at least as new as its
+    /// retained metadata. Local tombstones still dominate any downloaded upsert.
+    func commitRecoveredPlatformChanges(_ changes: [SyncChange], ownerID: String, baseline: KithDocument) async throws {
+        guard await commitLocal(mirror: false, { candidate in
+            guard candidate.hubAccountID == ownerID, baseline.hubAccountID == ownerID else {
+                throw KithError.accountMismatch
+            }
+            let retainedPeople = Set(candidate.people.map(\.id))
+            let retainedEntries = Set(candidate.entries.map(\.id))
+            for change in changes {
+                if change.operation == .delete, let id = UUID(uuidString: change.id) {
+                    // A person or memory created/edited during the network wait
+                    // has not been reconciled by this server snapshot.
+                    guard candidate.person(id: id) == baseline.person(id: id),
+                          candidate.entries.first(where: { $0.id == id }) == baseline.entries.first(where: { $0.id == id }),
+                          candidate.entries(for: id) == baseline.entries(for: id) else { continue }
+                } else if let object = change.record.objectValue {
+                    if object["recordType"]?.stringValue == "person",
+                       let person = KithPlatformRecord.person(from: object), retainedPeople.contains(person.id) { continue }
+                    if object["recordType"]?.stringValue == "interaction",
+                       let pair = KithPlatformRecord.interaction(from: object, recordId: change.id), retainedEntries.contains(pair.entry.id) { continue }
+                }
+                Self.apply(change, to: &candidate)
+            }
         }) else { throw KithSyncCommitError.localSaveFailed }
     }
 

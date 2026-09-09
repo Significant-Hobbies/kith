@@ -36,6 +36,16 @@ reminders as a notification product, messaging, and a web client.
 
 ## Timeline
 
+- 2026-09-09 — added an explicit approved-account “Recover missing Hub records”
+  action using shared PersonalSyncKit `629d8e7`. Recovery accepts equal stored
+  versions and fingerprints to repair the old acknowledged-but-missing state,
+  preserves current local details, deletion markers and edits during downloads,
+  and commits the local document before cursor bookkeeping. Eleven focused native
+  sync tests pass, including failed-save retry, disk reopen and owner rejection.
+  The full native suite passed 41 tests (eight UI), with no skipped tests.
+  The action is opt-in; no live cursor, phone data or backend configuration changed.
+  Real signed-in recovery and installed-build acceptance remain in issue 27.
+
 - 2026-09-09 — Hub date compatibility repair: the server contract permits dates,
   whole-second timestamps and timestamps with one to three fractional digits,
   using Z or numeric offsets. Kith's old decoder silently dropped valid date-only
