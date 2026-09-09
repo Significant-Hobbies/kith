@@ -36,6 +36,16 @@ reminders as a notification product, messaging, and a web client.
 
 ## Timeline
 
+- 2026-09-09 — added two actual AppModel approval/sync caller regressions using
+  memory-only identities and isolated transport. An in-flight A response cannot
+  commit records/cursor or success state after switching to B; A's queue remains
+  intact. A failed local commit retries through the recovery caller and survives
+  disk reopen. No new product defect was reproduced. PersonalSyncKit `31f6b4e`
+  adds only an explicit composition initializer; default connection behavior is
+  unchanged. The full native suite passes 43 tests (eight UI), zero skips,
+  followed by unsigned Release compilation on stable Xcode 26.6.
+  Physical account and installed-build acceptance remain in issue 27.
+
 - 2026-09-09 — added an explicit approved-account “Recover missing Hub records”
   action using shared PersonalSyncKit `629d8e7`. Recovery accepts equal stored
   versions and fingerprints to repair the old acknowledged-but-missing state,

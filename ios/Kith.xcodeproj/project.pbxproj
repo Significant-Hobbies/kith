@@ -16,6 +16,7 @@
 		1D9712691351162D15E59B82 /* KithPlatformRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09DA028D29EAA834DF9E94A7 /* KithPlatformRecord.swift */; };
 		26F587DD0A2D6F634E9068BE /* KithCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 706248B78A28D30986A34B42 /* KithCore.framework */; };
 		28DC706C84B926D801903C80 /* KithCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 706248B78A28D30986A34B42 /* KithCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		2B8DEA95655B089293F8A642 /* KithCallerSyncTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC68477EFD3B579745B4E2EC /* KithCallerSyncTests.swift */; };
 		3D16CCA4E369961726F5EC1F /* KithCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 706248B78A28D30986A34B42 /* KithCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		3D2725D7CF8A07FC80223E4E /* KithCoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FDEF1D744F055053CB588A9 /* KithCoreTests.swift */; };
 		3D608572C9F810EEB4FD2452 /* KithAccountOwnershipTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E29D7827C0D85077597AC59 /* KithAccountOwnershipTests.swift */; };
@@ -118,6 +119,7 @@
 		A662AC2BCD668AE688D25BB5 /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
 		A6982529B80DE3228F8C45F4 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		AB6F67C1D3316B6D68F196B2 /* KithLocalSaveTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KithLocalSaveTests.swift; sourceTree = "<group>"; };
+		AC68477EFD3B579745B4E2EC /* KithCallerSyncTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KithCallerSyncTests.swift; sourceTree = "<group>"; };
 		B10F1C159C3DA6714FD52E7A /* AppModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppModel.swift; sourceTree = "<group>"; };
 		B5055DD36BBAD17F586CE183 /* Kith.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Kith.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BBCFD88B8B1F5D94999E4F0C /* KithApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KithApp.swift; sourceTree = "<group>"; };
@@ -171,6 +173,7 @@
 			children = (
 				A41324D637F7A736FAD6B80A /* HubSyncIssueTests.swift */,
 				7E29D7827C0D85077597AC59 /* KithAccountOwnershipTests.swift */,
+				AC68477EFD3B579745B4E2EC /* KithCallerSyncTests.swift */,
 				AB6F67C1D3316B6D68F196B2 /* KithLocalSaveTests.swift */,
 				E2497D4CF5603E39B52F3EEE /* KithOnboardingPresentationTests.swift */,
 				056D480C2E910CDB1764A58E /* KithSyncCommitTests.swift */,
@@ -450,6 +453,7 @@
 			files = (
 				A4336E3A96ACF2FE47DA6C35 /* HubSyncIssueTests.swift in Sources */,
 				3D608572C9F810EEB4FD2452 /* KithAccountOwnershipTests.swift in Sources */,
+				2B8DEA95655B089293F8A642 /* KithCallerSyncTests.swift in Sources */,
 				0D90BFD259DC9B30AFEC91D7 /* KithLocalSaveTests.swift in Sources */,
 				B71A3A7A7503BACD158CAAF1 /* KithOnboardingPresentationTests.swift in Sources */,
 				0084AEA16B3FC65A619B57C3 /* KithSyncCommitTests.swift in Sources */,
@@ -906,7 +910,7 @@
 			repositoryURL = "https://github.com/Significant-Hobbies/significanthobbies.git";
 			requirement = {
 				kind = revision;
-				revision = 629d8e7be44295044e60c950395ec3232541a373;
+				revision = 31f6b4eaa6d748b0fddd41ea66ed098655e9a541;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */

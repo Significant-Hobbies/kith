@@ -81,3 +81,21 @@ pages of at most 500 changes and can fail without acknowledging a partial histor
 Real signed-in/device recovery acceptance remains in
 [issue 27](https://github.com/Significant-Hobbies/kith/issues/27).
 No phone records or provider settings were changed for the synthetic checks.
+
+### Actual caller isolation proof (9 September 2026)
+
+Two additional tests exercise `AppModel.approvePlatformAccount` and
+`syncFromPlatform` through an isolated URL session and memory-only synthetic
+identities. Switching from A to B during a held response rejects A's downloaded
+person and cursor, preserves A's queued mutation, and creates no success or
+recovery receipt for B. A failed local download save stays retryable; the actual
+recovery caller then commits the person and cursor together, verified on disk
+reopen. No product defect was reproduced by these scenarios.
+
+PersonalSyncKit `31f6b4e` adds an explicit composition initializer for this test
+isolation; its default production connection is unchanged. The full native suite
+passes 43 tests, including eight UI tests, with no skips; unsigned Release
+compilation also passes on stable Xcode 26.6. This is synthetic caller
+proof, not Google sign-in, physical phone use, iCloud convergence or public
+distribution. The installed build and remaining acceptance in issue 27 are
+unchanged.

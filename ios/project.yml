@@ -21,7 +21,7 @@ settings:
 packages:
   PersonalSyncKit:
     url: https://github.com/Significant-Hobbies/significanthobbies.git
-    revision: 629d8e7be44295044e60c950395ec3232541a373
+    revision: 31f6b4eaa6d748b0fddd41ea66ed098655e9a541
 targets:
   KithCore:
     type: framework
