@@ -25,7 +25,7 @@ struct KithApp: App {
             _model = State(initialValue: AppModel(
                 store: KithStore(fileURL: directory.appending(path: "people.json")),
                 cloud: nil,
-                platform: nil
+                mirror: nil
             ))
             return
         }
@@ -41,7 +41,7 @@ struct KithApp: App {
                 .onChange(of: scenePhase) { _, phase in
                     guard phase == .active else { return }
                     Task {
-                        await model.syncFromCloud()
+                        await model.importLegacyCloudIfEmpty()
                         await model.syncFromPlatform()
                     }
                 }

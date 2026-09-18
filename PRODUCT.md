@@ -36,8 +36,9 @@ scores.
 ## Capabilities and Constraints
 
 - A person has a name, a circle (family, close, friends, work, other), an
-  explicit closeness from 1 to 5, an optional birthday, how you met, standing
-  notes, and a hue.
+  explicit closeness from 1 to 5, an optional birthday, how you met,
+  standing notes, labelled detail pairs seeded with relationship / where
+  they are / where they work / last contact, a free-text list, and a hue.
 - Bubble size on the constellation is closeness only.
 - Each person has a chronological log. An entry has a kind, a date, and a
   short body.
@@ -46,7 +47,10 @@ scores.
 - Everything is stored first in one local JSON document. The Hub
   synchronization is optional and uses Sign in with Apple; the existing
   personal-team CloudKit mirror remains available during transition.
-- Contact import, notifications, photos, and a public site remain deferred.
+- People can be added by hand or chosen from device contacts through the
+  system picker — picked contacts share name, birthday, and first
+  phone/email. Kith never browses the contact book.
+- Notifications, photos, and a public site remain deferred.
 
 ## Brand Commitments
 

@@ -19,9 +19,12 @@ settings:
     MARKETING_VERSION: 1.0.0
     ENABLE_USER_SCRIPT_SANDBOXING: YES
 packages:
+  # Local checkout while the mirror-runtime changes from issue #158 are
+  # uncommitted. Once the kit commit lands on the remote, repin:
+  #   url: https://github.com/Significant-Hobbies/significanthobbies.git
+  #   revision: <new kit SHA>
   PersonalSyncKit:
-    url: https://github.com/Significant-Hobbies/significanthobbies.git
-    revision: 31f6b4eaa6d748b0fddd41ea66ed098655e9a541
+    path: ../../significanthobbies
 targets:
   KithCore:
     type: framework
@@ -63,6 +66,8 @@ targets:
     dependencies:
       - target: KithCore
       - package: PersonalSyncKit
+      - sdk: Contacts.framework
+      - sdk: ContactsUI.framework
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.significanthobbies.kith

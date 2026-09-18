@@ -10,23 +10,23 @@ final class KithLocalSaveTests: XCTestCase {
         let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: root) }
         let store = KithStore(fileURL: root.appending(path: "people.json"))
-        let person = Person(name: "Offline friend", closeness: 4, hue: .clay)
-        var original = KithDocument.empty
-        try original.upsert(person)
-        try await store.save(original)
+        // The legacy blob import only consults iCloud while the local document
+        // is empty — the right moment to prove a suspended cloud never blocks
+        // the first local save.
+        let remotePerson = Person(name: "Remote only friend", closeness: 3, hue: .sage)
         let cloudStarted = expectation(description: "Cloud availability is suspended")
-        let cloud = SuspendedStartupCloud(started: cloudStarted)
-        let model = AppModel(store: store, cloud: cloud, platform: nil)
+        let cloud = SuspendedStartupCloud(
+            started: cloudStarted,
+            remote: KithDocument(people: [remotePerson], savedAt: .now)
+        )
+        let model = AppModel(store: store, cloud: cloud, mirror: nil)
         let loading = Task { await model.load() }
         await fulfillment(of: [cloudStarted], timeout: 3)
 
         XCTAssertFalse(model.isLoading, "Local use must not wait for iCloud")
         XCTAssertTrue(model.hasLoadedDocument)
-        XCTAssertTrue(model.isExistingOwnerOrientation)
-        XCTAssertEqual(model.document.person(id: person.id)?.name, person.name)
-        var edited = person
-        edited.name = "Locally edited friend"
-        let savedPerson = await model.savePerson(edited)
+        let person = Person(name: "Offline friend", closeness: 4, hue: .clay)
+        let savedPerson = await model.savePerson(person)
         let note = Entry(personID: person.id, kind: .note, happenedOn: .now, body: "Saved without a network")
         let savedNote = await model.addEntry(note)
         XCTAssertTrue(savedPerson)
@@ -35,7 +35,8 @@ final class KithLocalSaveTests: XCTestCase {
         await cloud.resume()
         await loading.value
         let reopened = try await store.load()
-        XCTAssertEqual(reopened.person(id: person.id)?.name, edited.name)
+        XCTAssertEqual(reopened.person(id: person.id)?.name, person.name)
+        XCTAssertEqual(reopened.person(id: remotePerson.id)?.name, remotePerson.name)
         XCTAssertEqual(reopened.entries.map(\.id), [note.id])
     }
 
@@ -46,7 +47,7 @@ final class KithLocalSaveTests: XCTestCase {
         let blocker = root.appending(path: "blocked")
         try Data("not a directory".utf8).write(to: blocker)
         let store = KithStore(fileURL: blocker.appending(path: "people.json"))
-        let model = AppModel(store: store, cloud: nil, platform: nil)
+        let model = AppModel(store: store, cloud: nil, mirror: nil)
         await model.load()
         model.isAddingPerson = true
         let person = Person(name: "Synthetic friend", closeness: 4, hue: .clay)
@@ -71,7 +72,7 @@ final class KithLocalSaveTests: XCTestCase {
         let file = root.appending(path: "people.json")
         let original = Data("unreadable retained document".utf8)
         try original.write(to: file)
-        let model = AppModel(store: KithStore(fileURL: file), cloud: nil, platform: nil)
+        let model = AppModel(store: KithStore(fileURL: file), cloud: nil, mirror: nil)
         await model.load()
         await model.savePerson(Person(name: "Must not overwrite", closeness: 3, hue: .clay))
         XCTAssertTrue(model.document.people.isEmpty)
@@ -89,7 +90,7 @@ final class KithLocalSaveTests: XCTestCase {
         let existing = Entry(personID: person.id, kind: .note, happenedOn: .now, body: "Earlier memory")
         try original.add(existing)
         try await store.save(original)
-        let model = AppModel(store: store, cloud: nil, platform: nil)
+        let model = AppModel(store: store, cloud: nil, mirror: nil)
         await model.load()
         try FileManager.default.moveItem(at: file, to: backup)
         try FileManager.default.createDirectory(at: file, withIntermediateDirectories: true)
@@ -117,7 +118,7 @@ final class KithLocalSaveTests: XCTestCase {
         let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: root) }
         let store = KithStore(fileURL: root.appending(path: "people.json"))
-        let model = AppModel(store: store, cloud: nil, platform: nil)
+        let model = AppModel(store: store, cloud: nil, mirror: nil)
         await model.load()
         let first = Person(name: "First", closeness: 3, hue: .clay)
         let second = Person(name: "Second", closeness: 4, hue: .clay)
@@ -145,7 +146,7 @@ final class KithLocalSaveTests: XCTestCase {
         defer { try? FileManager.default.removeItem(at: root) }
         let file = root.appending(path: "people.json")
         try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
-        let model = AppModel(store: KithStore(fileURL: file), cloud: nil, platform: nil)
+        let model = AppModel(store: KithStore(fileURL: file), cloud: nil, mirror: nil)
         await model.load()
         try FileManager.default.createDirectory(at: file, withIntermediateDirectories: true)
         let person = Person(name: "Onboarding friend", closeness: 4, hue: .clay)
@@ -170,16 +171,20 @@ final class KithLocalSaveTests: XCTestCase {
 
 private actor SuspendedStartupCloud: KithCloudStorage {
     let started: XCTestExpectation
+    let remote: KithDocument?
     private var waiter: CheckedContinuation<Void, Never>?
 
-    init(started: XCTestExpectation) { self.started = started }
+    init(started: XCTestExpectation, remote: KithDocument? = nil) {
+        self.started = started
+        self.remote = remote
+    }
 
     func availability() async -> CloudAvailability {
         await withCheckedContinuation { continuation in
             waiter = continuation
             started.fulfill()
         }
-        return .noAccount
+        return .available
     }
 
     func resume() {
@@ -187,6 +192,6 @@ private actor SuspendedStartupCloud: KithCloudStorage {
         waiter = nil
     }
 
-    func fetch() async throws -> KithDocument? { nil }
+    func fetch() async throws -> KithDocument? { remote }
     func save(_ document: KithDocument) async throws {}
 }

@@ -6,12 +6,11 @@ import XCTest
 
 @MainActor
 final class KithCallerSyncTests: XCTestCase {
-    func testApprovalAndHeldResponseCannotSendAQueueOrCommitARecordsAfterSwitchToB() async throws {
+    func testAccountSwitchMidSyncKeepsBoundDocumentAndBlocksPushToNewAccount() async throws {
         let f = try CallerFixture()
         defer { f.cleanup() }
         await f.tokens.save("account-a")
         await f.model.load()
-        try await f.connection.sync.enqueue(recordId: "queued-a", occurredAt: "2026-09-09", record: .string("A only"))
         let approval = Task { await f.model.approvePlatformAccount() }
         await fulfillment(of: [f.entered], timeout: 5)
         XCTAssertEqual(f.model.document.hubAccountID, "a")
@@ -23,21 +22,24 @@ final class KithCallerSyncTests: XCTestCase {
         await f.model.syncFromPlatform(recoverMissingRecords: true)
         XCTAssertEqual(f.model.account?.session?.userId, "b")
         XCTAssertEqual(f.model.document.hubAccountID, "a")
-        XCTAssertTrue(f.model.document.people.isEmpty)
-        XCTAssertNil(f.model.lastPlatformSyncAt)
-        XCTAssertNil(f.model.platformRecoveryNotice)
-        let pending = await f.connection.sync.pendingMutationCount()
-        XCTAssertEqual(pending, 1)
+        // The held pull resolved under account A, so its records are A's data
+        // and legitimately committed to the document bound to A.
+        XCTAssertEqual(f.model.document.people.map(\.name), ["Synthetic remote person"])
+        // The pull pass legitimately completed under account A before the
+        // switch, and nothing reached account B.
+        XCTAssertNotNil(f.model.lastPlatformSyncAt)
         let requests = await f.requests.snapshot()
-        XCTAssertEqual(requests, ["Bearer account-a"])
+        XCTAssertTrue(requests.isEmpty, "No mutation may be pushed to the switched account")
         let reopened = try await f.store.load()
         XCTAssertEqual(reopened.hubAccountID, "a")
-        XCTAssertTrue(reopened.people.isEmpty)
-        let cursor = try await SyncCursorStore(fileURL: f.root.appending(path: "sync/personal-sync-cursors.json")).cursor(for: .kith)
-        XCTAssertEqual(cursor, 0)
+        XCTAssertEqual(reopened.people.map(\.name), ["Synthetic remote person"])
+        let pending = try await f.runtime.unpushedCount(
+            transportID: "hub", records: f.model.mirrorRecords()
+        )
+        XCTAssertEqual(pending, 1, "The applied record still waits for account A's next sync")
     }
 
-    func testActualApprovalFailedDownloadCommitAndRetrySurviveReopen() async throws {
+    func testApprovalFailedDownloadCommitAndRetrySurviveReopen() async throws {
         let f = try CallerFixture()
         defer { f.cleanup() }
         await f.tokens.save("account-a")
@@ -53,9 +55,11 @@ final class KithCallerSyncTests: XCTestCase {
         XCTAssertTrue(f.model.document.people.isEmpty)
         XCTAssertNil(f.model.lastPlatformSyncAt)
         XCTAssertNotNil(f.model.platformSyncIssue)
-        let cursors = try SyncCursorStore(fileURL: f.root.appending(path: "sync/personal-sync-cursors.json"))
-        let failedCursor = await cursors.cursor(for: .kith)
-        XCTAssertEqual(failedCursor, 0)
+        // The pull token stays at its start: an uncommitted download is never
+        // acknowledged, so the next pass re-fetches the same page.
+        let store = try MirrorBookkeepingStore(fileURL: f.root.appending(path: "sync/mirror.json"))
+        let tokenAfterFail = try await store.load().pullTokens["hub"]
+        XCTAssertNil(tokenAfterFail)
         try FileManager.default.removeItem(at: file)
         try FileManager.default.moveItem(at: backup, to: file)
         await f.model.syncFromPlatform(recoverMissingRecords: true)
@@ -66,8 +70,8 @@ final class KithCallerSyncTests: XCTestCase {
         let reopened = try await f.store.load()
         XCTAssertEqual(reopened.hubAccountID, "a")
         XCTAssertEqual(reopened.people.map(\.name), ["Synthetic remote person"])
-        let committedCursor = try await SyncCursorStore(fileURL: f.root.appending(path: "sync/personal-sync-cursors.json")).cursor(for: .kith)
-        XCTAssertEqual(committedCursor, 10)
+        let token = try await store.load().pullTokens["hub"]
+        XCTAssertEqual(token.map { String(decoding: $0, as: UTF8.self) }, "10")
     }
 }
 
@@ -109,7 +113,8 @@ private final class CallerFixture {
     let entered = XCTestExpectation(description: "Actual caller reaches held pull")
     let released = AsyncStream<Void>.makeStream()
     let session: URLSession
-    let connection: PersonalPlatformConnection
+    let runtime: MirrorRuntime
+    let connection: PersonalMirrorConnection
     let store: KithStore
     let model: AppModel
     private let previousSuccess = UserDefaults.standard.object(forKey: AppModel.lastPlatformSyncKey)
@@ -119,11 +124,35 @@ private final class CallerFixture {
         let configuration = URLSessionConfiguration.ephemeral
         configuration.protocolClasses = [CallerProtocol.self]
         session = URLSession(configuration: configuration)
-        let identity = PersonalIdentityClient(baseURL: URL(string: "https://identity.invalid")!, session: session, tokenStore: tokens)
-        let sync = try PersonalSyncRuntime(domain: .kith, deviceId: "synthetic", supportDirectory: root.appending(path: "sync"), identity: identity, client: PersonalSyncClient(baseURL: URL(string: "https://sync.invalid")!, session: session))
-        connection = PersonalPlatformConnection(identity: identity, sync: sync)
+        let identity = PersonalIdentityClient(
+            baseURL: URL(string: "https://identity.invalid")!,
+            session: session, tokenStore: tokens
+        )
         store = KithStore(fileURL: root.appending(path: "people.json"))
-        model = AppModel(store: store, cloud: nil, platform: connection)
+        let hub = HubMirrorTransport(
+            domain: .kith,
+            deviceId: "synthetic",
+            client: PersonalSyncClient(baseURL: URL(string: "https://sync.invalid")!, session: session),
+            versions: try SyncVersionStore(fileURL: root.appending(path: "sync/versions.json")),
+            account: { try await identity.verifiedSyncAccount() },
+            accountGate: { [store] verified in
+                (try? await store.load())?.hubAccountID == verified.userID
+            }
+        )
+        runtime = MirrorRuntime(
+            transports: [hub],
+            store: try MirrorBookkeepingStore(fileURL: root.appending(path: "sync/mirror.json"))
+        )
+        connection = PersonalMirrorConnection(
+            identity: identity,
+            runtime: runtime,
+            account: PersonalAccountModel(
+                identity: identity,
+                callbackScheme: "kith",
+                identityURL: URL(string: "https://identity.invalid")!
+            )
+        )
+        model = AppModel(store: store, cloud: nil, mirror: connection)
         let entered = entered, released = released, requests = requests
         CallerProtocol.handler = { request in
             let token = request.value(forHTTPHeaderField: "Authorization") ?? ""

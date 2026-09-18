@@ -85,6 +85,19 @@ final class KithCoreTests: XCTestCase {
         XCTAssertEqual(decoded.savedAt, .distantPast)
     }
 
+    func testPeopleSavedBeforeDetailsAndListStillDecode() throws {
+        let json = Data("""
+        {"schemaVersion":1,"savedAt":"2026-09-01T00:00:00Z","entries":[],
+         "people":[{"id":"11111111-1111-1111-1111-111111111111","name":"Maya",
+           "circle":"friends","closeness":3,"hue":"clay","birthday":null,
+           "howWeMet":"","standingNotes":"",
+           "createdAt":"2026-09-01T00:00:00Z","updatedAt":"2026-09-01T00:00:00Z"}]}
+        """.utf8)
+        let person = try XCTUnwrap(KithStore.decode(json).people.first)
+        XCTAssertTrue(person.details.isEmpty)
+        XCTAssertTrue(person.listItems.isEmpty)
+    }
+
     func testNewerDocumentWinsForICloudMirror() {
         var older = KithDocument.sample
         older.savedAt = Date(timeIntervalSince1970: 100)

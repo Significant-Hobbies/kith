@@ -20,14 +20,18 @@
 		3D16CCA4E369961726F5EC1F /* KithCore.framework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 706248B78A28D30986A34B42 /* KithCore.framework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
 		3D2725D7CF8A07FC80223E4E /* KithCoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8FDEF1D744F055053CB588A9 /* KithCoreTests.swift */; };
 		3D608572C9F810EEB4FD2452 /* KithAccountOwnershipTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E29D7827C0D85077597AC59 /* KithAccountOwnershipTests.swift */; };
+		4008E017ED39D550E0AEFB6F /* ContactImport.swift in Sources */ = {isa = PBXBuildFile; fileRef = CD1E8DAE5E0FE5182F7CF603 /* ContactImport.swift */; };
 		43362B2B8A40AEC6FFBF4E34 /* LogViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = BC05AFA81D366A2F3F3657C9 /* LogViews.swift */; };
 		4DAC407477F1CDC34376B408 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 30859487C6430E18E645A7E1 /* Assets.xcassets */; };
+		4EDE79783381FA6EF330A799 /* ContactPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = C8854B2C3948424BF5E68389 /* ContactPicker.swift */; };
 		50198B83B77FCE3BB74868B9 /* RootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A6982529B80DE3228F8C45F4 /* RootView.swift */; };
 		5AE7F8678D6CD5D3E962CB11 /* PersonalSyncKit in Frameworks */ = {isa = PBXBuildFile; productRef = 89477B67A2352008C58A6078 /* PersonalSyncKit */; };
 		5D36133D386B4091A7DB8845 /* BubbleField.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7AA76B6FCE2A1BD2FDDE7D45 /* BubbleField.swift */; };
 		615BC818E410D41C47C41708 /* Domain.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC4EA45455B6FF74E4BCFC21 /* Domain.swift */; };
 		65C76174953419A9F87B0092 /* DemoData.swift in Sources */ = {isa = PBXBuildFile; fileRef = 79D378032A9722C9555ED8AE /* DemoData.swift */; };
 		6A749513F46572C1A112A145 /* AppModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10F1C159C3DA6714FD52E7A /* AppModel.swift */; };
+		7DCCC12E98BDACA5175F35D5 /* KithContactImportTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 47601CE7215C06BD55EE4FA9 /* KithContactImportTests.swift */; };
+		82D89A460939C33EAD45A7AC /* ContactsUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7A1DFB40DF666835B71D9C65 /* ContactsUI.framework */; };
 		83B5015F25ACE804801B8CD0 /* KithConnectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F2AF9D313021EF3F3623DE6D /* KithConnectionView.swift */; };
 		9AE67972B45E3203D786E267 /* KithApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = BBCFD88B8B1F5D94999E4F0C /* KithApp.swift */; };
 		9CD8FB3118B722E7027AF697 /* CloudStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7A8B5ADE80477C15D5324428 /* CloudStore.swift */; };
@@ -36,6 +40,8 @@
 		A4336E3A96ACF2FE47DA6C35 /* HubSyncIssueTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A41324D637F7A736FAD6B80A /* HubSyncIssueTests.swift */; };
 		B11A9EBD171FF12E6F7B0045 /* KithUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 69B0BA41F320166AEA1728A2 /* KithUITests.swift */; };
 		B71A3A7A7503BACD158CAAF1 /* KithOnboardingPresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2497D4CF5603E39B52F3EEE /* KithOnboardingPresentationTests.swift */; };
+		D7ED3C7B5D588D51E8140523 /* Contacts.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 275FDC6817498A07A9D3FC4F /* Contacts.framework */; };
+		DDCFD2AF2CC6B8CC4532F4F7 /* KithPersonFieldsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4BCEC340BA474E8322FB87D /* KithPersonFieldsTests.swift */; };
 		F3C48A6CA9EC720182B123BC /* Design.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE4DDB782CAF5D8FD571DC3B /* Design.swift */; };
 		F680576C1F45EE52AFBA44DE /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 2C466A859325D15A49C22248 /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
@@ -101,21 +107,26 @@
 		093BCDF0FE2F82258D1A28E0 /* KithCoreTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = KithCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		09C2DC255CA3B902918900FB /* KithUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = KithUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		09DA028D29EAA834DF9E94A7 /* KithPlatformRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KithPlatformRecord.swift; sourceTree = "<group>"; };
+		0CBDCD269CC24454FB129941 /* significanthobbies */ = {isa = PBXFileReference; lastKnownFileType = folder; name = significanthobbies; path = ../../significanthobbies; sourceTree = SOURCE_ROOT; };
+		275FDC6817498A07A9D3FC4F /* Contacts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Contacts.framework; path = System/Library/Frameworks/Contacts.framework; sourceTree = SDKROOT; };
 		283EE3AFA2ADACAC47EDC05F /* PersonViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonViews.swift; sourceTree = "<group>"; };
 		2C466A859325D15A49C22248 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		30859487C6430E18E645A7E1 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		416A75C69650AAD584FEE064 /* KithOnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KithOnboardingView.swift; sourceTree = "<group>"; };
+		47601CE7215C06BD55EE4FA9 /* KithContactImportTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KithContactImportTests.swift; sourceTree = "<group>"; };
 		5EBF5537116C0DE3DA6726C5 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
 		69B0BA41F320166AEA1728A2 /* KithUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KithUITests.swift; sourceTree = "<group>"; };
 		6B63B598C54DF2994E3A9AF0 /* Kith.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Kith.entitlements; sourceTree = "<group>"; };
 		706248B78A28D30986A34B42 /* KithCore.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = KithCore.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		79D378032A9722C9555ED8AE /* DemoData.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DemoData.swift; sourceTree = "<group>"; };
+		7A1DFB40DF666835B71D9C65 /* ContactsUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ContactsUI.framework; path = System/Library/Frameworks/ContactsUI.framework; sourceTree = SDKROOT; };
 		7A8B5ADE80477C15D5324428 /* CloudStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudStore.swift; sourceTree = "<group>"; };
 		7AA76B6FCE2A1BD2FDDE7D45 /* BubbleField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BubbleField.swift; sourceTree = "<group>"; };
 		7E29D7827C0D85077597AC59 /* KithAccountOwnershipTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KithAccountOwnershipTests.swift; sourceTree = "<group>"; };
 		8E3415A5E88E90361208B65E /* CloudKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CloudKit.framework; path = System/Library/Frameworks/CloudKit.framework; sourceTree = SDKROOT; };
 		8FDEF1D744F055053CB588A9 /* KithCoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KithCoreTests.swift; sourceTree = "<group>"; };
 		A41324D637F7A736FAD6B80A /* HubSyncIssueTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HubSyncIssueTests.swift; sourceTree = "<group>"; };
+		A4BCEC340BA474E8322FB87D /* KithPersonFieldsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KithPersonFieldsTests.swift; sourceTree = "<group>"; };
 		A662AC2BCD668AE688D25BB5 /* Persistence.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Persistence.swift; sourceTree = "<group>"; };
 		A6982529B80DE3228F8C45F4 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		AB6F67C1D3316B6D68F196B2 /* KithLocalSaveTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KithLocalSaveTests.swift; sourceTree = "<group>"; };
@@ -124,6 +135,8 @@
 		B5055DD36BBAD17F586CE183 /* Kith.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Kith.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		BBCFD88B8B1F5D94999E4F0C /* KithApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KithApp.swift; sourceTree = "<group>"; };
 		BC05AFA81D366A2F3F3657C9 /* LogViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LogViews.swift; sourceTree = "<group>"; };
+		C8854B2C3948424BF5E68389 /* ContactPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactPicker.swift; sourceTree = "<group>"; };
+		CD1E8DAE5E0FE5182F7CF603 /* ContactImport.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactImport.swift; sourceTree = "<group>"; };
 		DC4EA45455B6FF74E4BCFC21 /* Domain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Domain.swift; sourceTree = "<group>"; };
 		DE4DDB782CAF5D8FD571DC3B /* Design.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Design.swift; sourceTree = "<group>"; };
 		E01B4D3A257D3291B92EA865 /* KithAppTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = KithAppTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -154,6 +167,8 @@
 			files = (
 				09E8E56D1B58E87EC470F8DE /* KithCore.framework in Frameworks */,
 				5AE7F8678D6CD5D3E962CB11 /* PersonalSyncKit in Frameworks */,
+				D7ED3C7B5D588D51E8140523 /* Contacts.framework in Frameworks */,
+				82D89A460939C33EAD45A7AC /* ContactsUI.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -168,14 +183,24 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		18B4D5DED13C142DC53BCE3E /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				0CBDCD269CC24454FB129941 /* significanthobbies */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
 		325F938B013767DA2643EE8C /* KithAppTests */ = {
 			isa = PBXGroup;
 			children = (
 				A41324D637F7A736FAD6B80A /* HubSyncIssueTests.swift */,
 				7E29D7827C0D85077597AC59 /* KithAccountOwnershipTests.swift */,
 				AC68477EFD3B579745B4E2EC /* KithCallerSyncTests.swift */,
+				47601CE7215C06BD55EE4FA9 /* KithContactImportTests.swift */,
 				AB6F67C1D3316B6D68F196B2 /* KithLocalSaveTests.swift */,
 				E2497D4CF5603E39B52F3EEE /* KithOnboardingPresentationTests.swift */,
+				A4BCEC340BA474E8322FB87D /* KithPersonFieldsTests.swift */,
 				056D480C2E910CDB1764A58E /* KithSyncCommitTests.swift */,
 			);
 			name = KithAppTests;
@@ -195,6 +220,8 @@
 			isa = PBXGroup;
 			children = (
 				8E3415A5E88E90361208B65E /* CloudKit.framework */,
+				275FDC6817498A07A9D3FC4F /* Contacts.framework */,
+				7A1DFB40DF666835B71D9C65 /* ContactsUI.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -246,6 +273,8 @@
 			children = (
 				B10F1C159C3DA6714FD52E7A /* AppModel.swift */,
 				7AA76B6FCE2A1BD2FDDE7D45 /* BubbleField.swift */,
+				CD1E8DAE5E0FE5182F7CF603 /* ContactImport.swift */,
+				C8854B2C3948424BF5E68389 /* ContactPicker.swift */,
 				DE4DDB782CAF5D8FD571DC3B /* Design.swift */,
 				5EBF5537116C0DE3DA6726C5 /* Info.plist */,
 				6B63B598C54DF2994E3A9AF0 /* Kith.entitlements */,
@@ -270,6 +299,7 @@
 				C95DED6552F603708C492B95 /* KithCore */,
 				C1BA66230AAF4E8FA087C9D8 /* KithCoreTests */,
 				9F523A73087559EADBF4E41D /* KithUITests */,
+				18B4D5DED13C142DC53BCE3E /* Packages */,
 				740D39D08FAD697420684C6E /* Frameworks */,
 				B53CC26908B713C18F8BDABE /* Products */,
 			);
@@ -418,7 +448,7 @@
 			mainGroup = F35B7C939F8B4E95D11CD4D9;
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
-				E68067ACC664B232138E2C16 /* XCRemoteSwiftPackageReference "significanthobbies" */,
+				449D6DB1F056F023F2252C17 /* XCLocalSwiftPackageReference "../../significanthobbies" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = B53CC26908B713C18F8BDABE /* Products */;
@@ -454,8 +484,10 @@
 				A4336E3A96ACF2FE47DA6C35 /* HubSyncIssueTests.swift in Sources */,
 				3D608572C9F810EEB4FD2452 /* KithAccountOwnershipTests.swift in Sources */,
 				2B8DEA95655B089293F8A642 /* KithCallerSyncTests.swift in Sources */,
+				7DCCC12E98BDACA5175F35D5 /* KithContactImportTests.swift in Sources */,
 				0D90BFD259DC9B30AFEC91D7 /* KithLocalSaveTests.swift in Sources */,
 				B71A3A7A7503BACD158CAAF1 /* KithOnboardingPresentationTests.swift in Sources */,
+				DDCFD2AF2CC6B8CC4532F4F7 /* KithPersonFieldsTests.swift in Sources */,
 				0084AEA16B3FC65A619B57C3 /* KithSyncCommitTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -477,6 +509,8 @@
 			files = (
 				6A749513F46572C1A112A145 /* AppModel.swift in Sources */,
 				5D36133D386B4091A7DB8845 /* BubbleField.swift in Sources */,
+				4008E017ED39D550E0AEFB6F /* ContactImport.swift in Sources */,
+				4EDE79783381FA6EF330A799 /* ContactPicker.swift in Sources */,
 				F3C48A6CA9EC720182B123BC /* Design.swift in Sources */,
 				9AE67972B45E3203D786E267 /* KithApp.swift in Sources */,
 				83B5015F25ACE804801B8CD0 /* KithConnectionView.swift in Sources */,
@@ -904,26 +938,20 @@
 		};
 /* End XCConfigurationList section */
 
-/* Begin XCRemoteSwiftPackageReference section */
-		E68067ACC664B232138E2C16 /* XCRemoteSwiftPackageReference "significanthobbies" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/Significant-Hobbies/significanthobbies.git";
-			requirement = {
-				kind = revision;
-				revision = 31f6b4eaa6d748b0fddd41ea66ed098655e9a541;
-			};
+/* Begin XCLocalSwiftPackageReference section */
+		449D6DB1F056F023F2252C17 /* XCLocalSwiftPackageReference "../../significanthobbies" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = ../../significanthobbies;
 		};
-/* End XCRemoteSwiftPackageReference section */
+/* End XCLocalSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
 		06F16ED7DD7305671AC61A80 /* PersonalSyncKit */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = E68067ACC664B232138E2C16 /* XCRemoteSwiftPackageReference "significanthobbies" */;
 			productName = PersonalSyncKit;
 		};
 		89477B67A2352008C58A6078 /* PersonalSyncKit */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = E68067ACC664B232138E2C16 /* XCRemoteSwiftPackageReference "significanthobbies" */;
 			productName = PersonalSyncKit;
 		};
 /* End XCSwiftPackageProductDependency section */

@@ -15,6 +15,10 @@ enum KithPlatformRecord {
             "birthday": person.birthday.map { .string(iso($0)) } ?? .null,
             "howWeMet": person.howWeMet.isEmpty ? .null : .string(person.howWeMet),
             "standingNotes": person.standingNotes.isEmpty ? .null : .string(person.standingNotes),
+            "details": .array(person.details.map {
+                .object(["key": .string($0.key), "value": .string($0.value)])
+            }),
+            "listItems": .array(person.listItems.map { .string($0.text) }),
             "createdAt": .string(iso(person.createdAt)),
         ])
     }
@@ -49,6 +53,10 @@ enum KithPlatformRecord {
             hue: hue,
             birthday: value["birthday"]?.stringValue.flatMap(date),
             standingNotes: value["standingNotes"]?.stringValue ?? "",
+            details: details(from: value["details"]),
+            listItems: (value["listItems"]?.arrayValue ?? [])
+                .compactMap(\.stringValue)
+                .map { PersonListItem(text: $0) },
             createdAt: createdAt,
             updatedAt: createdAt
         )
@@ -76,6 +84,14 @@ enum KithPlatformRecord {
 
     static func iso(_ date: Date) -> String {
         ISO8601DateFormatter().string(from: date)
+    }
+
+    private static func details(from value: JSONValue?) -> [PersonDetail] {
+        (value?.arrayValue ?? []).compactMap { item in
+            guard let object = item.objectValue,
+                  let key = object["key"]?.stringValue else { return nil }
+            return PersonDetail(key: key, value: object["value"]?.stringValue ?? "")
+        }
     }
 
     private static func date(_ text: String) -> Date? {
@@ -107,6 +123,11 @@ enum KithPlatformRecord {
 extension JSONValue {
     var objectValue: [String: JSONValue]? {
         guard case let .object(value) = self else { return nil }
+        return value
+    }
+
+    var arrayValue: [JSONValue]? {
+        guard case let .array(value) = self else { return nil }
         return value
     }
 

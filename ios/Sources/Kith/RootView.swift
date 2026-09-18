@@ -32,6 +32,16 @@ struct RootView: View {
         .sheet(isPresented: $model.isAddingPerson) {
             PersonEditor(person: nil)
         }
+        .sheet(isPresented: $model.isImportingContacts) {
+            ContactPicker(
+                onPick: { contacts in
+                    model.isImportingContacts = false
+                    Task { await model.importContacts(contacts) }
+                },
+                onCancel: { model.isImportingContacts = false }
+            )
+            .ignoresSafeArea()
+        }
         .sheet(isPresented: $model.isShowingConnection) {
             KithConnectionView()
         }
@@ -110,8 +120,11 @@ struct FieldChrome: View {
                 }
                 .accessibilityLabel(model.isShowingList ? "Show constellation" : "Show list")
                 if !model.document.people.isEmpty {
-                    Button {
-                        model.isAddingPerson = true
+                    Menu {
+                        Button("Add someone") { model.isAddingPerson = true }
+                            .accessibilityIdentifier("add-manual")
+                        Button("Choose from contacts") { model.isImportingContacts = true }
+                            .accessibilityIdentifier("add-from-contacts")
                     } label: {
                         Image(systemName: "plus")
                             .font(.title3.weight(.semibold))
@@ -172,6 +185,11 @@ struct EmptyConstellation: View {
             }
             .buttonStyle(ClayButtonStyle())
             .padding(.top, 6)
+            Button("Choose from contacts") {
+                model.isImportingContacts = true
+            }
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(KithPalette.clay)
         }
         .padding(28)
     }

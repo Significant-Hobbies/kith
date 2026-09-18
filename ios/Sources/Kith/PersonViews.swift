@@ -64,8 +64,22 @@ struct PersonPage: View {
                 if !person.standingNotes.isEmpty {
                     labeled("Keep in mind", person.standingNotes)
                 }
+                ForEach(person.details) { detail in
+                    labeled(detail.key, detail.value)
+                }
+                if !person.listItems.isEmpty {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Notes")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(KithPalette.espresso.opacity(0.5))
+                        ForEach(person.listItems) { item in
+                            Text("• \(item.text)")
+                                .font(.body)
+                        }
+                    }
+                }
                 if let birthday = person.birthday {
-                    labeled("Birthday", birthday.formatted(.dateTime.month(.wide).day().year()))
+                    labeled("Birthday", ContactImport.birthdayText(birthday))
                 }
                 HStack {
                     Text("Log")
@@ -140,6 +154,8 @@ struct PersonEditor: View {
     @State private var hue: PersonHue
     @State private var hasBirthday: Bool
     @State private var birthday: Date
+    @State private var details: [PersonDetail]
+    @State private var listItems: [PersonListItem]
 
     init(person: Person?) {
         self.person = person
@@ -151,6 +167,17 @@ struct PersonEditor: View {
         _hue = State(initialValue: person?.hue ?? .clay)
         _hasBirthday = State(initialValue: person?.birthday != nil)
         _birthday = State(initialValue: person?.birthday ?? Date())
+        _details = State(initialValue: Self.seededDetails(person?.details ?? []))
+        _listItems = State(initialValue: person?.listItems ?? [])
+    }
+
+    /// The everyday labels always appear; a person's own keys stay as-is.
+    static func seededDetails(_ existing: [PersonDetail]) -> [PersonDetail] {
+        var details = existing
+        for key in Person.defaultDetailKeys where !details.contains(where: { $0.key == key }) {
+            details.append(PersonDetail(key: key))
+        }
+        return details
     }
 
     var body: some View {
@@ -186,6 +213,28 @@ struct PersonEditor: View {
                         DatePicker("Birthday", selection: $birthday, displayedComponents: .date)
                     }
                 }
+                Section("Details") {
+                    ForEach($details) { $detail in
+                        HStack(spacing: 10) {
+                            TextField("Label", text: $detail.key)
+                                .frame(width: 110)
+                            TextField("Detail", text: $detail.value)
+                        }
+                    }
+                    .onDelete { details.remove(atOffsets: $0) }
+                    Button("Add detail") {
+                        details.append(PersonDetail(key: ""))
+                    }
+                }
+                Section("Notes") {
+                    ForEach($listItems) { $item in
+                        TextField("Note", text: $item.text)
+                    }
+                    .onDelete { listItems.remove(atOffsets: $0) }
+                    Button("Add a note") {
+                        listItems.append(PersonListItem(text: ""))
+                    }
+                }
             }
             .scrollContentBackground(.hidden)
             .background(KithPalette.cream)
@@ -215,6 +264,17 @@ struct PersonEditor: View {
         next.closeness = closeness
         next.hue = hue
         next.birthday = hasBirthday ? birthday : nil
+        next.details = details.compactMap { detail in
+            let key = detail.key.trimmingCharacters(in: .whitespacesAndNewlines)
+            let value = detail.value.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !key.isEmpty, !value.isEmpty else { return nil }
+            return PersonDetail(id: detail.id, key: key, value: value)
+        }
+        next.listItems = listItems.compactMap { item in
+            let text = item.text.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !text.isEmpty else { return nil }
+            return PersonListItem(id: item.id, text: text)
+        }
         Task {
             if await model.savePerson(next) { dismiss() }
         }

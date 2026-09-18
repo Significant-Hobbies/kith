@@ -11,11 +11,11 @@ final class KithAccountOwnershipTests: XCTestCase {
         let store = KithStore(fileURL: root.appending(path: "people.json"))
         let person = Person(name: "Synthetic A", closeness: 4, hue: .clay)
         try await store.save(KithDocument(people: [person]))
-        let model = AppModel(store: store, cloud: nil, platform: nil)
+        let model = AppModel(store: store, cloud: nil, mirror: nil)
         await model.load()
         let approved = await model.approveLocalHubOwner("a")
         XCTAssertTrue(approved)
-        let reopened = AppModel(store: store, cloud: nil, platform: nil)
+        let reopened = AppModel(store: store, cloud: nil, mirror: nil)
         await reopened.load()
         XCTAssertEqual(reopened.document.hubAccountID, "a")
         let reassigned = await reopened.approveLocalHubOwner("b")
@@ -23,10 +23,8 @@ final class KithAccountOwnershipTests: XCTestCase {
         let persisted = try await store.load()
         XCTAssertEqual(persisted.hubAccountID, "a")
         XCTAssertEqual(persisted.people.map(\.id), [person.id])
-        do {
-            try await reopened.commitPlatformChanges([], ownerID: "b")
-            XCTFail("Wrong-account downloads must be rejected even before applying records")
-        } catch {}
+        let records = try reopened.mirrorRecords()
+        XCTAssertEqual(records.count, 1, "The bound document still produces its full sync snapshot")
     }
 
     func testFailedApprovalWriteLeavesDocumentUnownedAndRetryable() async throws {
@@ -34,7 +32,7 @@ final class KithAccountOwnershipTests: XCTestCase {
         defer { try? FileManager.default.removeItem(at: root) }
         let file = root.appending(path: "people.json")
         let store = KithStore(fileURL: file)
-        let model = AppModel(store: store, cloud: nil, platform: nil)
+        let model = AppModel(store: store, cloud: nil, mirror: nil)
         await model.load()
         try FileManager.default.createDirectory(at: file, withIntermediateDirectories: true)
         let failed = await model.approveLocalHubOwner("a")
@@ -61,19 +59,19 @@ final class KithAccountOwnershipTests: XCTestCase {
         XCTAssertNil(try KithStore.decode(JSONSerialization.data(withJSONObject: legacy)).hubAccountID)
     }
 
-    func testMismatchedCloudMirrorIsPausedWithoutOverwritingEitherCopy() async throws {
+    func testLegacyCloudMirrorIsIgnoredOnceTheDocumentHasContent() async throws {
         let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
         defer { try? FileManager.default.removeItem(at: root) }
         let store = KithStore(fileURL: root.appending(path: "people.json"))
         let person = Person(name: "Synthetic A", closeness: 4, hue: .clay)
         try await store.save(KithDocument(people: [person], hubAccountID: "a"))
         let cloud = OwnershipCloudFixture()
-        let model = AppModel(store: store, cloud: cloud, platform: nil)
+        let model = AppModel(store: store, cloud: cloud, mirror: nil)
         await model.load()
         XCTAssertEqual(model.document.people.map(\.id), [person.id])
-        XCTAssertNotNil(model.cloudAccountNotice)
+        XCTAssertEqual(model.document.hubAccountID, "a")
         let saves = await cloud.saves
-        XCTAssertEqual(saves, 0)
+        XCTAssertEqual(saves, 0, "The retired blob mirror is import-only and must never be written")
     }
 }
 

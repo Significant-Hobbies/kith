@@ -1,6 +1,6 @@
 # Kith — PROJECT STATUS
 
-Last updated: 2026-09-09
+Last updated: 2026-09-18
 
 ## Why / What
 
@@ -13,8 +13,9 @@ In scope: adding people, setting closeness and circle, a floating
 constellation home, a searchable list, standing notes, and a chronological
 log per person.
 
-Out of scope: a mandatory Kith account, contact-book import, social graphs,
-reminders as a notification product, messaging, and a web client.
+Out of scope: a mandatory Kith account, browsing or storing the contact
+book, social graphs, reminders as a notification product, messaging, and a
+web client.
 
 ## Dependencies
 
@@ -36,6 +37,23 @@ reminders as a notification product, messaging, and a web client.
 
 ## Timeline
 
+- 2026-09-18 — added per-person details under issue 29: ordered
+  key-value pairs seeded with relationship / where-they-are /
+  where-they-work / last-contact (import prefills work from organization
+  and place from the first address), plus a free-text list. `Person`
+  decodes the new keys as empty on older documents and the Hub person
+  record carries them. Field, import-prefill, legacy-decode and record
+  round-trip tests pass; the full native gate ran 60 tests (ten UI) with
+  zero skips, followed by unsigned Release compilation.
+- 2026-09-18 — added optional contact import through the system
+  multi-select picker under issue 28. Picking shares only the chosen
+  records, so no contacts permission or usage description is needed. Each
+  pick maps name, birthday (yearless values render without a year), and
+  first phone/email into standing notes onto a new person with the usual
+  defaults; existing or empty names are skipped, and the batch commits in
+  one atomic local save with a single Hub sync request. Seven focused
+  import tests plus a menu UI test pass; the full native gate ran 52
+  tests (ten UI) with zero skips, followed by unsigned Release compilation.
 - 2026-09-09 — qualified rendered create/edit/selective-delete/person-delete across
   process relaunches using a DEBUG-only UUID-scoped synthetic file store with no
   Hub or CloudKit connection. Full suite: 44 passed (nine UI), zero skips; unsigned
@@ -194,8 +212,13 @@ reminders as a notification product, messaging, and a web client.
 ## Features (shipped)
 
 - Local JSON document for people and dated log entries
+- Optional contact import through the system multi-select picker — name,
+  birthday, and first phone/email into notes; no contacts permission,
+  duplicates skipped
 - Constellation of floating bubbles sized by explicit closeness
-- Person profile: circle, closeness, how you met, standing notes, birthday
+- Person profile: circle, closeness, how you met, standing notes, birthday,
+  labelled detail pairs (relationship, where they are, where they work,
+  last contact, and custom keys), and a free-text list
 - Per-person log kinds: note, hangout, call, message, gift, milestone, remember
 - Searchable list fallback and reduced-motion static layout
 - Empty state and a `--ui-demo` fixture for tests and screenshots

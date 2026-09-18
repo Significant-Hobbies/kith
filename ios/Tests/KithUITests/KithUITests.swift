@@ -19,6 +19,16 @@ final class KithUITests: XCTestCase {
         XCTAssertTrue(app.buttons["Add someone"].exists)
     }
 
+    func testAddMenuOffersManualEntryAndContactImport() {
+        let app = launch(["--ui-demo", "-kith.illustrated-onboarding.seen.v1", "YES"])
+        let add = app.buttons["add-person"]
+        XCTAssertTrue(add.waitForExistence(timeout: 4))
+        add.tap()
+        XCTAssertTrue(app.buttons["add-from-contacts"].waitForExistence(timeout: 3))
+        app.buttons["add-manual"].tap()
+        XCTAssertTrue(app.textFields["Name"].waitForExistence(timeout: 3))
+    }
+
     func testDemoConstellationOpensAPersonAndTheirLog() {
         let app = launch(["--ui-demo", "-kith.illustrated-onboarding.seen.v1", "YES"])
         let maya = app.buttons.matching(NSPredicate(format: "label CONTAINS[c] %@", "Maya Rao")).firstMatch

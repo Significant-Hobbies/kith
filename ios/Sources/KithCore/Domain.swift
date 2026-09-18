@@ -76,6 +76,30 @@ public enum PersonHue: String, Codable, CaseIterable, Sendable {
     }
 }
 
+/// A labelled fact about a person, e.g. "Where they work" → "Agency".
+public struct PersonDetail: Identifiable, Codable, Equatable, Sendable {
+    public var id: UUID
+    public var key: String
+    public var value: String
+
+    public init(id: UUID = UUID(), key: String, value: String = "") {
+        self.id = id
+        self.key = key
+        self.value = value
+    }
+}
+
+/// One row in a person's free-text list.
+public struct PersonListItem: Identifiable, Codable, Equatable, Sendable {
+    public var id: UUID
+    public var text: String
+
+    public init(id: UUID = UUID(), text: String) {
+        self.id = id
+        self.text = text
+    }
+}
+
 public struct Person: Identifiable, Codable, Equatable, Sendable {
     public var id: UUID
     public var name: String
@@ -85,8 +109,19 @@ public struct Person: Identifiable, Codable, Equatable, Sendable {
     public var hue: PersonHue
     public var birthday: Date?
     public var standingNotes: String
+    public var details: [PersonDetail]
+    public var listItems: [PersonListItem]
     public var createdAt: Date
     public var updatedAt: Date
+
+    public static let detailKeyRelationship = "Relationship"
+    public static let detailKeyWhereTheyAre = "Where they are"
+    public static let detailKeyWhereTheyWork = "Where they work"
+    public static let detailKeyLastContact = "Last contact"
+    public static let defaultDetailKeys = [
+        detailKeyRelationship, detailKeyWhereTheyAre,
+        detailKeyWhereTheyWork, detailKeyLastContact,
+    ]
 
     public init(
         id: UUID = UUID(),
@@ -97,6 +132,8 @@ public struct Person: Identifiable, Codable, Equatable, Sendable {
         hue: PersonHue? = nil,
         birthday: Date? = nil,
         standingNotes: String = "",
+        details: [PersonDetail] = [],
+        listItems: [PersonListItem] = [],
         createdAt: Date = Date(),
         updatedAt: Date = Date()
     ) {
@@ -108,8 +145,43 @@ public struct Person: Identifiable, Codable, Equatable, Sendable {
         self.hue = hue ?? .assigned(for: id)
         self.birthday = birthday
         self.standingNotes = standingNotes
+        self.details = details
+        self.listItems = listItems
         self.createdAt = createdAt
         self.updatedAt = updatedAt
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case name
+        case howWeMet
+        case circle
+        case closeness
+        case hue
+        case birthday
+        case standingNotes
+        case details
+        case listItems
+        case createdAt
+        case updatedAt
+    }
+
+    /// Documents saved before details/listItems existed decode
+    /// them as empty rather than failing the whole file open.
+    public init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(UUID.self, forKey: .id)
+        name = try container.decode(String.self, forKey: .name)
+        howWeMet = try container.decodeIfPresent(String.self, forKey: .howWeMet) ?? ""
+        circle = try container.decode(CircleKind.self, forKey: .circle)
+        closeness = try container.decode(Int.self, forKey: .closeness)
+        hue = try container.decode(PersonHue.self, forKey: .hue)
+        birthday = try container.decodeIfPresent(Date.self, forKey: .birthday)
+        standingNotes = try container.decodeIfPresent(String.self, forKey: .standingNotes) ?? ""
+        details = try container.decodeIfPresent([PersonDetail].self, forKey: .details) ?? []
+        listItems = try container.decodeIfPresent([PersonListItem].self, forKey: .listItems) ?? []
+        createdAt = try container.decode(Date.self, forKey: .createdAt)
+        updatedAt = try container.decodeIfPresent(Date.self, forKey: .updatedAt) ?? createdAt
     }
 
     public var firstName: String {
