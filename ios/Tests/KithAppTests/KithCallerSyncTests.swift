@@ -329,6 +329,11 @@ private final class CallerFixture {
             let pull = await requests.recordPull()
             if pull == 1 { entered.fulfill() }
             for await _ in released.stream { break }
+            let cursor = URLComponents(url: request.url!, resolvingAgainstBaseURL: false)?.queryItems?
+                .first(where: { $0.name == "cursor" })?.value
+            guard cursor == "0" else {
+                return #"{"changes":[],"cursor":10,"hasMore":false}"#
+            }
             return #"{"changes":[{"cursor":10,"changeId":"remote-person","domain":"kith","id":"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa","operation":"upsert","version":1,"occurredAt":"2026-09-09","recordedAt":"2026-09-09T00:00:00.123Z","originDeviceId":"other","record":\#(record)}],"cursor":10,"hasMore":false}"#
         }
     }
