@@ -1,6 +1,6 @@
 # Kith 1.0.0 (13) internal TestFlight qualification
 
-Date: 2026-09-19. Scope: internal TestFlight candidate. Status: source published, provider changes verified and upload artifact exported; physical-device migration qualification and upload remain open.
+Date: 2026-09-19. Scope: internal TestFlight. Status: released to the one-tester Personal Testing group after exact-source archive qualification, owner-device upgrade, provider rollout and App Store Connect processing.
 
 ## Candidate behavior
 
@@ -13,7 +13,7 @@ Date: 2026-09-19. Scope: internal TestFlight candidate. Status: source published
 - After apply changes related records, the shared runtime re-reads the committed transport projection before push, preventing stale children from being uploaded.
 - The Hub contract preserves Kith `details` and `listItems`, and accepts closeness only as an integer from 1 through 5.
 
-Kith document schema v2 persists affiliation, content approval fingerprints, original wire names and note references. Schema-v1 documents decode with empty provenance and therefore require fresh consent before Hub upload. Old build 6 cannot read a document after it is saved as schema v2, so the owner-device upgrade and rollback exercise remains a separate migration gate.
+Kith document schema v2 persists affiliation, content approval fingerprints, original wire names and note references. Schema-v1 documents decode with empty provenance and therefore require fresh consent before Hub upload. The owner device upgraded from development build 7 to build 13 without replacing its local container. Its two-person schema-v1 document loaded intact and remained byte-for-byte unchanged because the acceptance run made no personal-data edit; the first subsequent save will persist schema v2. The pre-upgrade container backup remains the rollback artifact.
 
 ## Local verification
 
@@ -22,21 +22,21 @@ All checks used stable Xcode 26.6 (17F113), the iOS 26.5 SDK and simulator `28E4
 | Check | Result |
 | --- | --- |
 | Kith native gate | 61 unit tests and 10 UI tests passed; Release simulator build passed against remote PersonalSyncKit `6a3d228db6e296013f6ea4dc0221cda7d28591ac`. Log: `/private/tmp/kith-release-remote-pin-158.log`. |
-| Final schema-v1 decode regression | 10 KithCore tests passed. Result bundle: `/tmp/kith-core-final-158/Logs/Test/Test-Kith-2026.09.19_18-28-39-+0530.xcresult`. |
+| Final source and hosted gate | PR #32 passed the complete hosted Xcode gate at `5cbfcf944138ffe03ecebf8855f676c2c28d4e77`; its tree is the tree merged to `main` as `bf98f309056afcca518eab821f8093d1182b6670`. |
 | Shared PersonalSyncKit | 76 tests in 5 suites passed locally and both hosted CI jobs passed at `6a3d228db6e296013f6ea4dc0221cda7d28591ac`. |
 | Hub backend | Typecheck and 57 tests passed; Worker version `9a7b2cc0-0e6b-4b82-afad-586fcd9ff44c` is live at 100% and `/health` returns 200. |
 | Landing/privacy source | `pnpm check` and all nine hosted CI jobs passed. Pages deployment `080d00c2-a61c-4711-b9de-b703d078b08a` is live from `dbd50f5bd75e2be0d3081f2ecdfc3110384bfb26`. |
 | Source hygiene | `git diff --check` passed in Kith, shared and landing worktrees. |
 
-The remote-pinned signed archive is retained at `/Users/sarthak/Desktop/fleet/.worktrees/personal-sync-158/evidence/Kith-1.0.0-13-4beda0d.xcarchive`. It contains `com.significanthobbies.kith` version `1.0.0` build `13`, arm64, team `8F7LXHTJZR`, Sign in with Apple and `iCloud.com.significanthobbies.kith` CloudKit entitlements. Its bundled privacy manifest passes `plutil -lint`. The app executable SHA-256 is `5e377dbd4e5506bcfcfed0f70b9844403d0932f10077b06403acbe901ff2dcab`; the manifest SHA-256 is `31868f51db737ce1e824590c9a2b086704a678bacdd0a5c8af12dedb749e93b4`.
+The exact-final-source signed archive is retained at `/Users/sarthak/Desktop/fleet/.worktrees/personal-sync-158/evidence/Kith-1.0.0-13-5cbfcf9.xcarchive`. It contains `com.significanthobbies.kith` version `1.0.0` build `13`, arm64, team `8F7LXHTJZR`, Sign in with Apple and `iCloud.com.significanthobbies.kith` CloudKit entitlements. Its bundled privacy manifest passes `plutil -lint`. The app executable SHA-256 is `f1dbe39cf1a95cf5c16c1a35db6bcb9e0148ed92f53cf769a33ffde4f19d4015`; the manifest SHA-256 is `31868f51db737ce1e824590c9a2b086704a678bacdd0a5c8af12dedb749e93b4`.
 
-App Store Connect export succeeded from that archive. The upload artifact is `evidence/Kith-1.0.0-13-4beda0d-app-store/Kith.ipa`, SHA-256 `8b272692027a866c9c6de950853b597928c4403a52262741ae9d9b03164a39f5`.
+App Store Connect export succeeded from that archive. The delivered upload artifact is `evidence/Kith-1.0.0-13-5cbfcf9-app-store/Kith.ipa`, SHA-256 `7e8f0cae769eec02c895faf1162b0e90e238ed8a1d3827cfd3b616e1c05626a6`.
 
-The subsequent PR review found that sync requests arriving during an active pass were not drained. The queued-sync repair is newer than this archive: the existing archive, IPA, and native receipts above do not qualify that repair. Rebuild and qualify the exact final source before upload; no upload or device migration is authorized by a source merge.
+Before installation, the build-7 app data container was copied to `/Users/sarthak/Desktop/fleet/.worktrees/personal-sync-158/evidence/Kith-device-backup-build7-20260919T1443`. Build 13 then installed over build 7 on the paired iPhone 16 Pro without replacing the container. Before and after launch, the local document retained two people, zero entries and zero deletion dates; its SHA-256 remained `529e72726d70d023e81dd40fefa3c7d47062e25414a31665b4cac3776922d347`. Launch created the new mirror ledger with one ledger entry, one pull token, one pushed fingerprint and a successful-sync timestamp. There was no Kith crash report; the instrumented development process was later terminated by iOS with signal 9 after the device locked.
 
 ## Provider observations
 
-App Store Connect app `6803666674` currently has uploaded builds through 1.0.0 (6). Build 13 is unused. The Personal Testing group has automatic Xcode-build distribution enabled, so uploading build 13 may immediately distribute it internally.
+Transporter delivered app `6803666674` version 1.0.0 build 13 at 21:26 IST. App Store Connect completed processing, reports the binary as validated with non-exempt encryption `No`, and lists build 13 as `Testing` with a 90-day expiry in the one-tester `Personal Testing` internal group. The group now contains seven builds.
 
 The validated schema was imported into development. CloudKit Console could not deploy individual changes, so the owner separately approved its combined immutable delta: legacy `KithDocument`, new `MirrorRecord`, two KithDocument indexes and their role changes. Console confirmed the production deployment. Fresh development and production exports are byte-for-byte identical, SHA-256 `8554a6aa1fda12a30cab49aefaa8d6b2ba5116a1ac06e7e9f0252be268c573ab`.
 
@@ -45,10 +45,10 @@ The corrected privacy page is live at `https://kith.significanthobbies.com/priva
 ## Release sequence
 
 1. Completed: shared source published at `6a3d228db6e296013f6ea4dc0221cda7d28591ac`, CI passed, and Hub version `9a7b2cc0-0e6b-4b82-afad-586fcd9ff44c` deployed at 100%.
-2. Completed: Kith pinned that immutable SHA, regenerated the project/resolution, passed the full native gate, and published source at `4beda0d1ab728d8f7a658b903ed42e5071d9203b`.
+2. Completed: Kith pinned that immutable SHA, included the queued-sync repair, passed local and hosted native gates, and merged PR #32 to `main` as `bf98f309056afcca518eab821f8093d1182b6670`.
 3. Completed: landing/privacy source published and verified live from deployment `080d00c2-a61c-4711-b9de-b703d078b08a`.
 4. Completed: approved combined CloudKit schema deployed and verified by a fresh production export.
-5. Open: connect the paired owner iPhone, back up its Kith container, and run the signed build with disposable records. Verify v1-to-v2 upgrade, offline edit/retry, CloudKit pull/push, Hub approval, account switch, tombstone cascade, retained store after relaunch and rollback behavior.
-6. Open: rebuild the archive and App Store Connect IPA from the final queued-sync repair, repeat candidate qualification, and upload only after device qualification and release approval. Then confirm processing and internal-testing assignment.
+5. Completed: backed up the owner-device container, installed build 13 over build 7, retained the existing local records, initialized and completed the mirror pass, and retained the backup for rollback.
+6. Completed: archived and exported exact source `5cbfcf944138ffe03ecebf8855f676c2c28d4e77`, delivered the IPA, completed App Store Connect processing, and verified build 13 as `Testing` in `Personal Testing`.
 
-The earlier source review found no remaining high-priority blocker in the Kith approval/provenance, cascade, shared re-projection, alias or CloudKit-owner paths. The later queued-sync finding and its new qualification requirement are recorded above. Remaining release gates concern rebuilding exact source, migrating the owner's real local document, physical-device verification, and distributing the build. Provider observations here are retained receipts, not a fresh provider audit during PR review.
+The internal TestFlight release gate is complete. The acceptance run deliberately did not mutate the owner's personal records, so a post-save schema-v2 rollback drill and broader manual account-switch/tombstone journeys remain useful follow-up coverage rather than blockers for this internal build. Public App Store metadata, privacy answers, screenshots, account-deletion UI and review submission remain outside this release.
