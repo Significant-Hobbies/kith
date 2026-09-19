@@ -1,6 +1,6 @@
 # Kith 1.0.0 (13) internal TestFlight qualification
 
-Date: 2026-09-19. Scope: internal TestFlight candidate. Status: source and local build qualified; publication, provider mutation, device migration and upload require explicit authorization.
+Date: 2026-09-19. Scope: internal TestFlight candidate. Status: source published, provider changes verified and upload artifact exported; physical-device migration qualification and upload remain open.
 
 ## Candidate behavior
 
@@ -21,32 +21,32 @@ All checks used stable Xcode 26.6 (17F113), the iOS 26.5 SDK and simulator `28E4
 
 | Check | Result |
 | --- | --- |
-| Kith native gate | 61 unit tests and 10 UI tests passed; Release simulator build passed. Log: `/private/tmp/kith-release-full-final-158.log`. |
+| Kith native gate | 61 unit tests and 10 UI tests passed; Release simulator build passed against remote PersonalSyncKit `6a3d228db6e296013f6ea4dc0221cda7d28591ac`. Log: `/private/tmp/kith-release-remote-pin-158.log`. |
 | Final schema-v1 decode regression | 10 KithCore tests passed. Result bundle: `/tmp/kith-core-final-158/Logs/Test/Test-Kith-2026.09.19_18-28-39-+0530.xcresult`. |
-| Shared PersonalSyncKit | 76 tests in 5 suites passed. Log: `/private/tmp/shared-release-root-tests-158.log`. |
-| Hub backend | Typecheck passed; 57 tests passed. Logs: `/private/tmp/kith-hub-check-158.log` and `/private/tmp/kith-hub-tests-158.log`. |
-| Landing/privacy source | `pnpm check` passed. Log: `/private/tmp/kith-privacy-check-158.log`. |
+| Shared PersonalSyncKit | 76 tests in 5 suites passed locally and both hosted CI jobs passed at `6a3d228db6e296013f6ea4dc0221cda7d28591ac`. |
+| Hub backend | Typecheck and 57 tests passed; Worker version `9a7b2cc0-0e6b-4b82-afad-586fcd9ff44c` is live at 100% and `/health` returns 200. |
+| Landing/privacy source | `pnpm check` and all nine hosted CI jobs passed. Pages deployment `080d00c2-a61c-4711-b9de-b703d078b08a` is live from `dbd50f5bd75e2be0d3081f2ecdfc3110384bfb26`. |
 | Source hygiene | `git diff --check` passed in Kith, shared and landing worktrees. |
 
-The current signed development archive is retained at `/Users/sarthak/Desktop/fleet/.worktrees/personal-sync-158/evidence/Kith-1.0.0-13-current.xcarchive`. It contains `com.significanthobbies.kith` version `1.0.0` build `13`, arm64, team `8F7LXHTJZR`, Sign in with Apple and `iCloud.com.significanthobbies.kith` CloudKit entitlements. Its bundled privacy manifest passes `plutil -lint`. The app executable SHA-256 is `e27b89f2d64357c0b3dc5a48d62cbf18edffda02c545ee432f1892f822bbd558`; the manifest SHA-256 is `31868f51db737ce1e824590c9a2b086704a678bacdd0a5c8af12dedb749e93b4`.
+The remote-pinned signed archive is retained at `/Users/sarthak/Desktop/fleet/.worktrees/personal-sync-158/evidence/Kith-1.0.0-13-4beda0d.xcarchive`. It contains `com.significanthobbies.kith` version `1.0.0` build `13`, arm64, team `8F7LXHTJZR`, Sign in with Apple and `iCloud.com.significanthobbies.kith` CloudKit entitlements. Its bundled privacy manifest passes `plutil -lint`. The app executable SHA-256 is `5e377dbd4e5506bcfcfed0f70b9844403d0932f10077b06403acbe901ff2dcab`; the manifest SHA-256 is `31868f51db737ce1e824590c9a2b086704a678bacdd0a5c8af12dedb749e93b4`.
 
-This archive uses an Apple Development identity and the local qualification package path. It is evidence that the current source archives; it is not the upload artifact. Export/upload must follow immutable remote pinning and CI.
+App Store Connect export succeeded from that archive. The upload artifact is `evidence/Kith-1.0.0-13-4beda0d-app-store/Kith.ipa`, SHA-256 `8b272692027a866c9c6de950853b597928c4403a52262741ae9d9b03164a39f5`.
 
 ## Provider observations
 
 App Store Connect app `6803666674` currently has uploaded builds through 1.0.0 (6). Build 13 is unused. The Personal Testing group has automatic Xcode-build distribution enabled, so uploading build 13 may immediately distribute it internally.
 
-CloudKit production currently contains only the built-in `Users` type. Development contains `Users` and the legacy `KithDocument.payload`; neither environment contains `MirrorRecord` or `hubOwnerID`. The exact production candidate is `cloudkit-schema-2026-09-19/production-proposed.ckdb`, SHA-256 `14e3a9efc56468c49caa263844cf38c562034cacc1ef035d7792e9d53acdcb70`. It adds only `MirrorRecord` and does not promote the legacy `KithDocument` type. The equivalent development proposal validates with `cktool`; Apple does not expose production validation through that endpoint. Nothing has been imported or deployed.
+The validated schema was imported into development. CloudKit Console could not deploy individual changes, so the owner separately approved its combined immutable delta: legacy `KithDocument`, new `MirrorRecord`, two KithDocument indexes and their role changes. Console confirmed the production deployment. Fresh development and production exports are byte-for-byte identical, SHA-256 `8554a6aa1fda12a30cab49aefaa8d6b2ba5116a1ac06e7e9f0252be268c573ab`.
 
-The live privacy page remains stale until the prepared `ios-landings` change is committed and deployed. App Store Connect privacy answers and policy URL are blank. These fields, public screenshots, category metadata and account-deletion UI are public App Store submission work, not claimed complete for this internal TestFlight target.
+The corrected privacy page is live at `https://kith.significanthobbies.com/privacy/` from Pages deployment `080d00c2`. App Store Connect privacy answers and policy URL remain blank. These fields, public screenshots, category metadata and account-deletion UI are public App Store submission work, not claimed complete for this internal TestFlight target.
 
-## Release sequence requiring authorization
+## Release sequence
 
-1. Commit and push the shared PersonalSyncKit and Hub contract repair; wait for its CI and record the immutable shared commit SHA.
-2. Replace Kith's qualification-only local package reference with that remote SHA, regenerate the project and resolved package, then rerun the full native gate.
-3. Commit and push Kith and the landing/privacy correction; wait for CI. Deploy the corrected privacy page before distributing a build whose in-app link relies on it.
-4. Import and deploy only the reviewed `production-proposed.ckdb` additions, then export the production schema again and compare it with the proposal.
-5. Back up the owner document and run the signed build on a physical device using disposable records. Verify v1-to-v2 upgrade, offline edit/retry, CloudKit pull/push, Hub approval, account switch, tombstone cascade, retained store after relaunch and rollback behavior.
-6. Archive from the exact pushed Kith and shared SHAs, validate/export for App Store Connect, upload build 13, and confirm processing plus its internal-testing assignment.
+1. Completed: shared source published at `6a3d228db6e296013f6ea4dc0221cda7d28591ac`, CI passed, and Hub version `9a7b2cc0-0e6b-4b82-afad-586fcd9ff44c` deployed at 100%.
+2. Completed: Kith pinned that immutable SHA, regenerated the project/resolution, passed the full native gate, and published source at `4beda0d1ab728d8f7a658b903ed42e5071d9203b`.
+3. Completed: landing/privacy source published and verified live from deployment `080d00c2-a61c-4711-b9de-b703d078b08a`.
+4. Completed: approved combined CloudKit schema deployed and verified by a fresh production export.
+5. Open: connect the paired owner iPhone, back up its Kith container, and run the signed build with disposable records. Verify v1-to-v2 upgrade, offline edit/retry, CloudKit pull/push, Hub approval, account switch, tombstone cascade, retained store after relaunch and rollback behavior.
+6. Prepared: the exact-source archive and App Store Connect IPA are exported. Upload build 13 after device qualification, then confirm processing and internal-testing assignment.
 
 Astra's final source review found no remaining high-priority source blocker in the Kith approval/provenance, cascade, shared re-projection, alias or CloudKit-owner paths. The open gates above concern publishing exact source, changing provider schemas/backend/privacy hosting, migrating the owner's real local document and distributing the build.

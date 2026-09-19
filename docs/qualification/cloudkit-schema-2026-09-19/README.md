@@ -15,9 +15,11 @@ Observed 19 September 2026 using schema-only `cktool export-schema` reads for te
 
 `development-proposed.ckdb` carries the same additive `MirrorRecord` declaration on top of the observed development schema. Apple accepted that file with `cktool validate-schema` and it was imported into development after explicit authorization on 19 September 2026. A fresh export at `/private/tmp/kith-development-post-import-158.ckdb` contains `KithDocument`, `MirrorRecord` with the four proposed fields, and `Users`; only declaration order and equivalent grant formatting differ from the proposal. The validation receipt is retained at `/private/tmp/kith-cloudkit-schema-validation-158.txt`.
 
-Apple rejects both `validate-schema` and `import-schema` when `--environment production` is supplied with `endpoint not applicable in the environment 'production'`; neither command altered production. CloudKit Console's deployment review does not allow selecting individual changes and currently proposes both `Create KithDocument type` and `Create MirrorRecord type`, plus KithDocument indexes and role updates. That is broader than `production-proposed.ckdb`, so deployment was cancelled and production remains unchanged pending an explicit decision about the legacy type.
+Apple rejects both `validate-schema` and `import-schema` when `--environment production` is supplied with `endpoint not applicable in the environment 'production'`; neither command altered production. CloudKit Console's deployment review did not allow selecting individual changes and proposed both `Create KithDocument type` and `Create MirrorRecord type`, plus KithDocument indexes and role updates. The owner explicitly approved that combined immutable delta. CloudKit Console confirmed `Changes Deployed` and `The schema is deployed to Production`.
 
-The new type proposes create permission for authenticated iCloud users and read/write for the creator. This is deliberately limited to the creator; the existing legacy type and its grants remain untouched. CloudKit role grants govern public-database records, while this app uses only `privateCloudDatabase`. The development form has been validated and imported. Production has not been deployed.
+A fresh production export is checked in as `production-post-deploy.ckdb`, SHA-256 `8554a6aa1fda12a30cab49aefaa8d6b2ba5116a1ac06e7e9f0252be268c573ab`. It is byte-for-byte identical to the fresh post-import development export and contains exactly `KithDocument`, `MirrorRecord`, and `Users` with the reviewed fields and grants.
+
+The new type grants create permission to authenticated iCloud users and read/write to the creator. This is limited to the creator. CloudKit role grants govern public-database records, while this app uses only `privateCloudDatabase`. The development form has been validated and imported, and the approved combined delta has been deployed to production.
 
 CloudKit custom fields permit absence. `hubOwnerID` is additive affiliation metadata, not an authentication claim: missing fields in older records must remain representable. The proposed caller/transport repair must preserve known affiliation on live records and payload-nil soft tombstones, reject conflicting affiliation, and treat unproven hard deletions conservatively. Schema presence does not prove these behaviors.
 
@@ -33,9 +35,9 @@ The task is internal-only Kith TestFlight. Public App Store metadata, screenshot
 
 Production CloudKit schema availability IS relevant to TestFlight: distribution builds use the production environment, which rejects unknown record types/fields. Source fixes, a successful simulator gate, or an unsigned archive cannot establish that production CloudKit sync works.
 
-Before production mutation, resolve the console limitation above. Do not press Deploy while the review contains the unapproved legacy `KithDocument` and its indexes/role changes. Do not reset either environment, remove records, replace unrelated fields, or assume a binary rollback can undo schema deployment. CloudKit production schema additions cannot be removed; rollback must keep old clients compatible with the additions.
+Production now includes the approved legacy `KithDocument` and new `MirrorRecord` types. Do not reset either environment, remove records, replace unrelated fields, or assume a binary rollback can undo schema deployment. CloudKit production schema additions cannot be removed; rollback must keep old clients compatible with the additions.
 
-After authorized deployment, repeat schema-only exports to verify the exact fields, then qualify the signed production-environment candidate on the physical device with explicit, disposable test data. Do not label sync continuity verified from this schema receipt alone.
+The schema-only export verifies the exact fields. The signed production-environment candidate still needs physical-device qualification with explicit, disposable test data; do not label sync continuity verified from this schema receipt alone.
 
 Apple references checked 19 September 2026:
 
