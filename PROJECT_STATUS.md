@@ -42,11 +42,15 @@ web client.
   authority, stable wire aliases and committed post-apply re-projection.
   PersonalSyncKit `6a3d228` passed local and hosted checks; Hub version
   `9a7b2cc0` is live at 100%. The remote-pinned Kith gate passed 61 unit tests,
-  ten UI tests and Release compilation, and App Store Connect export succeeded.
+  ten UI tests and Release compilation, and the exact final source passed hosted
+  CI before merging as `bf98f309`. The exact-source archive and App Store Connect
+  export succeeded.
   The approved combined CloudKit schema is deployed and fresh development and
-  production exports match. The corrected privacy page is live. Physical-device
-  backup, migration/sync acceptance, upload processing and internal assignment
-  remain before build 13 is called released.
+  production exports match. The corrected privacy page is live. The owner-device
+  container was backed up, build 13 installed over build 7 with both existing
+  people retained, and the new mirror ledger recorded a successful pass. Apple
+  completed build 13 processing; it is `Testing` in the one-tester internal
+  `Personal Testing` group with a 90-day expiry.
 
 - 2026-09-18 — added per-person details under issue 29: ordered
   key-value pairs seeded with relationship / where-they-are /
@@ -213,8 +217,8 @@ web client.
 
 ## Products
 
-- Native iPhone app `com.significanthobbies.kith`; Hub-enabled
-  build `1.0.0 (3)` is available to the owner through the internal
+- Native iPhone app `com.significanthobbies.kith`; safe-sync
+  build `1.0.0 (13)` is available to the owner through the internal
   `Personal Testing` group on personal team `8F7LXHTJZR`. No App Store
   submission.
 - Public landing at https://kith.significanthobbies.com (ios-landings,
