@@ -38,18 +38,22 @@ enum KithPlatformRecord {
     static func person(from value: [String: JSONValue]) -> Person? {
         guard let idText = value["personId"]?.stringValue,
               let name = value["personName"]?.stringValue,
+              !name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty,
               let circleText = value["circle"]?.stringValue,
               let circle = CircleKind(rawValue: circleText),
               let hueText = value["hue"]?.stringValue,
               let hue = PersonHue(rawValue: hueText),
               let createdText = value["createdAt"]?.stringValue,
-              let createdAt = date(createdText) else { return nil }
+              let createdAt = date(createdText),
+              let closeness = value["closeness"]?.numberValue,
+              closeness.isFinite, (1...5).contains(closeness),
+              closeness.rounded() == closeness else { return nil }
         return Person(
             id: stableUUID(idText),
             name: name,
             howWeMet: value["howWeMet"]?.stringValue ?? "",
             circle: circle,
-            closeness: Int(value["closeness"]?.numberValue ?? 3),
+            closeness: Int(closeness),
             hue: hue,
             birthday: value["birthday"]?.stringValue.flatMap(date),
             standingNotes: value["standingNotes"]?.stringValue ?? "",
@@ -110,7 +114,7 @@ enum KithPlatformRecord {
         return formatter.date(from: text)
     }
 
-    private static func stableUUID(_ value: String) -> UUID {
+    static func stableUUID(_ value: String) -> UUID {
         if let uuid = UUID(uuidString: value) { return uuid }
         let bytes = Array(SHA256.hash(data: Data(value.utf8)).prefix(16))
         return UUID(uuid: (

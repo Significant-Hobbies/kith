@@ -83,6 +83,12 @@ final class KithCoreTests: XCTestCase {
         """.utf8)
         let decoded = try KithStore.decode(json)
         XCTAssertEqual(decoded.savedAt, .distantPast)
+        let migrated = try KithStore.migrate(decoded)
+        XCTAssertEqual(migrated.schemaVersion, KithDocument.currentSchemaVersion)
+        XCTAssertTrue(migrated.hubRecordOwners.isEmpty)
+        XCTAssertTrue(migrated.hubApprovedFingerprints.isEmpty)
+        XCTAssertTrue(migrated.syncRecordNames.isEmpty)
+        XCTAssertTrue(migrated.syncPersonReferences.isEmpty)
     }
 
     func testPeopleSavedBeforeDetailsAndListStillDecode() throws {

@@ -290,6 +290,223 @@ final class KithSyncCommitTests: XCTestCase {
             XCTAssertEqual(model.document.entries.count, 1, timestamp)
         }
     }
+
+    func testMalformedRecordFailsTheWholeDownloadAndRetriesWhenCorrected() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = KithStore(fileURL: root.appending(path: "people.json"))
+        let model = AppModel(store: store, cloud: nil, mirror: nil)
+        await model.load()
+        let person = Person(name: "Downloaded friend", closeness: 4, hue: .clay)
+        let broken = Person(name: "Broken download", closeness: 2, hue: .sand)
+        var brokenPayload = try XCTUnwrap(KithPlatformRecord.person(broken).objectValue)
+        brokenPayload.removeValue(forKey: "createdAt")
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.sortedKeys]
+        // A valid record ahead of a malformed one must commit nothing: the
+        // batch is acknowledged only after every record applies.
+        let transport = KithBatchFixture(records: [
+            MirrorRecord(
+                name: person.id.uuidString.lowercased(), modifiedAt: .now,
+                payload: try encoder.encode(KithPlatformRecord.person(person))
+            ),
+            MirrorRecord(
+                name: broken.id.uuidString.lowercased(), modifiedAt: .now,
+                payload: try encoder.encode(JSONValue.object(brokenPayload))
+            ),
+        ])
+        let bookkeeping = try MirrorBookkeepingStore(fileURL: root.appending(path: "mirror.json"))
+        let runtime = MirrorRuntime(transports: [transport], store: bookkeeping)
+        let failed = try await runtime.synchronize(records: {
+            try await model.mirrorRecords()
+        }) { pulled in
+            try await model.commitMirrorRecords(pulled)
+        }
+        XCTAssertFalse(failed.isComplete)
+        XCTAssertNotNil(failed.transports.first { $0.transportID == "hub" }?.failure)
+        XCTAssertTrue(
+            model.document.people.isEmpty,
+            "A valid record must not commit ahead of a malformed one"
+        )
+        XCTAssertNil(model.message)
+        let persistedAfterFailure = try await store.load()
+        XCTAssertTrue(persistedAfterFailure.people.isEmpty)
+        let tokenAfterFailure = try await bookkeeping.load().pullTokens["hub"]
+        XCTAssertNil(tokenAfterFailure, "A rejected batch must not advance the pull token")
+
+        await transport.replace([
+            MirrorRecord(
+                name: person.id.uuidString.lowercased(), modifiedAt: .now,
+                payload: try encoder.encode(KithPlatformRecord.person(person))
+            ),
+            MirrorRecord(
+                name: broken.id.uuidString.lowercased(), modifiedAt: .now,
+                payload: try encoder.encode(KithPlatformRecord.person(broken))
+            ),
+        ])
+        let retried = try await runtime.synchronize(records: {
+            try await model.mirrorRecords()
+        }) { pulled in
+            try await model.commitMirrorRecords(pulled)
+        }
+        XCTAssertTrue(retried.isComplete)
+        let reopened = AppModel(store: store, cloud: nil, mirror: nil)
+        await reopened.load()
+        XCTAssertEqual(
+            Set(reopened.document.people.map(\.id)),
+            Set([person.id, broken.id])
+        )
+        let pullTokens = await transport.pullTokens
+        XCTAssertEqual(
+            pullTokens, [nil, nil],
+            "Both pulls saw the start token — the malformed batch stayed unacknowledged"
+        )
+    }
+
+    func testUnknownRecordTypeFailsTheBatchWithoutCommitting() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = KithStore(fileURL: root.appending(path: "people.json"))
+        let model = AppModel(store: store, cloud: nil, mirror: nil)
+        await model.load()
+        let record = MirrorRecord(
+            name: UUID().uuidString.lowercased(), modifiedAt: .now,
+            payload: try JSONEncoder().encode(JSONValue.object([
+                "recordType": .string("future-kind"),
+                "personId": .string(UUID().uuidString.lowercased()),
+            ]))
+        )
+        do {
+            try await model.commitMirrorRecords([record])
+            XCTFail("An unsupported record type must not be acknowledged")
+        } catch {}
+        XCTAssertTrue(model.document.people.isEmpty)
+        let persisted = try await store.load()
+        XCTAssertTrue(persisted.people.isEmpty)
+        XCTAssertTrue(persisted.deletionDates.isEmpty)
+    }
+
+    func testDownloadedPersonNameMustMatchItsRecordIdentity() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = KithStore(fileURL: root.appending(path: "people.json"))
+        let model = AppModel(store: store, cloud: nil, mirror: nil)
+        await model.load()
+        let person = Person(name: "Mismatched friend", closeness: 4, hue: .clay)
+        var mismatched = try XCTUnwrap(KithPlatformRecord.person(person).objectValue)
+        mismatched["personId"] = .string(UUID().uuidString.lowercased())
+        do {
+            try await model.commitMirrorRecords([
+                MirrorRecord(
+                    name: person.id.uuidString.lowercased(), modifiedAt: .now,
+                    payload: try JSONEncoder().encode(JSONValue.object(mismatched))
+                )
+            ])
+            XCTFail("A record name that does not match its personId must fail")
+        } catch {}
+        XCTAssertTrue(model.document.people.isEmpty)
+
+        // Legacy wire and person-reference names survive independently; no
+        // canonical UUID duplicate appears after reopening the document.
+        var legacy = try XCTUnwrap(KithPlatformRecord.person(person).objectValue)
+        legacy["personId"] = .string("legacy-person-reference")
+        try await model.commitMirrorRecords([
+            MirrorRecord(name: "legacy-person-record", modifiedAt: .now,
+                         payload: try JSONEncoder().encode(JSONValue.object(legacy)))
+        ])
+        let reopened = try await store.load()
+        let records = try KithSyncProjection.records(reopened)
+        XCTAssertEqual(records.map(\.name), ["legacy-person-record"])
+        let payload = try JSONDecoder().decode(JSONValue.self, from: XCTUnwrap(records.first?.payload))
+        XCTAssertEqual(payload.objectValue?["personId"]?.stringValue, "legacy-person-reference")
+
+    }
+
+    func testDownloadedEditUpdatesExistingNoteAndSurvivesReopen() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = KithStore(fileURL: root.appending(path: "people.json"))
+        let person = Person(name: "Synthetic friend", closeness: 4, hue: .clay)
+        let date = Date(timeIntervalSince1970: 1_800_000_000)
+        var note = Entry(personID: person.id, kind: .note, happenedOn: date, body: "Before", createdAt: date)
+        try await store.save(KithDocument(people: [person], entries: [note]))
+        let model = AppModel(store: store, cloud: nil, mirror: nil)
+        await model.load()
+        note.body = "Remote edit"
+        let record = MirrorRecord(name: note.id.uuidString.lowercased(), modifiedAt: date,
+                                  payload: try JSONEncoder().encode(KithPlatformRecord.interaction(note, person: person)))
+        try await model.commitMirrorRecords([record])
+        try await model.commitMirrorRecords([record])
+        let reopened = try await store.load()
+        XCTAssertEqual(reopened.entries, [note])
+    }
+
+    func testInteractionCannotReuseItsPersonRecordIdentity() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = KithStore(fileURL: root.appending(path: "people.json"))
+        let person = Person(name: "Synthetic friend", closeness: 4, hue: .clay)
+        try await store.save(KithDocument(people: [person]))
+        let model = AppModel(store: store, cloud: nil, mirror: nil)
+        await model.load()
+        let before = model.document
+        let note = Entry(personID: person.id, kind: .note, happenedOn: .now, body: "Conflicting identity")
+        do {
+            try await model.commitMirrorRecords([
+                MirrorRecord(name: person.id.uuidString.lowercased(), modifiedAt: .now,
+                             payload: try JSONEncoder().encode(KithPlatformRecord.interaction(note, person: person)))
+            ])
+            XCTFail("A note cannot share its person's wire identity")
+        } catch {}
+        XCTAssertEqual(model.document, before)
+        let persisted = try await store.load()
+        XCTAssertEqual(persisted.entries.count, 0)
+        XCTAssertEqual(persisted.people.map(\.id), [person.id])
+    }
+
+    func testOutOfRangeClosenessRejectsWithoutTrapping() throws {
+        let person = Person(name: "Synthetic friend", closeness: 4, hue: .clay)
+        for value in [1e100, -1, 0, 5.5, 6] {
+            var payload = try XCTUnwrap(KithPlatformRecord.person(person).objectValue)
+            payload["closeness"] = .number(value)
+            XCTAssertNil(KithPlatformRecord.person(from: payload))
+        }
+    }
+
+    func testSavedLocalDeletionInvalidatesOlderMirrorSnapshot() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = KithStore(fileURL: root.appending(path: "people.json"))
+        let person = Person(name: "Synthetic friend", closeness: 4, hue: .clay)
+        try await store.save(KithDocument(people: [person]))
+        let model = AppModel(store: store, cloud: nil, mirror: nil)
+        await model.load()
+        let pass = model.makeMirrorPass()
+        _ = await model.deletePerson(id: person.id)
+        do {
+            try await model.commitMirrorRecords([], pass: pass)
+            XCTFail("A snapshot captured before a saved deletion must retry")
+        } catch {}
+        XCTAssertTrue(model.document.people.isEmpty)
+    }
+
+    func testDownloadedTombstoneRemovesTheMatchingLocalRecord() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let store = KithStore(fileURL: root.appending(path: "people.json"))
+        let person = Person(name: "Departing friend", closeness: 3, hue: .clay)
+        try await store.save(KithDocument(people: [person]))
+        let model = AppModel(store: store, cloud: nil, mirror: nil)
+        await model.load()
+        try await model.commitMirrorRecords([
+            MirrorRecord(
+                name: person.id.uuidString.lowercased(), modifiedAt: .now, payload: nil
+            )
+        ])
+        let persisted = try await store.load()
+        XCTAssertTrue(persisted.people.isEmpty)
+        XCTAssertNotNil(persisted.deletionDates[person.id])
+    }
 }
 
 private actor KithPullFixture: MirrorTransport {
@@ -351,6 +568,26 @@ private actor KithPullFixture: MirrorTransport {
     func push(_ records: [MirrorRecord]) async throws {
         pushed.append(contentsOf: records)
     }
+}
+
+private actor KithBatchFixture: MirrorTransport {
+    let id = "hub"
+    private var served: [MirrorRecord]
+    private(set) var pullTokens: [Data?] = []
+
+    init(records: [MirrorRecord]) { served = records }
+
+    func replace(_ records: [MirrorRecord]) { served = records }
+
+    func availability() async -> MirrorAvailability { .available }
+
+    func pull(since token: Data?) async throws -> MirrorPullPage {
+        pullTokens.append(token)
+        guard token == nil else { return MirrorPullPage(records: [], nextToken: token) }
+        return MirrorPullPage(records: served, nextToken: Data("1".utf8))
+    }
+
+    func push(_ records: [MirrorRecord]) async throws {}
 }
 
 private actor KithDeletionMirror: KithCloudStorage {
