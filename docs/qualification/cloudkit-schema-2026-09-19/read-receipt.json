@@ -1,0 +1,39 @@
+{
+  "container": "iCloud.com.significanthobbies.kith",
+  "team": "8F7LXHTJZR",
+  "observations": {
+    "production": {
+      "observedAt": "2026-09-19T12:22:28.221037+00:00",
+      "command": [
+        "xcrun",
+        "cktool",
+        "export-schema",
+        "--team-id",
+        "8F7LXHTJZR",
+        "--container-id",
+        "iCloud.com.significanthobbies.kith",
+        "--environment",
+        "production"
+      ],
+      "sha256": "4b18e8ad6a530d81c48b200cc36a6448003a0c606a95adb918470dd64613eb89"
+    },
+    "development": {
+      "observedAt": "2026-09-19T12:22:29.168191+00:00",
+      "command": [
+        "xcrun",
+        "cktool",
+        "export-schema",
+        "--team-id",
+        "8F7LXHTJZR",
+        "--container-id",
+        "iCloud.com.significanthobbies.kith",
+        "--environment",
+        "development"
+      ],
+      "sha256": "63258e0f56d6369f8a308457743dffb395e160fc0b88324f78202a51265a9318"
+    }
+  },
+  "recordsRead": false,
+  "providerMutations": false,
+  "proposalValidated": false
+}

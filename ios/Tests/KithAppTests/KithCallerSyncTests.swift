@@ -6,6 +6,72 @@ import XCTest
 
 @MainActor
 final class KithCallerSyncTests: XCTestCase {
+    func testCloudArrivalCannotReachHubUntilExplicitContentApproval() async throws {
+        let person = Person(name: "Cloud-only private person")
+        let record = MirrorRecord(name: person.id.uuidString.lowercased(), modifiedAt: .now,
+                                  payload: try JSONEncoder().encode(KithPlatformRecord.person(person)))
+        let f = try CallerFixture(cloudRecords: [record])
+        defer { f.cleanup() }
+        await f.tokens.save("account-a")
+        await f.model.load()
+        let approval = Task { await f.model.approvePlatformAccount() }
+        await fulfillment(of: [f.entered], timeout: 5)
+        // Arrive after the user's approval snapshot, through the next transport.
+        f.released.continuation.finish()
+        await approval.value
+        await f.model.syncFromPlatform()
+        XCTAssertNotNil(f.model.document.person(id: person.id))
+        let firstNames = await f.requests.names()
+        XCTAssertFalse(firstNames.contains(record.name))
+        XCTAssertTrue(f.model.needsPlatformApproval)
+        await f.model.approvePlatformAccount()
+        let approvedNames = await f.requests.names()
+        XCTAssertTrue(approvedNames.contains(record.name))
+        let reopened = try await f.store.load()
+        XCTAssertEqual(reopened.hubRecordOwners[person.id], "a")
+        XCTAssertNotNil(reopened.hubApprovedFingerprints[person.id])
+    }
+
+    func testTrustedHubParentDeletionKeepsChildApprovalAndRejectsPendingChild() async throws {
+        for pendingChild in [false, true] {
+            let f = try CallerFixture()
+            defer { f.cleanup() }
+            await f.tokens.save("account-a")
+            await f.model.load()
+            let approval = Task { await f.model.approvePlatformAccount() }
+            await fulfillment(of: [f.entered], timeout: 5)
+            f.released.continuation.finish()
+            await approval.value
+            let person = try XCTUnwrap(f.model.document.people.first)
+            let note = Entry(personID: person.id, kind: .note, happenedOn: .now, body: "Retain child")
+            let verified = try await f.connection.identity.verifiedSyncAccount()
+            if pendingChild {
+                try await f.model.commitMirrorRecords([
+                    MirrorRecord(name: note.id.uuidString.lowercased(), modifiedAt: .now,
+                        payload: try JSONEncoder().encode(KithPlatformRecord.interaction(note, person: person)))
+                ], source: "cloudkit")
+            } else {
+                try await f.model.commitMirrorRecords([
+                    MirrorRecord(name: note.id.uuidString.lowercased(), modifiedAt: .now,
+                        payload: try JSONEncoder().encode(KithPlatformRecord.interaction(note, person: person)))
+                ], pass: f.model.makeMirrorPass(account: verified), source: "hub")
+            }
+            let pass = f.model.makeMirrorPass(account: verified)
+            let deletion = MirrorRecord(name: person.id.uuidString.lowercased(), modifiedAt: .now, payload: nil)
+            do {
+                try await f.model.commitMirrorRecords([deletion], pass: pass, source: "hub")
+                XCTAssertFalse(pendingChild)
+                let records = try f.model.mirrorRecords(transportID: "hub")
+                XCTAssertTrue(records.contains { $0.name == note.id.uuidString.lowercased() && $0.isDeleted })
+                try await f.model.commitMirrorRecords([deletion], pass: pass, source: "hub")
+            } catch {
+                XCTAssertTrue(pendingChild)
+                XCTAssertNotNil(f.model.document.person(id: person.id))
+                XCTAssertTrue(f.model.document.entries.contains { $0.id == note.id })
+            }
+        }
+    }
+
     func testAccountSwitchMidSyncKeepsBoundDocumentAndBlocksPushToNewAccount() async throws {
         let f = try CallerFixture()
         defer { f.cleanup() }
@@ -35,6 +101,38 @@ final class KithCallerSyncTests: XCTestCase {
             transportID: "hub", records: f.model.mirrorRecords()
         )
         XCTAssertEqual(pending, 0, "The stale pull was never committed")
+    }
+
+    func testEditDuringSyncQueuesOneFreshPassWithCommittedState() async throws {
+        let f = try CallerFixture()
+        defer { f.cleanup() }
+        await f.tokens.save("account-a")
+        await f.model.load()
+        let approval = Task { await f.model.approvePlatformAccount() }
+        await fulfillment(of: [f.entered], timeout: 5)
+
+        let id = UUID(uuidString: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")!
+        let edited = Person(id: id, name: "Edited locally", closeness: 5, hue: .clay)
+        let saved = await f.model.savePerson(edited)
+        XCTAssertTrue(saved)
+        await f.model.syncFromPlatform()
+        f.released.continuation.finish()
+        await approval.value
+
+        let pullCount = await f.requests.pullCount()
+        XCTAssertEqual(pullCount, 2, "A queued edit should trigger one fresh pass")
+        let pushes = await f.requests.snapshot()
+        XCTAssertEqual(pushes.count, 1, "The fresh pass should push the edited record once")
+        let payloads = await f.requests.payloads()
+        let payload = try XCTUnwrap(payloads.first)
+        let body = try XCTUnwrap(JSONSerialization.jsonObject(with: payload) as? [String: Any])
+        let mutations = try XCTUnwrap(body["mutations"] as? [[String: Any]])
+        let mutation = try XCTUnwrap(mutations.first { $0["id"] as? String == id.uuidString.lowercased() })
+        let record = try XCTUnwrap(mutation["record"] as? [String: Any])
+        XCTAssertEqual(record["personName"] as? String, "Edited locally",
+                       "The queued pass must push the committed local edit")
+        XCTAssertEqual(f.model.document.person(id: id)?.name, "Edited locally")
+        XCTAssertNil(f.model.platformSyncIssue)
     }
 
     func testApprovalFailedDownloadCommitAndRetrySurviveReopen() async throws {
@@ -71,6 +169,37 @@ final class KithCallerSyncTests: XCTestCase {
         let token = try await store.load().pullTokens["hub"]
         XCTAssertEqual(token.map { String(decoding: $0, as: UTF8.self) }, "10")
     }
+
+    func testMalformedDownloadKeepsRecoveryFailureVisibleWithoutSuccessReceipt() async throws {
+        // The pulled record's personId disagrees with its Hub record ID, so
+        // the download is malformed: it must commit nothing, stay
+        // unacknowledged, and never earn a recovery success receipt.
+        let f = try CallerFixture(pullRecord: #"{"recordType":"person","personId":"bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb","personName":"Mismatched remote person","circle":"close","closeness":4,"hue":"clay","createdAt":"2026-09-09"}"#)
+        defer { f.cleanup() }
+        await f.tokens.save("account-a")
+        await f.model.load()
+        let approval = Task { await f.model.approvePlatformAccount() }
+        await fulfillment(of: [f.entered], timeout: 5)
+        f.released.continuation.finish()
+        await approval.value
+        XCTAssertEqual(f.model.document.hubAccountID, "a")
+        XCTAssertTrue(f.model.document.people.isEmpty, "The malformed pull must commit nothing")
+        XCTAssertNil(f.model.lastPlatformSyncAt)
+        XCTAssertNotNil(f.model.platformSyncIssue)
+        await f.model.syncFromPlatform(recoverMissingRecords: true)
+        XCTAssertNil(
+            f.model.platformRecoveryNotice,
+            "A failed recovery must not publish a success receipt"
+        )
+        XCTAssertNotNil(f.model.platformSyncIssue)
+        XCTAssertNil(f.model.lastPlatformSyncAt)
+        let persisted = try await f.store.load()
+        XCTAssertEqual(persisted.hubAccountID, "a")
+        XCTAssertTrue(persisted.people.isEmpty)
+        let bookkeeping = try MirrorBookkeepingStore(fileURL: f.root.appending(path: "sync/mirror.json"))
+        let pullToken = try await bookkeeping.load().pullTokens["hub"]
+        XCTAssertNil(pullToken, "The malformed pull stays unacknowledged so the batch retries")
+    }
 }
 
 private actor CallerTokens: PersonalBearerTokenStore {
@@ -82,12 +211,37 @@ private actor CallerTokens: PersonalBearerTokenStore {
 
 private actor CallerRequests {
     private var pushes: [String] = []
-    func record(_ token: String) { pushes.append(token) }
+    private var pushedNames: [String] = []
+    private var pushPayloads: [Data] = []
+    private var pulls = 0
+    func record(_ token: String, names: [String], payload: Data) {
+        pushes.append(token)
+        pushedNames += names
+        pushPayloads.append(payload)
+    }
+    func recordPull() -> Int { pulls += 1; return pulls }
+    func pullCount() -> Int { pulls }
+    func names() -> [String] { pushedNames }
     func snapshot() -> [String] { pushes }
+    func payloads() -> [Data] { pushPayloads }
 }
 
 private final class CallerProtocol: URLProtocol, @unchecked Sendable {
     nonisolated(unsafe) static var handler: (@Sendable (URLRequest) async -> String)?
+    static func body(_ request: URLRequest) -> Data {
+        if let body = request.httpBody { return body }
+        guard let stream = request.httpBodyStream else { return Data() }
+        stream.open()
+        defer { stream.close() }
+        var bytes = [UInt8](repeating: 0, count: 4096)
+        var data = Data()
+        while stream.hasBytesAvailable {
+            let count = stream.read(&bytes, maxLength: bytes.count)
+            guard count > 0 else { break }
+            data.append(contentsOf: bytes.prefix(count))
+        }
+        return data
+    }
     override class func canInit(with request: URLRequest) -> Bool { true }
     override class func canonicalRequest(for request: URLRequest) -> URLRequest { request }
     override func startLoading() {
@@ -117,7 +271,7 @@ private final class CallerFixture {
     let model: AppModel
     private let previousSuccess = UserDefaults.standard.object(forKey: AppModel.lastPlatformSyncKey)
 
-    init() throws {
+    init(pullRecord: String? = nil, cloudRecords: [MirrorRecord] = []) throws {
         UserDefaults.standard.removeObject(forKey: AppModel.lastPlatformSyncKey)
         let configuration = URLSessionConfiguration.ephemeral
         configuration.protocolClasses = [CallerProtocol.self]
@@ -137,8 +291,10 @@ private final class CallerFixture {
                 (try? await store.load())?.hubAccountID == verified.userID
             }
         )
+        var transports: [any MirrorTransport] = [hub]
+        if !cloudRecords.isEmpty { transports.append(CallerCloud(records: cloudRecords)) }
         runtime = MirrorRuntime(
-            transports: [hub],
+            transports: transports,
             store: try MirrorBookkeepingStore(fileURL: root.appending(path: "sync/mirror.json"))
         )
         connection = PersonalMirrorConnection(
@@ -151,7 +307,9 @@ private final class CallerFixture {
             )
         )
         model = AppModel(store: store, cloud: nil, mirror: connection)
+        entered.assertForOverFulfill = false
         let entered = entered, released = released, requests = requests
+        let record = pullRecord ?? #"{"recordType":"person","personId":"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa","personName":"Synthetic remote person","circle":"close","closeness":4,"hue":"clay","createdAt":"2026-09-09"}"#
         CallerProtocol.handler = { request in
             let token = request.value(forHTTPHeaderField: "Authorization") ?? ""
             if request.url!.path.hasSuffix("session") {
@@ -159,12 +317,24 @@ private final class CallerFixture {
                 return "{\"userId\":\"\(id)\",\"email\":\"\(id)@example.invalid\"}"
             }
             if request.url!.path.hasSuffix("push") {
-                await requests.record(token)
-                return #"{"results":[]}"#
+                let payload = CallerProtocol.body(request)
+                let body = try! JSONDecoder().decode(CallerPushRequest.self, from: payload)
+                await requests.record(token, names: body.mutations.map(\.id), payload: payload)
+                let results = body.mutations.map { mutation in
+                    ["idempotencyKey": mutation.idempotencyKey, "id": mutation.id,
+                     "status": "accepted", "version": 2, "cursor": 11] as [String: Any]
+                }
+                return String(data: try! JSONSerialization.data(withJSONObject: ["results": results]), encoding: .utf8)!
             }
-            entered.fulfill()
+            let pull = await requests.recordPull()
+            if pull == 1 { entered.fulfill() }
             for await _ in released.stream { break }
-            return #"{"changes":[{"cursor":10,"changeId":"remote-person","domain":"kith","id":"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa","operation":"upsert","version":1,"occurredAt":"2026-09-09","recordedAt":"2026-09-09T00:00:00.123Z","originDeviceId":"other","record":{"recordType":"person","personId":"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa","personName":"Synthetic remote person","circle":"close","closeness":4,"hue":"clay","createdAt":"2026-09-09"}}],"cursor":10,"hasMore":false}"#
+            let cursor = URLComponents(url: request.url!, resolvingAgainstBaseURL: false)?.queryItems?
+                .first(where: { $0.name == "cursor" })?.value
+            guard cursor == "0" else {
+                return #"{"changes":[],"cursor":10,"hasMore":false}"#
+            }
+            return #"{"changes":[{"cursor":10,"changeId":"remote-person","domain":"kith","id":"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa","operation":"upsert","version":1,"occurredAt":"2026-09-09","recordedAt":"2026-09-09T00:00:00.123Z","originDeviceId":"other","record":\#(record)}],"cursor":10,"hasMore":false}"#
         }
     }
 
@@ -176,3 +346,18 @@ private final class CallerFixture {
         try? FileManager.default.removeItem(at: root)
     }
 }
+
+private actor CallerCloud: MirrorTransport {
+    nonisolated let id = "cloudkit"
+    let records: [MirrorRecord]
+    init(records: [MirrorRecord]) { self.records = records }
+    func availability() -> MirrorAvailability { .available }
+    private var pulls = 0
+    func pull(since token: Data?) -> MirrorPullPage {
+        pulls += 1
+        return MirrorPullPage(records: pulls > 1 ? records : [], nextToken: Data("cloud".utf8))
+    }
+    func push(_ records: [MirrorRecord]) {}
+}
+
+private struct CallerPushRequest: Decodable { let mutations: [SyncMutation] }

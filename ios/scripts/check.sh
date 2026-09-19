@@ -48,6 +48,8 @@ xcodebuild \
   -scheme Kith \
   -destination "$destination" \
   -derivedDataPath "$derived_data" \
+  -testLanguage "${KITH_TEST_LANGUAGE:-en}" \
+  -testRegion "${KITH_TEST_REGION:-US}" \
   test
 xcodebuild \
   -project Kith.xcodeproj \

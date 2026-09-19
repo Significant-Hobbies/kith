@@ -241,7 +241,9 @@ public struct Entry: Identifiable, Codable, Equatable, Sendable {
 }
 
 public struct KithDocument: Codable, Equatable, Sendable {
-    public static let currentSchemaVersion = 1
+    // Version 2 prevents older clients from rewriting away approval/affiliation
+    // evidence. Version-1 files remain readable and require explicit consent.
+    public static let currentSchemaVersion = 2
 
     public var schemaVersion: Int
     public var people: [Person]
@@ -249,6 +251,13 @@ public struct KithDocument: Codable, Equatable, Sendable {
     public var savedAt: Date
     public var deletionDates: [UUID: Date]
     public var hubAccountID: String?
+    /// Device-local approval evidence. An old document has no record approval;
+    /// its document-level account alone never authorizes a later cloud arrival.
+    public var hubRecordOwners: [UUID: String]
+    public var hubApprovedFingerprints: [UUID: String]
+    /// Original wire identities survive import, edits, deletion and relaunch.
+    public var syncRecordNames: [UUID: String]
+    public var syncPersonReferences: [UUID: String]
 
     enum CodingKeys: String, CodingKey {
         case schemaVersion
@@ -256,7 +265,7 @@ public struct KithDocument: Codable, Equatable, Sendable {
         case entries
         case savedAt
         case deletionDates
-        case hubAccountID
+        case hubAccountID, hubRecordOwners, hubApprovedFingerprints, syncRecordNames, syncPersonReferences
     }
 
     public init(
@@ -265,7 +274,11 @@ public struct KithDocument: Codable, Equatable, Sendable {
         entries: [Entry] = [],
         savedAt: Date = .distantPast,
         deletionDates: [UUID: Date] = [:],
-        hubAccountID: String? = nil
+        hubAccountID: String? = nil,
+        hubRecordOwners: [UUID: String] = [:],
+        hubApprovedFingerprints: [UUID: String] = [:],
+        syncRecordNames: [UUID: String] = [:],
+        syncPersonReferences: [UUID: String] = [:]
     ) {
         self.schemaVersion = schemaVersion
         self.people = people
@@ -273,6 +286,10 @@ public struct KithDocument: Codable, Equatable, Sendable {
         self.savedAt = savedAt
         self.deletionDates = deletionDates
         self.hubAccountID = hubAccountID
+        self.hubRecordOwners = hubRecordOwners
+        self.hubApprovedFingerprints = hubApprovedFingerprints
+        self.syncRecordNames = syncRecordNames
+        self.syncPersonReferences = syncPersonReferences
     }
 
     public init(from decoder: Decoder) throws {
@@ -283,6 +300,10 @@ public struct KithDocument: Codable, Equatable, Sendable {
         savedAt = try container.decodeIfPresent(Date.self, forKey: .savedAt) ?? .distantPast
         deletionDates = try container.decodeIfPresent([UUID: Date].self, forKey: .deletionDates) ?? [:]
         hubAccountID = try container.decodeIfPresent(String.self, forKey: .hubAccountID)
+        hubRecordOwners = try container.decodeIfPresent([UUID: String].self, forKey: .hubRecordOwners) ?? [:]
+        hubApprovedFingerprints = try container.decodeIfPresent([UUID: String].self, forKey: .hubApprovedFingerprints) ?? [:]
+        syncRecordNames = try container.decodeIfPresent([UUID: String].self, forKey: .syncRecordNames) ?? [:]
+        syncPersonReferences = try container.decodeIfPresent([UUID: String].self, forKey: .syncPersonReferences) ?? [:]
     }
 
     public func encode(to encoder: Encoder) throws {
@@ -293,6 +314,10 @@ public struct KithDocument: Codable, Equatable, Sendable {
         try container.encode(savedAt, forKey: .savedAt)
         try container.encode(deletionDates, forKey: .deletionDates)
         try container.encodeIfPresent(hubAccountID, forKey: .hubAccountID)
+        try container.encode(hubRecordOwners, forKey: .hubRecordOwners)
+        try container.encode(hubApprovedFingerprints, forKey: .hubApprovedFingerprints)
+        try container.encode(syncRecordNames, forKey: .syncRecordNames)
+        try container.encode(syncPersonReferences, forKey: .syncPersonReferences)
     }
 
     /// Keep the newer working copy while retaining deletions from either copy.
@@ -301,6 +326,8 @@ public struct KithDocument: Codable, Equatable, Sendable {
         // or deletion markers across different (including unapproved) owners.
         guard lhs.hubAccountID == rhs.hubAccountID else { return lhs }
         var chosen = lhs.savedAt >= rhs.savedAt ? lhs : rhs
+        chosen.hubRecordOwners = lhs.hubRecordOwners
+        chosen.hubApprovedFingerprints = [:]
         chosen.deletionDates = lhs.deletionDates.merging(rhs.deletionDates, uniquingKeysWith: max)
         chosen.people.removeAll { chosen.deletionDates[$0.id] != nil }
         for entry in chosen.entries {

@@ -1,6 +1,6 @@
 # Kith — PROJECT STATUS
 
-Last updated: 2026-09-18
+Last updated: 2026-09-19
 
 ## Why / What
 
@@ -36,6 +36,17 @@ web client.
   handoff; local JSON remains the immediate store.
 
 ## Timeline
+
+- 2026-09-19 — Prepared internal TestFlight build 13 with content-bound
+  per-record Hub approval, durable CloudKit affiliation, authenticated Hub
+  authority, stable wire aliases and committed post-apply re-projection.
+  PersonalSyncKit `6a3d228` passed local and hosted checks; Hub version
+  `9a7b2cc0` is live at 100%. The remote-pinned Kith gate passed 61 unit tests,
+  ten UI tests and Release compilation, and App Store Connect export succeeded.
+  The approved combined CloudKit schema is deployed and fresh development and
+  production exports match. The corrected privacy page is live. Physical-device
+  backup, migration/sync acceptance, upload processing and internal assignment
+  remain before build 13 is called released.
 
 - 2026-09-18 — added per-person details under issue 29: ordered
   key-value pairs seeded with relationship / where-they-are /

@@ -62,9 +62,9 @@ struct KithConnectionView: View {
                                     Text(notice).font(.subheadline).foregroundStyle(KithPalette.rust)
                                 }
                                 if model.needsPlatformApproval || (model.platformAccountMatches && model.platformAccountNotice != nil) {
-                                    Text("Connect the people and notes on this iPhone to the account shown above? They will be included in its private Hub copy.")
+                                    Text("Approve the current people and notes on this iPhone for the account shown above? New or changed iCloud copies will wait for another approval. Records connected to another account stay separate.")
                                         .font(.subheadline)
-                                    Button("Connect these people to this account") {
+                                    Button("Approve these people and notes") {
                                         Task { await model.approvePlatformAccount() }
                                     }
                                     .buttonStyle(ClayButtonStyle())
@@ -133,6 +133,8 @@ struct KithConnectionView: View {
                             .foregroundStyle(KithPalette.rust)
                     }
 
+                    Link("Privacy policy", destination: URL(string: "https://kith.significanthobbies.com/privacy")!)
+                        .font(.footnote)
                 }
                 .padding(28)
             }
