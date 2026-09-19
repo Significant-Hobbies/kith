@@ -103,6 +103,38 @@ final class KithCallerSyncTests: XCTestCase {
         XCTAssertEqual(pending, 0, "The stale pull was never committed")
     }
 
+    func testEditDuringSyncQueuesOneFreshPassWithCommittedState() async throws {
+        let f = try CallerFixture()
+        defer { f.cleanup() }
+        await f.tokens.save("account-a")
+        await f.model.load()
+        let approval = Task { await f.model.approvePlatformAccount() }
+        await fulfillment(of: [f.entered], timeout: 5)
+
+        let id = UUID(uuidString: "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa")!
+        let edited = Person(id: id, name: "Edited locally", closeness: 5, hue: .clay)
+        let saved = await f.model.savePerson(edited)
+        XCTAssertTrue(saved)
+        await f.model.syncFromPlatform()
+        f.released.continuation.finish()
+        await approval.value
+
+        let pullCount = await f.requests.pullCount()
+        XCTAssertEqual(pullCount, 2, "A queued edit should trigger one fresh pass")
+        let pushes = await f.requests.snapshot()
+        XCTAssertEqual(pushes.count, 1, "The fresh pass should push the edited record once")
+        let payloads = await f.requests.payloads()
+        let payload = try XCTUnwrap(payloads.first)
+        let body = try XCTUnwrap(JSONSerialization.jsonObject(with: payload) as? [String: Any])
+        let mutations = try XCTUnwrap(body["mutations"] as? [[String: Any]])
+        let mutation = try XCTUnwrap(mutations.first { $0["id"] as? String == id.uuidString.lowercased() })
+        let record = try XCTUnwrap(mutation["record"] as? [String: Any])
+        XCTAssertEqual(record["personName"] as? String, "Edited locally",
+                       "The queued pass must push the committed local edit")
+        XCTAssertEqual(f.model.document.person(id: id)?.name, "Edited locally")
+        XCTAssertNil(f.model.platformSyncIssue)
+    }
+
     func testApprovalFailedDownloadCommitAndRetrySurviveReopen() async throws {
         let f = try CallerFixture()
         defer { f.cleanup() }
@@ -180,9 +212,18 @@ private actor CallerTokens: PersonalBearerTokenStore {
 private actor CallerRequests {
     private var pushes: [String] = []
     private var pushedNames: [String] = []
-    func record(_ token: String, names: [String]) { pushes.append(token); pushedNames += names }
+    private var pushPayloads: [Data] = []
+    private var pulls = 0
+    func record(_ token: String, names: [String], payload: Data) {
+        pushes.append(token)
+        pushedNames += names
+        pushPayloads.append(payload)
+    }
+    func recordPull() -> Int { pulls += 1; return pulls }
+    func pullCount() -> Int { pulls }
     func names() -> [String] { pushedNames }
     func snapshot() -> [String] { pushes }
+    func payloads() -> [Data] { pushPayloads }
 }
 
 private final class CallerProtocol: URLProtocol, @unchecked Sendable {
@@ -276,15 +317,17 @@ private final class CallerFixture {
                 return "{\"userId\":\"\(id)\",\"email\":\"\(id)@example.invalid\"}"
             }
             if request.url!.path.hasSuffix("push") {
-                let body = try! JSONDecoder().decode(CallerPushRequest.self, from: CallerProtocol.body(request))
-                await requests.record(token, names: body.mutations.map(\.id))
+                let payload = CallerProtocol.body(request)
+                let body = try! JSONDecoder().decode(CallerPushRequest.self, from: payload)
+                await requests.record(token, names: body.mutations.map(\.id), payload: payload)
                 let results = body.mutations.map { mutation in
                     ["idempotencyKey": mutation.idempotencyKey, "id": mutation.id,
                      "status": "accepted", "version": 2, "cursor": 11] as [String: Any]
                 }
                 return String(data: try! JSONSerialization.data(withJSONObject: ["results": results]), encoding: .utf8)!
             }
-            entered.fulfill()
+            let pull = await requests.recordPull()
+            if pull == 1 { entered.fulfill() }
             for await _ in released.stream { break }
             return #"{"changes":[{"cursor":10,"changeId":"remote-person","domain":"kith","id":"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa","operation":"upsert","version":1,"occurredAt":"2026-09-09","recordedAt":"2026-09-09T00:00:00.123Z","originDeviceId":"other","record":\#(record)}],"cursor":10,"hasMore":false}"#
         }

@@ -30,6 +30,7 @@ final class AppModel {
     var message: String?
     private(set) var isPlatformSyncing = false
     private var platformSyncRequested = false
+    private var platformRecoveryRequested = false
     private(set) var lastPlatformSyncAt: Date?
     private(set) var platformPendingMutationCount = 0
     private(set) var platformSyncIssue: HubSyncIssue?
@@ -412,56 +413,73 @@ final class AppModel {
         guard hasLoadedDocument else { return }
         guard !ProcessInfo.processInfo.arguments.contains("--sync-status-demo") else { return }
         guard let mirror else { return }
-        guard !isPlatformSyncing else { platformSyncRequested = true; return }
-        isPlatformSyncing = true
-        platformRecoveryNotice = nil
-        platformSyncIssue = nil
-        defer { isPlatformSyncing = false }
-        platformPendingMutationCount = (try? await mirror.runtime.unpushedCount(
-            transportID: "hub", records: mirrorRecords(transportID: "hub")
-        )) ?? 0
-        if account?.isSignedIn == true {
-            if needsPlatformApproval {
-                platformAccountNotice = "Some people or notes need your approval before they can be included in this account’s Hub copy."
-            } else if account?.session?.userId != document.hubAccountID {
-                platformAccountNotice = "These people are connected to another Hub account. Sign in to that account to sync, or keep using Kith locally."
-            }
+        guard !isPlatformSyncing else {
+            platformSyncRequested = true
+            platformRecoveryRequested = platformRecoveryRequested || recoverMissingRecords
+            return
         }
-        do {
-            if recoverMissingRecords { try await mirror.runtime.repullAll() }
-            let verified = try? await mirror.identity.verifiedSyncAccount()
-            let pass = makeMirrorPass(account: verified)
-            let outcome = try await mirror.runtime.synchronize(recordsForTransport: { transportID in
-                try await self.mirrorRecords(for: pass, transportID: transportID)
-            }, validateLocalSnapshot: { transportID in
-                try await self.validateMirrorPass(pass, transportID: transportID)
-            }, applyFromTransport: { transportID, pulled in
-                try await self.commitMirrorRecords(pulled, pass: pass, source: transportID)
-            })
+        isPlatformSyncing = true
+        var recoveryRequested = recoverMissingRecords || platformRecoveryRequested
+        platformRecoveryRequested = false
+        defer { isPlatformSyncing = false }
+
+        while true {
+            guard !Task.isCancelled else { break }
+            platformSyncRequested = false
+            let recovering = recoveryRequested
+            recoveryRequested = false
+            platformRecoveryNotice = nil
+            platformSyncIssue = nil
             platformPendingMutationCount = (try? await mirror.runtime.unpushedCount(
                 transportID: "hub", records: mirrorRecords(transportID: "hub")
             )) ?? 0
-            if outcome.transports.contains(where: { $0.transportID == "hub" && $0.failure == nil }) {
-                try await validateMirrorPass(pass, transportID: "hub")
-                let syncedAt = Date()
-                lastPlatformSyncAt = syncedAt
-                UserDefaults.standard.set(syncedAt, forKey: Self.lastPlatformSyncKey)
+            if account?.isSignedIn == true {
+                if needsPlatformApproval {
+                    platformAccountNotice = "Some people or notes need your approval before they can be included in this account’s Hub copy."
+                } else if account?.session?.userId != document.hubAccountID {
+                    platformAccountNotice = "These people are connected to another Hub account. Sign in to that account to sync, or keep using Kith locally."
+                }
             }
-            if let hubFailure = outcome.transports.first(where: { $0.transportID == "hub" })?.failure {
-                platformSyncIssue = Self.syncIssue(forFailure: hubFailure)
+            do {
+                if recovering { try await mirror.runtime.repullAll() }
+                let verified = try? await mirror.identity.verifiedSyncAccount()
+                let pass = makeMirrorPass(account: verified)
+                let outcome = try await mirror.runtime.synchronize(recordsForTransport: { transportID in
+                    try await self.mirrorRecords(for: pass, transportID: transportID)
+                }, validateLocalSnapshot: { transportID in
+                    try await self.validateMirrorPass(pass, transportID: transportID)
+                }, applyFromTransport: { transportID, pulled in
+                    try await self.commitMirrorRecords(pulled, pass: pass, source: transportID)
+                })
+                platformPendingMutationCount = (try? await mirror.runtime.unpushedCount(
+                    transportID: "hub", records: mirrorRecords(transportID: "hub")
+                )) ?? 0
+                if outcome.transports.contains(where: { $0.transportID == "hub" && $0.failure == nil }) {
+                    try await validateMirrorPass(pass, transportID: "hub")
+                    let syncedAt = Date()
+                    lastPlatformSyncAt = syncedAt
+                    UserDefaults.standard.set(syncedAt, forKey: Self.lastPlatformSyncKey)
+                }
+                if let hubFailure = outcome.transports.first(where: { $0.transportID == "hub" })?.failure {
+                    platformSyncIssue = Self.syncIssue(forFailure: hubFailure)
+                }
+                // A partial pass is not a recovery: only a fully complete outcome
+                // earns the success receipt, so a rejected batch stays a failure.
+                if recovering, outcome.isComplete {
+                    platformRecoveryNotice = "Checked Hub and iCloud history for missing people and notes. Your existing local details were kept."
+                }
+            } catch {
+                platformPendingMutationCount = (try? await mirror.runtime.unpushedCount(
+                    transportID: "hub", records: mirrorRecords(transportID: "hub")
+                )) ?? 0
+                if error is PersonalSyncOwnershipError {
+                    platformAccountNotice = "This connection needs your approval, or belongs to another account. Your people and waiting changes are preserved."
+                } else { platformSyncIssue = HubSyncIssue(error: error) }
             }
-            // A partial pass is not a recovery: only a fully complete outcome
-            // earns the success receipt, so a rejected batch stays a failure.
-            if recoverMissingRecords, outcome.isComplete {
-                platformRecoveryNotice = "Checked Hub and iCloud history for missing people and notes. Your existing local details were kept."
-            }
-        } catch {
-            platformPendingMutationCount = (try? await mirror.runtime.unpushedCount(
-                transportID: "hub", records: mirrorRecords(transportID: "hub")
-            )) ?? 0
-            if error is PersonalSyncOwnershipError {
-                platformAccountNotice = "This connection needs your approval, or belongs to another account. Your people and waiting changes are preserved."
-            } else { platformSyncIssue = HubSyncIssue(error: error) }
+
+            guard platformSyncRequested, !Task.isCancelled else { break }
+            recoveryRequested = platformRecoveryRequested
+            platformRecoveryRequested = false
         }
     }
 

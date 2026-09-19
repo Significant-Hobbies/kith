@@ -1,12 +1,12 @@
 # Kith internal TestFlight CloudKit schema review
 
-Observed 19 September 2026 using schema-only `cktool export-schema` reads for team `8F7LXHTJZR`, container `iCloud.com.significanthobbies.kith`. `read-receipt.json` preserves the original read commands, UTC times, and SHA-256 hashes. No credentials were printed or manually read and no records were queried. After approval, the additive proposal was imported into development; production remains unchanged. CloudKit Console was used only for the deployment-delta review; no data view was opened.
+Observed 19 September 2026 using schema-only `cktool export-schema` reads for team `8F7LXHTJZR`, container `iCloud.com.significanthobbies.kith`. `read-receipt.json` preserves the original read commands, UTC times, and SHA-256 hashes. No credentials were printed or manually read and no records were queried. The initial observations below preceded development import and the separately approved production deployment recorded later in this receipt. No data view was opened.
 
-## Actual provider state
+## Initial provider observations, before deployment
 
-- Production contains only built-in `Users`. Neither `KithDocument` nor `MirrorRecord` is deployed.
-- Development now contains `Users`, `KithDocument.payload: BYTES QUERYABLE SORTABLE`, and the imported `MirrorRecord` proposal.
-- `hubOwnerID` remains absent from production and is present on development's `MirrorRecord`.
+- The initial production export contained only built-in `Users`; neither `KithDocument` nor `MirrorRecord` was deployed then.
+- Following development import, development contained `Users`, `KithDocument.payload: BYTES QUERYABLE SORTABLE`, and the imported `MirrorRecord` proposal.
+- At that intermediate stage, `hubOwnerID` was absent from production and present on development's `MirrorRecord`.
 - Schema export describes types and fields, not private database zone existence or record contents. The `Sync` zone has not been queried or verified.
 
 ## Exact proposed additive change
@@ -27,7 +27,7 @@ CloudKit custom fields permit absence. `hubOwnerID` is additive affiliation meta
 
 `ios/Sources/KithCore/CloudStore.swift` declares the legacy record type `KithDocument`, record name `current`, and payload key `payload` (lines 23–25). It reads/writes `container.privateCloudDatabase` using `CKRecord.ID(recordName: "current")`, which is the default zone. Preserve this type and field for old clients and import compatibility; do not move, clear, or re-seed its record.
 
-The shared `CloudKitMirrorTransport` defaults to custom zone `Sync`, record type `MirrorRecord`, also in the private database. The schema proposal creates no zone and moves no records. The production candidate adds only `MirrorRecord`; it does not promote the legacy development-only `KithDocument` type.
+The shared `CloudKitMirrorTransport` defaults to custom zone `Sync`, record type `MirrorRecord`, also in the private database. The schema proposal creates no zone and moves no records. The original production proposal added only `MirrorRecord`; the subsequently approved Console deployment included both types, as recorded above.
 
 ## Approval and qualification boundary
 

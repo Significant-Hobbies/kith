@@ -32,6 +32,8 @@ The remote-pinned signed archive is retained at `/Users/sarthak/Desktop/fleet/.w
 
 App Store Connect export succeeded from that archive. The upload artifact is `evidence/Kith-1.0.0-13-4beda0d-app-store/Kith.ipa`, SHA-256 `8b272692027a866c9c6de950853b597928c4403a52262741ae9d9b03164a39f5`.
 
+The subsequent PR review found that sync requests arriving during an active pass were not drained. The queued-sync repair is newer than this archive: the existing archive, IPA, and native receipts above do not qualify that repair. Rebuild and qualify the exact final source before upload; no upload or device migration is authorized by a source merge.
+
 ## Provider observations
 
 App Store Connect app `6803666674` currently has uploaded builds through 1.0.0 (6). Build 13 is unused. The Personal Testing group has automatic Xcode-build distribution enabled, so uploading build 13 may immediately distribute it internally.
@@ -47,6 +49,6 @@ The corrected privacy page is live at `https://kith.significanthobbies.com/priva
 3. Completed: landing/privacy source published and verified live from deployment `080d00c2-a61c-4711-b9de-b703d078b08a`.
 4. Completed: approved combined CloudKit schema deployed and verified by a fresh production export.
 5. Open: connect the paired owner iPhone, back up its Kith container, and run the signed build with disposable records. Verify v1-to-v2 upgrade, offline edit/retry, CloudKit pull/push, Hub approval, account switch, tombstone cascade, retained store after relaunch and rollback behavior.
-6. Prepared: the exact-source archive and App Store Connect IPA are exported. Upload build 13 after device qualification, then confirm processing and internal-testing assignment.
+6. Open: rebuild the archive and App Store Connect IPA from the final queued-sync repair, repeat candidate qualification, and upload only after device qualification and release approval. Then confirm processing and internal-testing assignment.
 
-Astra's final source review found no remaining high-priority source blocker in the Kith approval/provenance, cascade, shared re-projection, alias or CloudKit-owner paths. The open gates above concern publishing exact source, changing provider schemas/backend/privacy hosting, migrating the owner's real local document and distributing the build.
+The earlier source review found no remaining high-priority blocker in the Kith approval/provenance, cascade, shared re-projection, alias or CloudKit-owner paths. The later queued-sync finding and its new qualification requirement are recorded above. Remaining release gates concern rebuilding exact source, migrating the owner's real local document, physical-device verification, and distributing the build. Provider observations here are retained receipts, not a fresh provider audit during PR review.
