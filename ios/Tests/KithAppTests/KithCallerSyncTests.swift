@@ -22,21 +22,19 @@ final class KithCallerSyncTests: XCTestCase {
         await f.model.syncFromPlatform(recoverMissingRecords: true)
         XCTAssertEqual(f.model.account?.session?.userId, "b")
         XCTAssertEqual(f.model.document.hubAccountID, "a")
-        // The held pull resolved under account A, so its records are A's data
-        // and legitimately committed to the document bound to A.
-        XCTAssertEqual(f.model.document.people.map(\.name), ["Synthetic remote person"])
-        // The pull pass legitimately completed under account A before the
-        // switch, and nothing reached account B.
-        XCTAssertNotNil(f.model.lastPlatformSyncAt)
+        // An account switch invalidates the held response before committing
+        // any data or advancing the original account's receipt.
+        XCTAssertTrue(f.model.document.people.isEmpty)
+        XCTAssertNil(f.model.lastPlatformSyncAt)
         let requests = await f.requests.snapshot()
         XCTAssertTrue(requests.isEmpty, "No mutation may be pushed to the switched account")
         let reopened = try await f.store.load()
         XCTAssertEqual(reopened.hubAccountID, "a")
-        XCTAssertEqual(reopened.people.map(\.name), ["Synthetic remote person"])
+        XCTAssertTrue(reopened.people.isEmpty)
         let pending = try await f.runtime.unpushedCount(
             transportID: "hub", records: f.model.mirrorRecords()
         )
-        XCTAssertEqual(pending, 1, "The applied record still waits for account A's next sync")
+        XCTAssertEqual(pending, 0, "The stale pull was never committed")
     }
 
     func testApprovalFailedDownloadCommitAndRetrySurviveReopen() async throws {
@@ -166,7 +164,7 @@ private final class CallerFixture {
             }
             entered.fulfill()
             for await _ in released.stream { break }
-            return #"{"changes":[{"cursor":10,"changeId":"remote-person","domain":"kith","id":"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa","operation":"upsert","version":1,"occurredAt":"2026-09-09","recordedAt":"2026-09-09","originDeviceId":"other","record":{"recordType":"person","personId":"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa","personName":"Synthetic remote person","circle":"close","closeness":4,"hue":"clay","createdAt":"2026-09-09"}}],"cursor":10,"hasMore":false}"#
+            return #"{"changes":[{"cursor":10,"changeId":"remote-person","domain":"kith","id":"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa","operation":"upsert","version":1,"occurredAt":"2026-09-09T00:00:00Z","recordedAt":"2026-09-09T00:00:00Z","originDeviceId":"other","record":{"recordType":"person","personId":"aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa","personName":"Synthetic remote person","circle":"close","closeness":4,"hue":"clay","createdAt":"2026-09-09"}}],"cursor":10,"hasMore":false}"#
         }
     }
 
