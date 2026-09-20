@@ -1,10 +1,10 @@
 ---
 title: Designing a relationship constellation without social scoring
 slug: designing-a-relationship-constellation-without-social-scoring
-target query: relationship tracker without social scoring
-search intent: Informational / Conceptual
-meta title: Designing a Relationship Constellation Without Social Scoring | Kith
-meta description: How Kith uses a floating constellation and explicit closeness—not algorithms or automated social scoring—to help you remember the people who matter.
+target_query: relationship tracker without social scoring
+search_intent: Informational / Conceptual
+meta_title: Designing a Relationship Constellation Without Social Scoring | Kith
+meta_description: How Kith uses a floating constellation and explicit closeness—not algorithms or automated social scoring—to help you remember the people who matter.
 ---
 
 ## Outline

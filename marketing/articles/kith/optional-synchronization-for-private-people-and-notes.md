@@ -1,10 +1,10 @@
 ---
 title: Optional synchronization for private people and notes
 slug: optional-synchronization-for-private-people-and-notes
-target query: private relationship tracker sync
-search intent: Understand how to keep personal notes about people synced privately across devices without mandatory accounts or cloud surveillance.
-meta title: Optional Synchronization for Private People and Notes in Kith
-meta description: Learn how Kith keeps your notes about close people private and local-first, with completely optional Hub synchronization.
+target_query: private relationship tracker sync
+search_intent: Understand how to keep personal notes about people synced privately across devices without mandatory accounts or cloud surveillance.
+meta_title: Optional Synchronization for Private People and Notes in Kith
+meta_description: Learn how Kith keeps your notes about close people private and local-first, with completely optional Hub synchronization.
 ---
 
 ## Outline
