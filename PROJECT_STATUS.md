@@ -1,6 +1,6 @@
 # Kith — PROJECT STATUS
 
-Last updated: 2026-09-18
+Last updated: 2026-09-23
 
 ## Why / What
 
@@ -36,6 +36,29 @@ web client.
   handoff; local JSON remains the immediate store.
 
 ## Timeline
+
+- 2026-09-23 — prepared the App Store Connect 1.0 listing draft with product
+  copy, Lifestyle category, verified live privacy and support URLs, manual
+  release, App Review contact and walkthrough notes, and two existing
+  1206 × 2622 iPhone screenshots (constellation and onboarding), free launch
+  pricing and on-release availability in all 175
+  regions, and iOS-only distribution (Mac and Vision Pro compatibility
+  disabled). No public build was selected or review submitted. Processed
+  build 13 predates the two latest source fixes; a new qualified build is
+  needed. The App Review contact's phone and email were saved and verified
+  after reload. With the owner's approval, the App Privacy disclosure was
+  published in App Store Connect: nine data types for optional account sync
+  and selected contact imports, each used for app functionality, linked to
+  the user's identity, and not used for tracking. The owner confirmed that
+  Kith includes no third-party content; the corresponding Content Rights
+  answer and a source-backed 4+ age rating were saved and verified after
+  reload.
+  The local native test gate stops before tests because CoreSimulatorService is
+  unavailable in this sandbox; an unsigned device-target Release build also
+  cannot resolve the pinned PersonalSyncKit package because github.com is
+  unreachable here. Neither failure qualifies a new binary. The live
+  support site still describes internal TestFlight only and must be updated
+  before a public launch.
 
 - 2026-09-18 — added per-person details under issue 29: ordered
   key-value pairs seeded with relationship / where-they-are /

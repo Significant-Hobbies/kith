@@ -12,7 +12,7 @@ struct LogCard: View {
                 Text(entry.kind.title)
                     .font(.subheadline.weight(.semibold))
                 Spacer()
-                Text(entry.happenedOn, format: .dateTime.month(.abbreviated).day())
+                Text(entry.happenedOn, format: .dateTime.month(.abbreviated).day().year())
                     .font(.subheadline)
                     .foregroundStyle(KithPalette.espresso.opacity(0.5))
             }
