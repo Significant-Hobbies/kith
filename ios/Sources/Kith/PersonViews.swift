@@ -122,7 +122,7 @@ struct PersonPage: View {
                 .font(.subheadline.weight(.medium))
                 .foregroundStyle(KithPalette.espresso.opacity(0.58))
             if let last = model.document.lastContact(for: person.id) {
-                Text("Last note \(last.formatted(date: .abbreviated, time: .omitted))")
+                Text("Last note · \(last.formatted(date: .long, time: .omitted))")
                     .font(.footnote)
                     .foregroundStyle(KithPalette.espresso.opacity(0.5))
             }

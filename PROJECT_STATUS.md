@@ -1,6 +1,6 @@
 # Kith — PROJECT STATUS
 
-Last updated: 2026-09-19
+Last updated: 2026-10-09
 
 ## Why / What
 
@@ -36,6 +36,30 @@ web client.
   handoff; local JSON remains the immediate store.
 
 ## Timeline
+
+- 2026-10-09 — landed the two small date-display fixes from the 2026-09-26
+  work sweep: log cards show the year, and the person page reads
+  "Last note · <long date>". A new qualified build is still needed before any
+  public submission.
+
+- 2026-09-23 — prepared the App Store Connect 1.0 listing draft with product
+  copy, Lifestyle category, verified live privacy and support URLs, manual
+  release, App Review contact and walkthrough notes, and two existing
+  1206 × 2622 iPhone screenshots (constellation and onboarding), free launch
+  pricing and on-release availability in all 175
+  regions, and iOS-only distribution (Mac and Vision Pro compatibility
+  disabled). No public build was selected or review submitted. Processed
+  build 13 predates the two latest source fixes; a new qualified build is
+  needed. The App Review contact's phone and email were saved and verified
+  after reload. With the owner's approval, the App Privacy disclosure was
+  published in App Store Connect: nine data types for optional account sync
+  and selected contact imports, each used for app functionality, linked to
+  the user's identity, and not used for tracking. The owner confirmed that
+  Kith includes no third-party content; the corresponding Content Rights
+  answer and a source-backed 4+ age rating were saved and verified after
+  reload.
+  The live support site still describes internal TestFlight only and must be
+  updated before a public launch.
 
 - 2026-09-19 — Prepared internal TestFlight build 13 with content-bound
   per-record Hub approval, durable CloudKit affiliation, authenticated Hub
