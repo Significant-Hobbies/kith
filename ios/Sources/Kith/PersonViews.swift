@@ -1,4 +1,5 @@
 import KithCore
+import SaaSMakerUI
 import SwiftUI
 
 struct PersonPage: View {
@@ -23,9 +24,13 @@ struct PersonPage: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Close") { dismiss() }
+                        .textCase(.lowercase)
+                        .accessibilityLabel("Close")
                 }
                 ToolbarItem(placement: .primaryAction) {
                     Button("Edit") { isEditing = true }
+                        .textCase(.lowercase)
+                        .accessibilityLabel("Edit")
                 }
             }
             .sheet(isPresented: $isEditing) {
@@ -42,6 +47,8 @@ struct PersonPage: View {
                         if await model.deletePerson(id: personID) { dismiss() }
                     }
                 }
+                .textCase(.lowercase)
+                .accessibilityLabel("Remove")
             } message: {
                 Text("Their notes go with them. This stays on this phone.")
             }
@@ -59,10 +66,10 @@ struct PersonPage: View {
             VStack(alignment: .leading, spacing: 22) {
                 header(person)
                 if !person.howWeMet.isEmpty {
-                    labeled("How you met", person.howWeMet)
+                    labeled("How you met", person.howWeMet, lowercase: true)
                 }
                 if !person.standingNotes.isEmpty {
-                    labeled("Keep in mind", person.standingNotes)
+                    labeled("Keep in mind", person.standingNotes, lowercase: true)
                 }
                 ForEach(person.details) { detail in
                     labeled(detail.key, detail.value)
@@ -70,23 +77,27 @@ struct PersonPage: View {
                 if !person.listItems.isEmpty {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("Notes")
-                            .font(.caption.weight(.semibold))
+                            .textCase(.lowercase)
+                            .accessibilityLabel("Notes")
+                            .font(KithType.caption.weight(.semibold))
                             .foregroundStyle(KithPalette.espresso.opacity(0.5))
                         ForEach(person.listItems) { item in
                             Text("• \(item.text)")
-                                .font(.body)
+                                .font(KithType.body)
                         }
                     }
                 }
                 if let birthday = person.birthday {
-                    labeled("Birthday", ContactImport.birthdayText(birthday))
+                    labeled("Birthday", ContactImport.birthdayText(birthday), lowercase: true)
                 }
                 HStack {
-                    Text("Log")
-                        .font(.title3.weight(.semibold))
+                    SMSectionHeader("log", size: 20)
+                        .accessibilityLabel("Log")
                     Spacer()
                     Button("Add") { isLogging = true }
-                        .font(.body.weight(.semibold))
+                        .textCase(.lowercase)
+                        .accessibilityLabel("Add")
+                        .buttonStyle(SMButtonStyle(.link))
                 }
                 .padding(.top, 8)
                 if entries.isEmpty {
@@ -99,13 +110,16 @@ struct PersonPage: View {
                                 Button("Delete", role: .destructive) {
                                     Task { await model.deleteEntry(id: entry.id) }
                                 }
+                                .textCase(.lowercase)
+                                .accessibilityLabel("Delete")
                             }
                     }
                 }
-                Button("Remove \(person.firstName)", role: .destructive) {
+                Button("remove \(person.firstName)", role: .destructive) {
                     confirmDelete = true
                 }
-                .font(.subheadline.weight(.medium))
+                .accessibilityLabel("Remove \(person.firstName)")
+                .font(KithType.subheadline.weight(.medium))
                 .padding(.top, 16)
             }
             .padding(24)
@@ -116,14 +130,15 @@ struct PersonPage: View {
         VStack(spacing: 12) {
             LanternView(person: person, diameter: CGFloat(person.lanternDiameter))
             Text(person.name)
-                .font(.largeTitle.weight(.semibold))
+                .font(KithType.largeTitle)
+                .fixedSize(horizontal: false, vertical: true)
                 .multilineTextAlignment(.center)
             Text("\(person.circle.title) · closeness \(person.closeness)")
-                .font(.subheadline.weight(.medium))
+                .font(KithType.subheadline.weight(.medium))
                 .foregroundStyle(KithPalette.espresso.opacity(0.58))
             if let last = model.document.lastContact(for: person.id) {
                 Text("Last note · \(last.formatted(date: .long, time: .omitted))")
-                    .font(.footnote)
+                    .font(KithType.footnote)
                     .foregroundStyle(KithPalette.espresso.opacity(0.5))
             }
         }
@@ -131,13 +146,14 @@ struct PersonPage: View {
         .padding(.top, 8)
     }
 
-    private func labeled(_ title: String, _ body: String) -> some View {
+    private func labeled(_ title: String, _ body: String, lowercase: Bool = false) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(title)
-                .font(.caption.weight(.semibold))
+            Text(lowercase ? title.lowercased() : title)
+                .accessibilityLabel(title)
+                .font(KithType.caption.weight(.semibold))
                 .foregroundStyle(KithPalette.espresso.opacity(0.5))
             Text(body)
-                .font(.body)
+                .font(KithType.body)
         }
     }
 }
@@ -189,7 +205,7 @@ struct PersonEditor: View {
                             .foregroundStyle(KithPalette.rust)
                     }
                 }
-                Section("Who") {
+                Section {
                     TextField("Name", text: $name)
                     Picker("Circle", selection: $circle) {
                         ForEach(CircleKind.allCases, id: \.self) { kind in
@@ -198,35 +214,54 @@ struct PersonEditor: View {
                     }
                     VStack(alignment: .leading, spacing: 10) {
                         Text("Closeness")
+                            .textCase(.lowercase)
+                            .accessibilityLabel("Closeness")
                         ClosenessRow(value: $closeness)
                     }
                     VStack(alignment: .leading, spacing: 10) {
                         Text("Colour")
+                            .textCase(.lowercase)
+                            .accessibilityLabel("Colour")
                         HueRow(hue: $hue)
                     }
+                } header: {
+                    Text("Who")
+                        .textCase(.lowercase)
+                        .accessibilityLabel("Who")
                 }
-                Section("About them") {
+                Section {
                     TextField("How you met", text: $howWeMet, axis: .vertical)
                     TextField("Things to keep in mind", text: $standingNotes, axis: .vertical)
                     Toggle("Birthday", isOn: $hasBirthday)
                     if hasBirthday {
                         DatePicker("Birthday", selection: $birthday, displayedComponents: .date)
                     }
+                } header: {
+                    Text("About them")
+                        .textCase(.lowercase)
+                        .accessibilityLabel("About them")
                 }
-                Section("Details") {
+                Section {
                     ForEach($details) { $detail in
                         HStack(spacing: 10) {
-                            TextField("Label", text: $detail.key)
-                                .frame(width: 110)
-                            TextField("Detail", text: $detail.value)
+                            TextField("Label", text: $detail.key, axis: .vertical)
+                                .frame(maxWidth: .infinity)
+                            TextField("Detail", text: $detail.value, axis: .vertical)
+                                .frame(maxWidth: .infinity)
                         }
                     }
                     .onDelete { details.remove(atOffsets: $0) }
                     Button("Add detail") {
                         details.append(PersonDetail(key: ""))
                     }
+                    .textCase(.lowercase)
+                    .accessibilityLabel("Add detail")
+                } header: {
+                    Text("Details")
+                        .textCase(.lowercase)
+                        .accessibilityLabel("Details")
                 }
-                Section("Notes") {
+                Section {
                     ForEach($listItems) { $item in
                         TextField("Note", text: $item.text)
                     }
@@ -234,18 +269,28 @@ struct PersonEditor: View {
                     Button("Add a note") {
                         listItems.append(PersonListItem(text: ""))
                     }
+                    .textCase(.lowercase)
+                    .accessibilityLabel("Add a note")
+                } header: {
+                    Text("Notes")
+                        .textCase(.lowercase)
+                        .accessibilityLabel("Notes")
                 }
             }
             .scrollContentBackground(.hidden)
             .background(KithPalette.cream)
-            .navigationTitle(person == nil ? "Someone new" : "Edit")
+            .kithNavigationTitle(person == nil ? "Someone new" : "Edit")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
+                        .textCase(.lowercase)
+                        .accessibilityLabel("Cancel")
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") { save() }
+                        .textCase(.lowercase)
+                        .accessibilityLabel("Save")
                         .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                 }
             }

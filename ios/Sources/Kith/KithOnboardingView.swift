@@ -1,4 +1,5 @@
 import KithCore
+import SaaSMakerUI
 import SwiftUI
 
 private enum KithOnboardingStep {
@@ -54,75 +55,87 @@ struct KithOnboardingView: View {
                     existingOwnerActions
                 } else {
                     lanternPreview
-                VStack(alignment: .leading, spacing: 16) {
-                    TextField("Their name", text: $name)
-                        .textFieldStyle(.roundedBorder)
-                        .textContentType(.name)
-                        .accessibilityLabel("Their name")
-                    Picker("Circle", selection: $circle) {
-                        ForEach(CircleKind.allCases, id: \.self) { option in
-                            Text(option.title).tag(option)
+                    SMCard {
+                        VStack(alignment: .leading, spacing: 16) {
+                            TextField("Their name", text: $name)
+                                .textFieldStyle(.roundedBorder)
+                                .textContentType(.name)
+                                .accessibilityLabel("Their name")
+                            Picker("Circle", selection: $circle) {
+                                ForEach(CircleKind.allCases, id: \.self) { option in
+                                    Text(option.title).tag(option)
+                                }
+                            }
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("How close are you?")
+                                    .textCase(.lowercase)
+                                    .accessibilityLabel("How close are you?")
+                                    .font(KithType.headline)
+                                ClosenessRow(value: $closeness)
+                                Text("You choose this value. Kith never infers closeness from recency, notes, or circle.")
+                                    .font(KithType.footnote)
+                                    .foregroundStyle(KithPalette.espresso.opacity(0.62))
+                            }
+                            VStack(alignment: .leading, spacing: 8) {
+                                Text("Lantern colour").font(KithType.headline)
+                                    .textCase(.lowercase)
+                                    .accessibilityLabel("Lantern colour")
+                                HueRow(hue: $hue)
+                            }
                         }
                     }
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("How close are you?")
-                            .font(.headline)
-                        ClosenessRow(value: $closeness)
-                        Text("You choose this value. Kith never infers closeness from recency, notes, or circle.")
-                            .font(.footnote)
-                            .foregroundStyle(KithPalette.espresso.opacity(0.62))
-                    }
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("Lantern colour").font(.headline)
-                        HueRow(hue: $hue)
-                    }
-                }
-                .padding(20)
-                .background(KithPalette.cream, in: RoundedRectangle(cornerRadius: 24, style: .continuous))
 
-                Button("Place in my constellation") { savePerson() }
-                    .buttonStyle(ClayButtonStyle())
-                    .frame(maxWidth: .infinity)
-                    .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                    .opacity(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? 0.5 : 1)
+                    Button("Place in my constellation") { savePerson() }
+                        .textCase(.lowercase)
+                        .accessibilityLabel("Place in my constellation")
+                        .buttonStyle(SMButtonStyle(.brand))
+                        .frame(maxWidth: .infinity)
+                        .disabled(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                        .opacity(name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? 0.5 : 1)
 
-                Button("Open Kith first") { model.finishOnboarding() }
-                    .font(.headline)
-                    .frame(maxWidth: .infinity, minHeight: 44)
+                    Button("Open Kith first") { model.finishOnboarding() }
+                        .textCase(.lowercase)
+                        .accessibilityLabel("Open Kith first")
+                        .font(KithType.headline)
+                        .frame(maxWidth: .infinity, minHeight: 44)
 
-                Text("No Contacts permission. This is saved on your iPhone first and works offline.")
-                    .font(.footnote)
-                    .foregroundStyle(KithPalette.espresso.opacity(0.58))
-                    .frame(maxWidth: .infinity, alignment: .center)
+                    Text("No Contacts permission. This is saved on your iPhone first and works offline.")
+                        .font(KithType.footnote)
+                        .foregroundStyle(KithPalette.espresso.opacity(0.58))
+                        .frame(maxWidth: .infinity, alignment: .center)
                 }
             }
             .frame(maxWidth: 620)
             .padding(24)
         }
-        .navigationTitle("Kith")
+        .kithNavigationTitle("Kith")
         .navigationBarTitleDisplayMode(.inline)
     }
 
     private var existingOwnerActions: some View {
         VStack(alignment: .leading, spacing: 14) {
             Text("Your existing constellation stays exactly as it is.")
-                .font(.body)
+                .font(KithType.body)
                 .foregroundStyle(KithPalette.espresso.opacity(0.66))
             Button("Return to Kith") { model.finishOnboarding() }
-                .buttonStyle(ClayButtonStyle())
+                .textCase(.lowercase)
+                .accessibilityLabel("Return to Kith")
+                .buttonStyle(SMButtonStyle(.brand))
                 .frame(maxWidth: .infinity)
             Button("Add someone in Kith") { model.finishOnboarding(addAnother: true) }
-                .font(.headline)
+                .textCase(.lowercase)
+                .accessibilityLabel("Add someone in Kith")
+                .font(KithType.headline)
                 .frame(maxWidth: .infinity, minHeight: 44)
         }
     }
 
     private var introduction: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text("The people you keep close.")
-                .font(.largeTitle.weight(.semibold))
+            SMSectionHeader("The people you keep close.", size: 34)
+                .accessibilityLabel("The people you keep close.")
             Text("Begin with one real person. A name, the closeness you choose, and one thing worth remembering are enough.")
-                .font(.body)
+                .font(KithType.body)
                 .foregroundStyle(KithPalette.espresso.opacity(0.66))
         }
     }
@@ -136,9 +149,9 @@ struct KithOnboardingView: View {
         )
         return VStack(spacing: 10) {
             LanternView(person: preview, diameter: CGFloat(preview.lanternDiameter))
-                .animation(reduceMotion ? nil : .spring(response: 0.3), value: closeness)
+                .animation(reduceMotion ? nil : SMMotion.state, value: closeness)
             Text("Closeness \(closeness) of 5 · \(circle.title)")
-                .font(.subheadline.weight(.medium))
+                .font(KithType.subheadline.weight(.medium))
                 .foregroundStyle(KithPalette.espresso.opacity(0.62))
         }
         .frame(maxWidth: .infinity)
@@ -153,18 +166,20 @@ struct KithOnboardingView: View {
                     HStack(spacing: 16) {
                         LanternView(person: person, diameter: 72)
                         VStack(alignment: .leading, spacing: 4) {
-                            Text(person.name).font(.title2.weight(.semibold))
+                            Text(person.name).font(KithType.title2.weight(.semibold))
                             Text("\(person.circle.title) · closeness \(person.closeness)")
-                                .font(.subheadline)
+                                .font(KithType.subheadline)
                                 .foregroundStyle(.secondary)
                         }
                     }
                     .accessibilityElement(children: .combine)
                 } header: {
                     Text("Placed in your constellation")
+                        .textCase(.lowercase)
+                        .accessibilityLabel("Placed in your constellation")
                 }
             }
-            Section("What do you want to remember?") {
+            Section {
                 Picker("Kind", selection: $kind) {
                     ForEach(LogKind.allCases, id: \.self) { option in
                         Label(option.title, systemImage: option.symbolName).tag(option)
@@ -173,16 +188,20 @@ struct KithOnboardingView: View {
                 DatePicker("When", selection: $happenedOn, displayedComponents: .date)
                 TextField("A few words", text: $note, axis: .vertical)
                     .lineLimit(3...7)
+            } header: {
+                Text("What do you want to remember?")
+                    .textCase(.lowercase)
+                    .accessibilityLabel("What do you want to remember?")
             }
             Section {
                 Text("This becomes a real dated entry in their chronological log. You can edit the person or add more entries later.")
-                    .font(.footnote)
+                    .font(KithType.footnote)
                     .foregroundStyle(.secondary)
             }
         }
         .scrollContentBackground(.hidden)
         .background(KithPalette.linen)
-        .navigationTitle("One thing to keep")
+        .kithNavigationTitle("One thing to keep")
         .navigationBarTitleDisplayMode(.inline)
         .safeAreaInset(edge: .bottom) {
             Button("Save this memory") {
@@ -192,7 +211,9 @@ struct KithOnboardingView: View {
                     }
                 }
             }
-            .buttonStyle(ClayButtonStyle())
+            .textCase(.lowercase)
+            .accessibilityLabel("Save this memory")
+            .buttonStyle(SMButtonStyle(.brand))
             .disabled(note.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
             .opacity(note.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? 0.5 : 1)
             .padding()
@@ -208,9 +229,11 @@ struct KithOnboardingView: View {
             VStack(spacing: 0) {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Your constellation has begun.")
-                        .font(.largeTitle.weight(.semibold))
+                        .textCase(.lowercase)
+                        .accessibilityLabel("Your constellation has begun.")
+                        .font(KithType.largeTitle.weight(.semibold))
                     Text("One person and one honest memory are enough. Add others when they naturally come to mind.")
-                        .font(.body)
+                        .font(KithType.body)
                         .foregroundStyle(KithPalette.espresso.opacity(0.65))
                 }
                 .padding(24)
@@ -218,13 +241,17 @@ struct KithOnboardingView: View {
                 Spacer()
                 VStack(spacing: 10) {
                     Text("Saved on this iPhone. Signing in later adds an optional private Cloudflare copy; Kith stays usable without it.")
-                        .font(.footnote)
+                        .font(KithType.footnote)
                         .multilineTextAlignment(.center)
                         .foregroundStyle(KithPalette.espresso.opacity(0.62))
                     Button("Open Kith") { model.finishOnboarding() }
-                        .buttonStyle(ClayButtonStyle())
+                        .textCase(.lowercase)
+                        .accessibilityLabel("Open Kith")
+                        .buttonStyle(SMButtonStyle(.brand))
                     Button("Add another person") { model.finishOnboarding(addAnother: true) }
-                        .font(.headline)
+                        .textCase(.lowercase)
+                        .accessibilityLabel("Add another person")
+                        .font(KithType.headline)
                         .frame(minHeight: 44)
                 }
                 .padding(24)
