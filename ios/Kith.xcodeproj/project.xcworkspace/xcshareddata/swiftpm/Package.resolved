@@ -1,5 +1,5 @@
 {
-  "originHash" : "6dab35764b25d650a4b6aed3a8feeffa5d8eef404ba9c0d5389a409f550270fc",
+  "originHash" : "dc8cc102228ee63b4c79091619737db4e0a7a0ee67385fc087b1886db1fabb1a",
   "pins" : [
     {
       "identity" : "significanthobbies",
@@ -7,6 +7,15 @@
       "location" : "https://github.com/Significant-Hobbies/significanthobbies.git",
       "state" : {
         "revision" : "6a3d228db6e296013f6ea4dc0221cda7d28591ac"
+      }
+    },
+    {
+      "identity" : "ui-library",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/sass-maker/ui-library",
+      "state" : {
+        "revision" : "404a34ef1b1f0ecebe76015d73bd8133bd255c89",
+        "version" : "0.1.14"
       }
     }
   ],

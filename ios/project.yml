@@ -19,6 +19,9 @@ settings:
     MARKETING_VERSION: 1.0.0
     ENABLE_USER_SCRIPT_SANDBOXING: YES
 packages:
+  SaaSMakerUI:
+    url: https://github.com/sass-maker/ui-library
+    from: 0.1.14
   PersonalSyncKit:
     url: https://github.com/Significant-Hobbies/significanthobbies.git
     revision: 6a3d228db6e296013f6ea4dc0221cda7d28591ac
@@ -62,6 +65,7 @@ targets:
         buildPhase: resources
     dependencies:
       - target: KithCore
+      - package: SaaSMakerUI
       - package: PersonalSyncKit
       - sdk: Contacts.framework
       - sdk: ContactsUI.framework

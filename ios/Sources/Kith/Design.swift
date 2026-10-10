@@ -1,18 +1,44 @@
 import KithCore
+import SaaSMakerUI
 import SwiftUI
 import UIKit
 
 enum KithPalette {
-    static let linen = adaptive(light: rgb(244, 230, 212), dark: rgb(36, 24, 18))
-    static let cream = adaptive(light: rgb(255, 246, 234), dark: rgb(52, 36, 28))
-    static let espresso = adaptive(light: rgb(58, 36, 24), dark: rgb(255, 242, 226))
-    static let clay = adaptive(light: rgb(196, 106, 74), dark: rgb(232, 148, 116))
+    private static let fieldColor = adaptive(light: rgb(244, 230, 212), dark: rgb(36, 24, 18))
+    private static let sheetColor = adaptive(light: rgb(255, 246, 234), dark: rgb(52, 36, 28))
+    private static let inkColor = adaptive(light: rgb(58, 36, 24), dark: rgb(255, 242, 226))
+    private static let brandColor = adaptive(light: rgb(196, 106, 74), dark: rgb(232, 148, 116))
     static let apricot = adaptive(light: rgb(232, 160, 106), dark: rgb(236, 176, 128))
     static let honey = adaptive(light: rgb(224, 176, 74), dark: rgb(232, 196, 110))
     static let rose = adaptive(light: rgb(212, 122, 120), dark: rgb(228, 150, 146))
     static let rust = adaptive(light: rgb(154, 63, 42), dark: rgb(214, 116, 92))
     static let sand = adaptive(light: rgb(215, 180, 138), dark: rgb(186, 154, 118))
     static let sage = adaptive(light: rgb(139, 154, 109), dark: rgb(164, 178, 136))
+
+    // Gallery supplies the shared roles; Kith keeps its paper, clay and lantern hues.
+    static var preset: SMPalette {
+        var palette = SMPalette.gallery
+        palette.background = fieldColor
+        palette.surface = sheetColor
+        palette.card = sheetColor
+        palette.foreground = inkColor
+        palette.primary = inkColor
+        palette.mutedForeground = inkColor.opacity(0.62)
+        palette.destructive = rust
+        palette.success = sage
+        palette.warning = honey
+        palette.hairline = .clear
+        palette.displayWeight = 600
+        palette.textFont = palette.sansFont
+        palette.textSerif = false
+        return palette
+    }
+
+    static var theme: SMPalette { preset.brand(brandColor, foreground: .white) }
+    static var linen: Color { theme.background }
+    static var cream: Color { theme.card }
+    static var espresso: Color { theme.foreground }
+    static var clay: Color { theme.brand }
 
     static func fill(for hue: PersonHue) -> Color {
         switch hue {
@@ -40,7 +66,7 @@ enum KithPalette {
 struct KithBackground: ViewModifier {
     func body(content: Content) -> some View {
         content
-            .fontDesign(.rounded)
+            .font(KithType.body)
             .foregroundStyle(KithPalette.espresso)
             .background(KithPalette.linen.ignoresSafeArea())
             .tint(KithPalette.clay)
@@ -49,6 +75,31 @@ struct KithBackground: ViewModifier {
 
 extension View {
     func kithBackground() -> some View { modifier(KithBackground()) }
+
+    // Keep the existing navigation accessibility title while rendering Fleet's UI voice.
+    func kithNavigationTitle(_ title: String, displayTitle: String? = nil) -> some View {
+        navigationTitle(title)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    Text(displayTitle ?? (title == "Kith" ? title : title.lowercased()))
+                        .font(KithType.headline)
+                        .accessibilityLabel(title)
+                }
+            }
+    }
+}
+
+// SMType.font is internal to the package; use its bundled families with native
+// relative text styles so every role scales with Dynamic Type.
+enum KithType {
+    static let largeTitle = Font.custom(KithPalette.theme.displayFont, size: 34, relativeTo: .largeTitle).weight(.semibold)
+    static let title2 = Font.custom(KithPalette.theme.displayFont, size: 22, relativeTo: .title2).weight(.semibold)
+    static let title3 = Font.custom(KithPalette.theme.displayFont, size: 20, relativeTo: .title3).weight(.semibold)
+    static let headline = Font.custom(KithPalette.theme.sansFont, size: 17, relativeTo: .headline).weight(.semibold)
+    static let body = Font.custom(KithPalette.theme.sansFont, size: 17, relativeTo: .body)
+    static let subheadline = Font.custom(KithPalette.theme.sansFont, size: 15, relativeTo: .subheadline)
+    static let footnote = Font.custom(KithPalette.theme.sansFont, size: 13, relativeTo: .footnote)
+    static let caption = Font.custom(KithPalette.theme.sansFont, size: 12, relativeTo: .caption)
 }
 
 struct ClosenessRow: View {

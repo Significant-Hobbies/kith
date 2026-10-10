@@ -1,8 +1,16 @@
 import KithCore
+import SaaSMakerUI
 import SwiftUI
 
 struct RootView: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.colorScheme) private var colorScheme
+
+    private var theme: SMPalette {
+        var preset = KithPalette.preset
+        preset.isDark = colorScheme == .dark
+        return preset.brand(KithPalette.clay, foreground: .white)
+    }
 
     var body: some View {
         @Bindable var model = model
@@ -18,6 +26,8 @@ struct RootView: View {
                     Text("Your saved file has not been changed. Reopen it before adding or changing anything.")
                 } actions: {
                     Button("Try again") { Task { await model.load() } }
+                        .textCase(.lowercase)
+                        .accessibilityLabel("Try again")
                 }
             } else if model.isOnboardingPresented {
                 KithOnboardingView()
@@ -53,9 +63,13 @@ struct RootView: View {
             set: { if !$0 { model.message = nil } }
         )) {
             Button("OK", role: .cancel) { model.message = nil }
+                .textCase(.lowercase)
+                .accessibilityLabel("OK")
         } message: {
             Text(model.message ?? "")
         }
+        .smTheme(theme)
+        .preferredColorScheme(nil)
     }
 
     private var selectedPersonBinding: Binding<Person?> {
@@ -79,7 +93,7 @@ struct ConstellationView: View {
                 }
                 if model.visiblePeople.isEmpty {
                     Text("No one matches that.")
-                        .font(.body.weight(.medium))
+                        .font(KithType.body.weight(.medium))
                         .foregroundStyle(KithPalette.espresso.opacity(0.55))
                 }
             }
@@ -93,47 +107,59 @@ struct ConstellationView: View {
 
 struct FieldChrome: View {
     @Environment(AppModel.self) private var model
+    @Environment(\.dynamicTypeSize) private var dynamicTypeSize
 
     var body: some View {
         @Bindable var model = model
         VStack(alignment: .leading, spacing: 12) {
-            HStack(alignment: .center, spacing: 12) {
+            let layout = dynamicTypeSize.isAccessibilitySize
+                ? AnyLayout(VStackLayout(alignment: .leading, spacing: 12))
+                : AnyLayout(HStackLayout(alignment: .center, spacing: 12))
+            layout {
                 Text("Kith")
-                    .font(.largeTitle.weight(.semibold))
-                Spacer()
-                Button {
-                    model.isShowingConnection = true
-                } label: {
-                    Image(systemName: model.account?.isSignedIn == true ? "checkmark.icloud" : "icloud")
-                        .font(.title3.weight(.semibold))
-                        .frame(width: 44, height: 44)
-                        .background(KithPalette.cream, in: Circle())
-                }
-                .accessibilityLabel("Significant Hobbies connection")
-                Button {
-                    model.isShowingList.toggle()
-                } label: {
-                    Image(systemName: model.isShowingList ? "sparkles" : "list.bullet")
-                        .font(.title3.weight(.semibold))
-                        .frame(width: 44, height: 44)
-                        .background(KithPalette.cream, in: Circle())
-                }
-                .accessibilityLabel(model.isShowingList ? "Show constellation" : "Show list")
-                if !model.document.people.isEmpty {
-                    Menu {
-                        Button("Add someone") { model.isAddingPerson = true }
-                            .accessibilityIdentifier("add-manual")
-                        Button("Choose from contacts") { model.isImportingContacts = true }
-                            .accessibilityIdentifier("add-from-contacts")
+                    .font(KithType.largeTitle)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .layoutPriority(1)
+                if !dynamicTypeSize.isAccessibilitySize { Spacer() }
+                HStack(spacing: 12) {
+                    Button {
+                        model.isShowingConnection = true
                     } label: {
-                        Image(systemName: "plus")
-                            .font(.title3.weight(.semibold))
-                            .foregroundStyle(.white)
+                        Image(systemName: model.account?.isSignedIn == true ? "checkmark.icloud" : "icloud")
+                            .font(KithType.headline)
                             .frame(width: 44, height: 44)
-                            .background(KithPalette.clay, in: Circle())
+                            .background(KithPalette.cream, in: Circle())
                     }
-                    .accessibilityLabel("Add someone")
-                    .accessibilityIdentifier("add-person")
+                    .accessibilityLabel("Significant Hobbies connection")
+                    Button {
+                        model.isShowingList.toggle()
+                    } label: {
+                        Image(systemName: model.isShowingList ? "sparkles" : "list.bullet")
+                            .font(KithType.headline)
+                            .frame(width: 44, height: 44)
+                            .background(KithPalette.cream, in: Circle())
+                    }
+                    .accessibilityLabel(model.isShowingList ? "Show constellation" : "Show list")
+                    if !model.document.people.isEmpty {
+                        Menu {
+                            Button("Add someone") { model.isAddingPerson = true }
+                                .textCase(.lowercase)
+                                .accessibilityLabel("Add someone")
+                                .accessibilityIdentifier("add-manual")
+                            Button("Choose from contacts") { model.isImportingContacts = true }
+                                .textCase(.lowercase)
+                                .accessibilityLabel("Choose from contacts")
+                                .accessibilityIdentifier("add-from-contacts")
+                        } label: {
+                            Image(systemName: "plus")
+                                .font(KithType.headline)
+                                .foregroundStyle(.white)
+                                .frame(width: 44, height: 44)
+                                .background(KithPalette.clay, in: Circle())
+                        }
+                        .accessibilityLabel("Add someone")
+                        .accessibilityIdentifier("add-person")
+                    }
                 }
             }
             if !model.document.people.isEmpty {
@@ -155,43 +181,49 @@ struct EmptyConstellation: View {
     @Environment(AppModel.self) private var model
 
     var body: some View {
-        VStack(spacing: 22) {
-            ZStack {
-                Circle()
-                    .fill(KithPalette.clay.opacity(0.22))
-                    .frame(width: 132, height: 132)
-                    .offset(x: -36, y: -8)
-                Circle()
-                    .fill(KithPalette.apricot.opacity(0.55))
-                    .frame(width: 92, height: 92)
-                    .offset(x: 44, y: 12)
-                Circle()
-                    .fill(KithPalette.honey.opacity(0.7))
-                    .frame(width: 64, height: 64)
-                    .offset(x: 10, y: 48)
+        ScrollView {
+            VStack(spacing: 22) {
+                ZStack {
+                    Circle()
+                        .fill(KithPalette.clay.opacity(0.22))
+                        .frame(width: 132, height: 132)
+                        .offset(x: -36, y: -8)
+                    Circle()
+                        .fill(KithPalette.apricot.opacity(0.55))
+                        .frame(width: 92, height: 92)
+                        .offset(x: 44, y: 12)
+                    Circle()
+                        .fill(KithPalette.honey.opacity(0.7))
+                        .frame(width: 64, height: 64)
+                        .offset(x: 10, y: 48)
+                }
+                .frame(height: 180)
+                .accessibilityHidden(true)
+                SMSectionHeader("Who do you want to keep close?", alignment: .center, size: 22)
+                    .accessibilityLabel("Who do you want to keep close?")
+                Text("Add someone. They’ll float here, larger when the relationship is closer.")
+                    .font(KithType.body)
+                    .foregroundStyle(KithPalette.espresso.opacity(0.62))
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: 300)
+                Button("Add someone") {
+                    model.isAddingPerson = true
+                }
+                .textCase(.lowercase)
+                .accessibilityLabel("Add someone")
+                .buttonStyle(SMButtonStyle(.brand))
+                .accessibilityLabel("Add someone")
+                .padding(.top, 6)
+                Button("Choose from contacts") {
+                    model.isImportingContacts = true
+                }
+                .textCase(.lowercase)
+                .accessibilityLabel("Choose from contacts")
+                .buttonStyle(SMButtonStyle(.link))
+                .accessibilityLabel("Choose from contacts")
             }
-            .frame(height: 180)
-            .accessibilityHidden(true)
-            Text("Who do you want to keep close?")
-                .font(.title2.weight(.semibold))
-                .multilineTextAlignment(.center)
-            Text("Add someone. They’ll float here, larger when the relationship is closer.")
-                .font(.body)
-                .foregroundStyle(KithPalette.espresso.opacity(0.62))
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: 300)
-            Button("Add someone") {
-                model.isAddingPerson = true
-            }
-            .buttonStyle(ClayButtonStyle())
-            .padding(.top, 6)
-            Button("Choose from contacts") {
-                model.isImportingContacts = true
-            }
-            .font(.subheadline.weight(.semibold))
-            .foregroundStyle(KithPalette.clay)
+            .padding(28)
         }
-        .padding(28)
     }
 }
 
@@ -214,14 +246,15 @@ struct PeopleListView: View {
                                 LanternView(person: person, diameter: 52)
                                 VStack(alignment: .leading, spacing: 3) {
                                     Text(person.name)
-                                        .font(.headline)
+                                        .font(KithType.headline)
+                                        .fixedSize(horizontal: false, vertical: true)
                                     Text(person.circle.title)
-                                        .font(.subheadline)
+                                        .font(KithType.subheadline)
                                         .foregroundStyle(KithPalette.espresso.opacity(0.55))
                                 }
                                 Spacer()
                                 Text("\(person.closeness)")
-                                    .font(.title3.weight(.semibold))
+                                    .font(KithType.title3.weight(.semibold))
                                     .foregroundStyle(KithPalette.clay)
                             }
                             .padding(.vertical, 6)
@@ -234,17 +267,5 @@ struct PeopleListView: View {
                 .scrollContentBackground(.hidden)
             }
         }
-    }
-}
-
-struct ClayButtonStyle: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .font(.headline.weight(.semibold))
-            .foregroundStyle(.white)
-            .padding(.horizontal, 22)
-            .padding(.vertical, 14)
-            .background(KithPalette.clay, in: Capsule())
-            .opacity(configuration.isPressed ? 0.82 : 1)
     }
 }
