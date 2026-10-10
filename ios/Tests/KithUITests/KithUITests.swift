@@ -88,7 +88,7 @@ final class KithUITests: XCTestCase {
             body.tap()
             body.typeText(note)
             app.buttons.ci("Save").tap()
-            XCTAssertTrue(app.staticTexts[note].waitForExistence(timeout: 4))
+            XCTAssertTrue(app.staticTexts.ci(note).waitForExistence(timeout: 4))
         }
         app.buttons.ci("Edit").tap()
         XCTAssertTrue(name.waitForExistence(timeout: 3))
