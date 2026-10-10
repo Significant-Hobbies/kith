@@ -12,6 +12,7 @@
 		0D21685BEDBF76C6AE714CEF /* PersonalSyncKit in Frameworks */ = {isa = PBXBuildFile; productRef = 06F16ED7DD7305671AC61A80 /* PersonalSyncKit */; };
 		0D90BFD259DC9B30AFEC91D7 /* KithLocalSaveTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AB6F67C1D3316B6D68F196B2 /* KithLocalSaveTests.swift */; };
 		15835961CE7BABD27EA30295 /* CloudKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8E3415A5E88E90361208B65E /* CloudKit.framework */; };
+		16455AC5D9F0C3A80F4E6C92 /* CaseInsensitiveQuery.swift in Sources */ = {isa = PBXBuildFile; fileRef = 18E761DB6B6D8A8405B9BC9B /* CaseInsensitiveQuery.swift */; };
 		1D8DB7DB42B1154E40F56ED6 /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = A662AC2BCD668AE688D25BB5 /* Persistence.swift */; };
 		1D9712691351162D15E59B82 /* KithPlatformRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = 09DA028D29EAA834DF9E94A7 /* KithPlatformRecord.swift */; };
 		26F587DD0A2D6F634E9068BE /* KithCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 706248B78A28D30986A34B42 /* KithCore.framework */; };
@@ -110,6 +111,7 @@
 		093BCDF0FE2F82258D1A28E0 /* KithCoreTests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = KithCoreTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		09C2DC255CA3B902918900FB /* KithUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = KithUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		09DA028D29EAA834DF9E94A7 /* KithPlatformRecord.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KithPlatformRecord.swift; sourceTree = "<group>"; };
+		18E761DB6B6D8A8405B9BC9B /* CaseInsensitiveQuery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaseInsensitiveQuery.swift; sourceTree = "<group>"; };
 		275FDC6817498A07A9D3FC4F /* Contacts.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Contacts.framework; path = System/Library/Frameworks/Contacts.framework; sourceTree = SDKROOT; };
 		283EE3AFA2ADACAC47EDC05F /* PersonViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonViews.swift; sourceTree = "<group>"; };
 		2C466A859325D15A49C22248 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
@@ -227,6 +229,7 @@
 		9F523A73087559EADBF4E41D /* KithUITests */ = {
 			isa = PBXGroup;
 			children = (
+				18E761DB6B6D8A8405B9BC9B /* CaseInsensitiveQuery.swift */,
 				69B0BA41F320166AEA1728A2 /* KithUITests.swift */,
 			);
 			name = KithUITests;
@@ -528,6 +531,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				16455AC5D9F0C3A80F4E6C92 /* CaseInsensitiveQuery.swift in Sources */,
 				B11A9EBD171FF12E6F7B0045 /* KithUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
