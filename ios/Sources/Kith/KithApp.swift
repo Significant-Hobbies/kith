@@ -36,6 +36,7 @@ struct KithApp: App {
     var body: some Scene {
         WindowGroup {
             RootView()
+                .preferredColorScheme(.dark)
                 .environment(model)
                 .task { await model.load() }
                 .onChange(of: scenePhase) { _, phase in

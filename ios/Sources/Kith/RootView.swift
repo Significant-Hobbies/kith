@@ -9,7 +9,7 @@ struct RootView: View {
     private var theme: SMPalette {
         var preset = KithPalette.preset
         preset.isDark = colorScheme == .dark
-        return preset.brand(KithPalette.clay, foreground: .white)
+        return preset.brand(KithPalette.clay, foreground: KithPalette.linen)
     }
 
     var body: some View {
@@ -69,7 +69,6 @@ struct RootView: View {
             Text(model.message ?? "")
         }
         .smTheme(theme)
-        .preferredColorScheme(nil)
     }
 
     private var selectedPersonBinding: Binding<Person?> {
@@ -153,7 +152,7 @@ struct FieldChrome: View {
                         } label: {
                             Image(systemName: "plus")
                                 .font(KithType.headline)
-                                .foregroundStyle(.white)
+                                .foregroundStyle(KithPalette.linen)
                                 .frame(width: 44, height: 44)
                                 .background(KithPalette.clay, in: Circle())
                         }

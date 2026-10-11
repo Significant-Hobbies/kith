@@ -34,7 +34,7 @@ enum KithPalette {
         return palette
     }
 
-    static var theme: SMPalette { preset.brand(brandColor, foreground: .white) }
+    static var theme: SMPalette { preset.brand(brandColor, foreground: fieldColor) }
     static var linen: Color { theme.background }
     static var cream: Color { theme.card }
     static var espresso: Color { theme.foreground }
@@ -163,7 +163,7 @@ struct LanternView: View {
             Circle()
                 .fill(
                     RadialGradient(
-                        colors: [Color.white.opacity(0.28), Color.white.opacity(0)],
+                        colors: [KithPalette.espresso.opacity(0.28), KithPalette.espresso.opacity(0)],
                         center: .init(x: 0.32, y: 0.28),
                         startRadius: 2,
                         endRadius: diameter * 0.62
@@ -172,11 +172,11 @@ struct LanternView: View {
             VStack(spacing: diameter > 90 ? 4 : 1) {
                 Text(person.initials)
                     .font(.system(size: max(14, diameter * 0.22), weight: .semibold, design: .rounded))
-                    .foregroundStyle(Color.white.opacity(0.94))
+                    .foregroundStyle(KithPalette.linen)
                 if diameter >= 80 {
                     Text(person.firstName)
                         .font(.system(size: max(11, diameter * 0.12), weight: .medium, design: .rounded))
-                        .foregroundStyle(Color.white.opacity(0.92))
+                        .foregroundStyle(KithPalette.linen)
                         .lineLimit(1)
                         .minimumScaleFactor(0.7)
                         .padding(.horizontal, 10)
