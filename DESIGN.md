@@ -3,7 +3,7 @@
 ## Direction
 
 Kith is a quiet room of lanterns. People are soft circles of clay, apricot,
-honey, and rose on linen paper. Closer people take more space. The field
+honey, and rose on dark linen paper. Closer people take more space. The field
 drifts the way a mobile hangs in still air — not a game, not a particle
 demo.
 
@@ -23,16 +23,30 @@ paper and clay, not like a dashboard.
 
 ## Palette
 
-- `linen`: `#f4e6d4` — primary field.
-- `cream`: `#fff6ea` — raised cards and sheets.
-- `espresso`: `#3a2418` — primary type.
-- `clay`: `#c46a4a` — primary action and closest people.
-- `apricot`: `#e8a06a` — secondary bubble hue.
-- `honey`: `#e0b04a` — secondary bubble hue.
-- `rose`: `#d47a78` — secondary bubble hue.
-- `rust`: `#9a3f2a` — emphasis and destructive.
-- `sand`: `#d7b48a` — quieter bubble hue.
-- `sage`: `#8b9a6d` — work-circle hue only.
+Dark is the default from first run and is forced at the app root, regardless
+of the system appearance. The landing must use the same dark tokens.
+
+- `linen`: `#241812` — primary field and text on clay or lantern fills.
+- `cream`: `#34241c` — raised cards and sheets.
+- `espresso`: `#fff2e2` — primary type and soft lantern highlight.
+- `clay`: `#e89474` — primary action and closest people.
+- `apricot`: `#ecb080` — secondary bubble hue.
+- `honey`: `#e8c46e` — secondary bubble hue.
+- `rose`: `#e49692` — secondary bubble hue.
+- `rust`: `#d6745c` — emphasis and destructive.
+- `sand`: `#ba9a76` — quieter bubble hue.
+- `sage`: `#a4b288` — work-circle hue only.
+
+Landing continuity roles derived from espresso over linen:
+
+- `surface`: `#2f231c` — 5% foreground over the field.
+- `muted`: `#362923` — 8% foreground over the field.
+- `mutedForeground`: `#c2b5a8` — 72% foreground over the field.
+- `border`: `#43372f` — 14% foreground over the field.
+
+Lantern initials, labels, and clay action text use opaque dark linen,
+not white. Dark linen on clay has 7.34:1 contrast; on lantern hues it has
+5.36–10.34:1 contrast before the soft highlight.
 
 Color never carries status alone. Closeness is also size and a numeric
 label. Circle is also a word.
