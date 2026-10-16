@@ -1,6 +1,6 @@
 # Kith — PROJECT STATUS
 
-Last updated: 2026-10-09
+Last updated: 2026-10-16
 
 ## Why / What
 
@@ -36,6 +36,14 @@ web client.
   handoff; local JSON remains the immediate store.
 
 ## Timeline
+
+- 2026-10-16 — Prepared current-source native build 14 after the two date-display
+  fixes. Xcode 26.6 produced a signed Release archive and a locally exported
+  App Store Connect IPA with Production CloudKit entitlement; neither was
+  uploaded. Exact-source hosted CI and the remaining physical/account limits
+  are recorded in `docs/qualification/release-1.0.0-14-2026-10-16.md`.
+  The public support path now reflects the intended product after ios-landings
+  PR #63. Public App Store submission remains a separate decision.
 
 - 2026-10-09 — landed the two small date-display fixes from the 2026-09-26
   work sweep: log cards show the year, and the person page reads
