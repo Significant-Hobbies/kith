@@ -172,8 +172,9 @@ final class AppModel {
             recordInteractionMetricWithoutWaiting(.logCanceled(elapsedSeconds: logEditorElapsedSeconds))
             resetLogEditorMeasurement()
         case .abandoned:
-            // An interrupted editor has no outcome, so retain only an
-            // abandonment count and discard its elapsed time.
+            // An editor dismissed while inactive has no reliable effort
+            // duration. Process termination may skip onDisappear, so an open
+            // without an outcome remains unclassified in the aggregate.
             recordInteractionMetricWithoutWaiting(.logAbandoned)
             resetLogEditorMeasurement()
         }

@@ -95,6 +95,7 @@ final class LocalInteractionMetricsTests: XCTestCase {
         } catch {
             XCTAssertEqual(try Data(contentsOf: file), corruptData)
         }
+    }
 
     func testOverflowingCountersAndDurationTotalPreserveExistingSidecar() async throws {
         let instant = ISO8601DateFormatter().date(from: "2026-10-26T12:00:00Z")!
@@ -146,6 +147,5 @@ final class LocalInteractionMetricsTests: XCTestCase {
                 XCTAssertEqual(try Data(contentsOf: file), original)
             }
         }
-    }
     }
 }
