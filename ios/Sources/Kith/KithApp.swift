@@ -38,8 +38,12 @@ struct KithApp: App {
             RootView()
                 .preferredColorScheme(.dark)
                 .environment(model)
-                .task { await model.load() }
+                .task {
+                    model.setMeasurementAppActive(scenePhase == .active)
+                    await model.load()
+                }
                 .onChange(of: scenePhase) { _, phase in
+                    model.setMeasurementAppActive(phase == .active)
                     guard phase == .active else { return }
                     Task {
                         await model.importLegacyCloudIfEmpty()

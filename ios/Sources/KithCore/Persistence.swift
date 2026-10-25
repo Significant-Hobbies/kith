@@ -12,7 +12,7 @@ public enum KithFiles {
 }
 
 public actor KithStore {
-    public let fileURL: URL
+    public nonisolated let fileURL: URL
 
     public init(fileURL: URL? = nil) {
         self.fileURL = fileURL ?? KithFiles.document
