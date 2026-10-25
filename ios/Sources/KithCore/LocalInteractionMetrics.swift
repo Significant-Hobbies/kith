@@ -2,6 +2,8 @@ import Foundation
 
 /// A content-free interaction proxy. These values describe app actions, not
 /// whether a memory was useful or a recall succeeded.
+/// Each log outcome duration covers the foreground segment since the previous
+/// outcome; a failed save ends one effort sample and a retry starts another.
 public enum KithInteractionMetric: Sendable {
     case searchAttempt(hasResults: Bool)
     case resultOpened
@@ -56,6 +58,11 @@ public struct KithInteractionMetricsDocument: Codable, Equatable, Sendable {
     }
 }
 
+private enum KithInteractionMetricsError: Error {
+    case counterOverflow
+    case durationOverflow
+}
+
 /// Persists only fixed event counters and elapsed-time aggregates. The
 /// injectable URL keeps unit/UI fixtures away from the owner's app-support data.
 public actor KithInteractionMetricsStore {
@@ -89,7 +96,7 @@ public actor KithInteractionMetricsStore {
 
         var day = current.days.first(where: { $0.date == dayKey })
             ?? KithDailyInteractionMetrics(date: dayKey)
-        Self.apply(metric, to: &day)
+        try Self.apply(metric, to: &day)
         current.days.removeAll(where: { $0.date == dayKey })
         current.days.append(day)
         current.days.sort { $0.date < $1.date }
@@ -100,6 +107,10 @@ public actor KithInteractionMetricsStore {
             to: fileURL,
             options: [.atomic, .completeFileProtectionUnlessOpen]
         )
+        var resourceValues = URLResourceValues()
+        resourceValues.isExcludedFromBackup = true
+        var metricsURL = fileURL
+        try metricsURL.setResourceValues(resourceValues)
     }
 
     public func load() throws -> KithInteractionMetricsDocument? {
@@ -111,23 +122,23 @@ public actor KithInteractionMetricsStore {
         return try Self.decoder.decode(KithInteractionMetricsDocument.self, from: Data(contentsOf: fileURL))
     }
 
-    private static func apply(_ metric: KithInteractionMetric, to day: inout KithDailyInteractionMetrics) {
+    private static func apply(_ metric: KithInteractionMetric, to day: inout KithDailyInteractionMetrics) throws {
         switch metric {
         case let .searchAttempt(hasResults):
-            increment("search_attempt", in: &day.counters)
-            if !hasResults { increment("search_no_results", in: &day.counters) }
+            try increment("search_attempt", in: &day.counters)
+            if !hasResults { try increment("search_no_results", in: &day.counters) }
         case .resultOpened:
-            increment("result_opened", in: &day.counters)
+            try increment("result_opened", in: &day.counters)
         case .logEditorOpened:
-            increment("log_editor_opened", in: &day.counters)
+            try increment("log_editor_opened", in: &day.counters)
         case let .logSaveSucceeded(elapsedSeconds):
-            recordLogOutcome("log_save_succeeded", elapsedSeconds: elapsedSeconds, in: &day)
+            try recordLogOutcome("log_save_succeeded", elapsedSeconds: elapsedSeconds, in: &day)
         case let .logSaveFailed(elapsedSeconds):
-            recordLogOutcome("log_save_failed", elapsedSeconds: elapsedSeconds, in: &day)
+            try recordLogOutcome("log_save_failed", elapsedSeconds: elapsedSeconds, in: &day)
         case let .logCanceled(elapsedSeconds):
-            recordLogOutcome("log_canceled", elapsedSeconds: elapsedSeconds, in: &day)
+            try recordLogOutcome("log_canceled", elapsedSeconds: elapsedSeconds, in: &day)
         case .logAbandoned:
-            increment("log_abandoned", in: &day.counters)
+            try increment("log_abandoned", in: &day.counters)
         }
     }
 
@@ -135,16 +146,20 @@ public actor KithInteractionMetricsStore {
         _ counter: String,
         elapsedSeconds: TimeInterval,
         in day: inout KithDailyInteractionMetrics
-    ) {
-        increment(counter, in: &day.counters)
+    ) throws {
+        try increment(counter, in: &day.counters)
         guard elapsedSeconds.isFinite, elapsedSeconds >= 0 else { return }
-        day.durationTotalsSeconds["log_editor_foreground_elapsed"] =
-            (day.durationTotalsSeconds["log_editor_foreground_elapsed"] ?? 0) + elapsedSeconds
-        increment("log_editor_foreground_elapsed", in: &day.durationSamples)
+        let durationKey = "log_editor_foreground_elapsed"
+        let total = (day.durationTotalsSeconds[durationKey] ?? 0) + elapsedSeconds
+        guard total.isFinite else { throw KithInteractionMetricsError.durationOverflow }
+        day.durationTotalsSeconds[durationKey] = total
+        try increment(durationKey, in: &day.durationSamples)
     }
 
-    private static func increment(_ key: String, in counters: inout [String: Int]) {
-        counters[key, default: 0] += 1
+    private static func increment(_ key: String, in counters: inout [String: Int]) throws {
+        let (next, overflow) = counters[key, default: 0].addingReportingOverflow(1)
+        guard !overflow else { throw KithInteractionMetricsError.counterOverflow }
+        counters[key] = next
     }
 
     private static func dayKey(for date: Date, timeZone: TimeZone) -> String {

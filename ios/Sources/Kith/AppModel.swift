@@ -179,6 +179,10 @@ final class AppModel {
         }
     }
 
+    func finishLogEditorAfterDismissal(at date: Date = .now) {
+        finishLogEditorMeasurement(measurementAppIsActive ? .canceled : .abandoned, at: date)
+    }
+
     private func accumulateLogEditorInterval(endingAt date: Date) {
         guard let startedAt = logEditorIntervalStartedAt else { return }
         let elapsed = date.timeIntervalSince(startedAt)

@@ -109,7 +109,7 @@ struct LogEditor: View {
         .interactiveDismissDisabled(model.isSaving)
         .kithBackground()
         .onAppear { model.beginLogEditorMeasurement() }
-        .onDisappear { model.finishLogEditorMeasurement(.abandoned) }
+        .onDisappear { model.finishLogEditorAfterDismissal() }
     }
 
     private func save() {

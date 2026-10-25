@@ -48,6 +48,7 @@ final class LocalInteractionMetricsTests: XCTestCase {
         XCTAssertEqual(day.durationSamples, ["log_editor_foreground_elapsed": 3])
 
         let encoded = try Data(contentsOf: metricsURL)
+        XCTAssertTrue(try XCTUnwrap(metricsURL.resourceValues(forKeys: [.isExcludedFromBackupKey]).isExcludedFromBackup))
         let rootObject = try XCTUnwrap(JSONSerialization.jsonObject(with: encoded) as? [String: Any])
         XCTAssertEqual(Set(rootObject.keys), Set([
             "schemaVersion", "projectId", "coverageStartedAtISO", "updatedAtISO",
@@ -94,5 +95,57 @@ final class LocalInteractionMetricsTests: XCTestCase {
         } catch {
             XCTAssertEqual(try Data(contentsOf: file), corruptData)
         }
+
+    func testOverflowingCountersAndDurationTotalPreserveExistingSidecar() async throws {
+        let instant = ISO8601DateFormatter().date(from: "2026-10-26T12:00:00Z")!
+        let zone = try XCTUnwrap(TimeZone(secondsFromGMT: 0))
+        let cases: [(KithDailyInteractionMetrics, KithInteractionMetric)] = [
+            (
+                KithDailyInteractionMetrics(date: "2026-10-26", counters: ["search_attempt": Int.max]),
+                .searchAttempt(hasResults: true)
+            ),
+            (
+                KithDailyInteractionMetrics(
+                    date: "2026-10-26",
+                    counters: ["log_save_succeeded": 1],
+                    durationTotalsSeconds: ["log_editor_foreground_elapsed": 1],
+                    durationSamples: ["log_editor_foreground_elapsed": Int.max]
+                ),
+                .logSaveSucceeded(elapsedSeconds: 1)
+            ),
+            (
+                KithDailyInteractionMetrics(
+                    date: "2026-10-26",
+                    counters: ["log_save_succeeded": 1],
+                    durationTotalsSeconds: ["log_editor_foreground_elapsed": .greatestFiniteMagnitude],
+                    durationSamples: ["log_editor_foreground_elapsed": 1]
+                ),
+                .logSaveSucceeded(elapsedSeconds: .greatestFiniteMagnitude)
+            ),
+        ]
+
+        for (index, testCase) in cases.enumerated() {
+            let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+            defer { try? FileManager.default.removeItem(at: root) }
+            try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true)
+            let file = root.appending(path: "interaction-metrics-v1.json")
+            let seed = KithInteractionMetricsDocument(
+                coverageStartedAtISO: "2026-10-26T11:00:00Z",
+                updatedAtISO: "2026-10-26T11:00:00Z",
+                timeZoneIdentifier: zone.identifier,
+                days: [testCase.0]
+            )
+            let original = try JSONEncoder().encode(seed)
+            try original.write(to: file)
+            let store = KithInteractionMetricsStore(fileURL: file)
+
+            do {
+                try await store.record(testCase.1, at: instant, timeZone: zone)
+                XCTFail("Overflow case \(index) should skip persistence")
+            } catch {
+                XCTAssertEqual(try Data(contentsOf: file), original)
+            }
+        }
+    }
     }
 }

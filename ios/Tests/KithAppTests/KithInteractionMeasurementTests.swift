@@ -84,6 +84,32 @@ final class KithInteractionMeasurementTests: XCTestCase {
         XCTAssertFalse(String(decoding: try Data(contentsOf: metricsURL), as: UTF8.self).contains("failed_retrieval"))
     }
 
+    func testForegroundDismissalIsCancelAndFailedSaveHasItsOwnEffortSegment() async throws {
+        let root = FileManager.default.temporaryDirectory.appending(path: UUID().uuidString)
+        defer { try? FileManager.default.removeItem(at: root) }
+        let model = AppModel(
+            store: KithStore(fileURL: root.appending(path: "kith-v1.json")),
+            cloud: nil,
+            mirror: nil
+        )
+        await model.load()
+        let startedAt = Date(timeIntervalSince1970: 1_798_000_000)
+        model.beginLogEditorMeasurement(at: startedAt)
+        model.finishLogEditorMeasurement(.failed, at: startedAt.addingTimeInterval(10))
+        model.finishLogEditorAfterDismissal(at: startedAt.addingTimeInterval(15))
+
+        let metricsURL = root.appending(path: "interaction-metrics-v1.json")
+        let loadedMetrics = try await waitForMetrics(
+            at: metricsURL,
+            counters: ["log_editor_opened": 1, "log_save_failed": 1, "log_canceled": 1]
+        )
+        let metrics = try XCTUnwrap(loadedMetrics)
+        let day = try XCTUnwrap(metrics.days.first)
+        XCTAssertEqual(day.durationTotalsSeconds, ["log_editor_foreground_elapsed": 15])
+        XCTAssertEqual(day.durationSamples, ["log_editor_foreground_elapsed": 2])
+        XCTAssertNil(day.counters["log_abandoned"])
+    }
+
     private func waitForMetrics(
         at url: URL,
         counters expected: [String: Int]
