@@ -4,6 +4,13 @@ import KithCore
 import Observation
 import PersonalSyncKit
 
+enum KithLogEditorMeasurementOutcome {
+    case saved
+    case failed
+    case canceled
+    case abandoned
+}
+
 /// Owns the one Kith document and every action that changes it.
 ///
 /// The phone is the working copy. CloudKit remains a transition mirror, while
@@ -26,7 +33,11 @@ final class AppModel {
     var isImportingContacts = false
     var isShowingList = false
     var isShowingConnection = false
-    var searchText = ""
+    var searchText = "" {
+        didSet {
+            if oldValue != searchText { isCurrentSearchSessionCounted = false }
+        }
+    }
     var message: String?
     private(set) var isPlatformSyncing = false
     private var platformSyncRequested = false
@@ -48,6 +59,12 @@ final class AppModel {
     }
 
     private let store: KithStore
+    private let interactionMetrics: KithInteractionMetricsStore?
+    private var measurementAppIsActive = true
+    private var isMeasuringLogEditor = false
+    private var logEditorElapsedSeconds: TimeInterval = 0
+    private var logEditorIntervalStartedAt: Date?
+    private var isCurrentSearchSessionCounted = false
     /// The retired single-document iCloud mirror, kept only to import its
     /// contents once into an empty local document. Per-record CloudKit sync now
     /// goes through the mirror runtime's CloudKit transport.
@@ -65,6 +82,13 @@ final class AppModel {
         lastPlatformSyncAt = UserDefaults.standard.object(forKey: Self.lastPlatformSyncKey) as? Date
         account = mirror?.account
         let arguments = ProcessInfo.processInfo.arguments
+        if Self.isDemoLaunch(arguments) {
+            interactionMetrics = nil
+        } else {
+            let metricsURL = store.fileURL.deletingLastPathComponent()
+                .appending(path: "interaction-metrics-v1.json")
+            interactionMetrics = KithInteractionMetricsStore(fileURL: metricsURL)
+        }
         self.legacyCloud = Self.isDemoLaunch(arguments) ? nil : cloud
         if arguments.contains("--person-demo") {
             selectedPersonID = UUID(uuidString: "11111111-1111-1111-1111-111111111111")
@@ -91,6 +115,96 @@ final class AppModel {
 
     var selectedPerson: Person? {
         selectedPersonID.flatMap { document.person(id: $0) }
+    }
+
+    /// Record a committed search without retaining its query or result identities.
+    func recordSearchAttempt() async {
+        guard !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+        guard !isCurrentSearchSessionCounted else { return }
+        isCurrentSearchSessionCounted = true
+        await recordInteractionMetric(.searchAttempt(hasResults: !visiblePeople.isEmpty))
+    }
+
+    /// Count only explicit taps on currently visible results, never view renders.
+    func openVisibleResult(_ id: UUID) async {
+        guard visiblePeople.contains(where: { $0.id == id }) else { return }
+        let hasSearchQuery = !searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        let shouldCountSearch = hasSearchQuery && !isCurrentSearchSessionCounted
+        if shouldCountSearch { isCurrentSearchSessionCounted = true }
+        selectedPersonID = id
+        if shouldCountSearch {
+            await recordInteractionMetric(.searchAttempt(hasResults: true))
+        }
+        await recordInteractionMetric(.resultOpened)
+    }
+
+    func setMeasurementAppActive(_ isActive: Bool, at date: Date = .now) {
+        guard measurementAppIsActive != isActive else { return }
+        measurementAppIsActive = isActive
+        if isActive {
+            if isMeasuringLogEditor { logEditorIntervalStartedAt = date }
+        } else {
+            accumulateLogEditorInterval(endingAt: date)
+        }
+    }
+
+    func beginLogEditorMeasurement(at date: Date = .now) {
+        guard interactionMetrics != nil, !isMeasuringLogEditor else { return }
+        isMeasuringLogEditor = true
+        logEditorElapsedSeconds = 0
+        logEditorIntervalStartedAt = measurementAppIsActive ? date : nil
+        recordInteractionMetricWithoutWaiting(.logEditorOpened)
+    }
+
+    func finishLogEditorMeasurement(_ outcome: KithLogEditorMeasurementOutcome, at date: Date = .now) {
+        guard isMeasuringLogEditor else { return }
+        accumulateLogEditorInterval(endingAt: date)
+
+        switch outcome {
+        case .failed:
+            recordInteractionMetricWithoutWaiting(.logSaveFailed(elapsedSeconds: logEditorElapsedSeconds))
+            logEditorElapsedSeconds = 0
+            logEditorIntervalStartedAt = measurementAppIsActive ? date : nil
+        case .saved:
+            recordInteractionMetricWithoutWaiting(.logSaveSucceeded(elapsedSeconds: logEditorElapsedSeconds))
+            resetLogEditorMeasurement()
+        case .canceled:
+            recordInteractionMetricWithoutWaiting(.logCanceled(elapsedSeconds: logEditorElapsedSeconds))
+            resetLogEditorMeasurement()
+        case .abandoned:
+            // An editor dismissed while inactive has no reliable effort
+            // duration. Process termination may skip onDisappear, so an open
+            // without an outcome remains unclassified in the aggregate.
+            recordInteractionMetricWithoutWaiting(.logAbandoned)
+            resetLogEditorMeasurement()
+        }
+    }
+
+    func finishLogEditorAfterDismissal(at date: Date = .now) {
+        finishLogEditorMeasurement(measurementAppIsActive ? .canceled : .abandoned, at: date)
+    }
+
+    private func accumulateLogEditorInterval(endingAt date: Date) {
+        guard let startedAt = logEditorIntervalStartedAt else { return }
+        let elapsed = date.timeIntervalSince(startedAt)
+        if elapsed.isFinite, elapsed >= 0 { logEditorElapsedSeconds += elapsed }
+        logEditorIntervalStartedAt = nil
+    }
+
+    private func resetLogEditorMeasurement() {
+        isMeasuringLogEditor = false
+        logEditorElapsedSeconds = 0
+        logEditorIntervalStartedAt = nil
+    }
+
+    private func recordInteractionMetricWithoutWaiting(_ metric: KithInteractionMetric) {
+        guard let interactionMetrics else { return }
+        Task { try? await interactionMetrics.record(metric) }
+    }
+
+    private func recordInteractionMetric(_ metric: KithInteractionMetric) async {
+        guard let interactionMetrics else { return }
+        try? await interactionMetrics.record(metric)
     }
 
     func load() async {

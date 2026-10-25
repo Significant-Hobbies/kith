@@ -91,7 +91,10 @@ struct LogEditor: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button("Cancel") {
+                        model.finishLogEditorMeasurement(.canceled)
+                        dismiss()
+                    }
                         .textCase(.lowercase)
                         .accessibilityLabel("Cancel")
                 }
@@ -105,12 +108,19 @@ struct LogEditor: View {
         .disabled(model.isSaving)
         .interactiveDismissDisabled(model.isSaving)
         .kithBackground()
+        .onAppear { model.beginLogEditorMeasurement() }
+        .onDisappear { model.finishLogEditorAfterDismissal() }
     }
 
     private func save() {
         let entry = Entry(personID: person.id, kind: kind, happenedOn: happenedOn, body: bodyText)
         Task {
-            if await model.addEntry(entry) { dismiss() }
+            if await model.addEntry(entry) {
+                model.finishLogEditorMeasurement(.saved)
+                dismiss()
+            } else {
+                model.finishLogEditorMeasurement(.failed)
+            }
         }
     }
 }

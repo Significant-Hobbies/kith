@@ -88,7 +88,7 @@ struct ConstellationView: View {
                 EmptyConstellation()
             } else {
                 BubbleField(people: model.visiblePeople) { person in
-                    model.selectedPersonID = person.id
+                    Task { await model.openVisibleResult(person.id) }
                 }
                 if model.visiblePeople.isEmpty {
                     Text("No one matches that.")
@@ -164,6 +164,8 @@ struct FieldChrome: View {
             if !model.document.people.isEmpty {
                 TextField("Find someone", text: $model.searchText)
                     .textFieldStyle(.plain)
+                    .submitLabel(.search)
+                    .onSubmit { Task { await model.recordSearchAttempt() } }
                     .padding(.horizontal, 14)
                     .padding(.vertical, 10)
                     .background(KithPalette.cream, in: Capsule())
@@ -239,7 +241,7 @@ struct PeopleListView: View {
                 List {
                     ForEach(model.visiblePeople) { person in
                         Button {
-                            model.selectedPersonID = person.id
+                            Task { await model.openVisibleResult(person.id) }
                         } label: {
                             HStack(spacing: 14) {
                                 LanternView(person: person, diameter: 52)
